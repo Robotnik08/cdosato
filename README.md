@@ -5,7 +5,7 @@ The first version I made was a simple tree walker, but I wanted to make it faste
 
 ## How to use
 
-To use the interpreter, you need to compile the source code and run the executable with the path to the DOSATO file as an argument.
+To use the interpreter, you need to compile the source code and run the executable
 
 ```bash
 $ cd src
