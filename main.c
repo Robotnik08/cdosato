@@ -1,8 +1,11 @@
 #include "include/common.h"
 
 #include "include/virtual-machine.h"
-#include "include/lexer.h"
+#include "include/ast.h"
 #include "include/debug.h"
+
+
+
 
 int main (int argc, char** argv) {
     if (argc < 2) {
@@ -16,9 +19,7 @@ int main (int argc, char** argv) {
         return 1;
     }
 
-    fseek(file, 0, SEEK_END); 
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    long long int length = getFileSize(file);
 
     char* source = malloc(length + 1);
     if (source == NULL) {
@@ -26,31 +27,30 @@ int main (int argc, char** argv) {
         return 1;
     }
 
-    source[length] = '\0';
     // read into source
     fread(source, 1, length, file);
+    source[length] = '\0';
     
 
+    AST main_ast;
+    init_AST(&main_ast);
+    load_AST(&main_ast, source, length, argv[1]);
 
-    /// TEST LEXER
+    printf ("==== Source: (%d) ====\n%s\n", length, source);
 
-    printf ("==== Source: ====\n%s\n", source);
+    printf("==== Tokens: (%d) ====\n", main_ast.tokens.count);
+    printTokens(main_ast.tokens);
 
-    TokenList list;
-    init_TokenList(&list);
+    printf("==== AST: ====\n");
+    printNode(main_ast.root, 0);
 
-    int res = tokenise(&list, source, length);
-    if (res != 0) {
-        printf("Error tokenising source %d\n", res);
-        return 1;
-    }
 
-    printf("==== Tokens: (%d) ====\n", list.count);
-    printTokens(list);
-
-    free_TokenList(&list);
+    free_AST(&main_ast);
 
     free(source);
+
+
+
 
     /// TEST VM
 

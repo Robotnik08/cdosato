@@ -189,7 +189,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
         for (int j = 0; j < sizeof(brackettokens)/sizeof(char*); j++) {
             if (full_code[i] == brackettokens[j][0]) {
                 bracketTier++;
-                DOSATO_ADD_TOKEN(list, TOKEN_PARENTHESIS, full_code + i, 0, getBracketType(full_code[i]) | bracketTier);
+                DOSATO_ADD_TOKEN(list, TOKEN_PARENTHESIS_OPEN, full_code + i, 0, getBracketType(full_code[i]) | bracketTier);
                 bracketTypeHiarcy[bracketTier - 1] = j;
                 break;
             }
@@ -197,7 +197,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
         // check for closing brackets
         for (int j = 0; j < sizeof(brackettokens)/sizeof(char*); j++) {
             if (full_code[i] == brackettokens[j][1]) {
-                DOSATO_ADD_TOKEN(list, TOKEN_PARENTHESIS, full_code + i, 0, getBracketType(full_code[i]) | (bracketTypeHiarcy[bracketTier - 1] == j ? bracketTier : -1));
+                DOSATO_ADD_TOKEN(list, TOKEN_PARENTHESIS_CLOSED, full_code + i, 0, getBracketType(full_code[i]) | (bracketTypeHiarcy[bracketTier - 1] == j ? bracketTier : -1));
                 if (bracketTypeHiarcy[bracketTier - 1] == j) {
                     bracketTypeHiarcy[bracketTier - 1] = -1;
                     bracketTier--;
@@ -228,7 +228,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
         SKIP_TOKEN()
         if (isFloateric(full_code[i])) {
             if (!(isNumeric(full_code[i]) || full_code[i] == '.') || isAlphaNameric(full_code[i-1]) || isAlphaNameric(full_code[i+1])) {
-                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') return 4;
+                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, E_INVALID_NUMBER_LITERAL);
                 for (int k = i; k < code_length && isFloateric(full_code[i]); k++) {
                     i = k;
                 }
@@ -245,7 +245,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
                     for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                         end = k;
                     }
-                    return E_INVALID_LITERAL;
+                    printError(full_code, start, E_INVALID_NUMBER_LITERAL);
                 }
                 if (full_code[j] == '.') {
                     if (foundDot) {
@@ -253,7 +253,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
                         for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                             end = k;
                         }
-                        return E_INVALID_LITERAL;
+                        printError(full_code, start, E_INVALID_NUMBER_LITERAL);
                     }
                     foundDot = true;
                     if (!isNumeric(full_code[j+1])) {
@@ -261,7 +261,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
                         for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                             end = k;
                         }
-                        return E_INVALID_LITERAL;
+                        printError(full_code, start, E_INVALID_NUMBER_LITERAL);
                     }
                 }
                 if (isFloateric(full_code[j])) {
@@ -271,7 +271,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
                             for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                                 end = k;
                             }
-                            return E_INVALID_LITERAL;
+                            printError(full_code, start, E_INVALID_NUMBER_LITERAL);
                         }
                         if (isNumeric(full_code[j-1])) {
                             end = j;
@@ -297,33 +297,27 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
     const char* operatortokens[] = OPERATORS;
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
-        bool foundHuge = false;
         for (int j = 0; j < sizeof(operatortokens)/sizeof(char*); j++) {
             if (i + 2 >= code_length) break;
             char hugeoperator[4] = { full_code[i], full_code[i+1 < code_length ? i+1 : 0], full_code[i+2 < code_length ? i+2 : 0], '\0' };
             if (!strcmp(hugeoperator, operatortokens[j])) {
-                DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]), j);
-                i += 2;
-                foundHuge = true;
+                DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]) - 1, j);
+                i += 3;
                 break;
             }
         }
-        if (foundHuge) continue;
-        bool foundBig = false;
         for (int j = 0; j < sizeof(operatortokens)/sizeof(char*); j++) {
             if (i + 1 >= code_length) break;
             char bigoperator[3] = { full_code[i], full_code[i+1 < code_length ? i+1 : 0], '\0' };
             if (!strcmp(bigoperator, operatortokens[j])) {
-                DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]), j);
-                i++;
-                foundBig = true;
+                DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]) - 1, j);
+                i += 2;
                 break;
             }
         }
-        if (foundBig) continue;
         for (int j = 0; j < sizeof(operatortokens)/sizeof(char*); j++) {
             if (full_code[i] == operatortokens[j][0]) {
-                DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]), j);
+                DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]) - 1, j);
                 break;
             }
         }

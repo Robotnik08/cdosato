@@ -12,6 +12,7 @@
 
 #include "strtools.h"
 #include "error.h"
+#include "filetools.h"
 
 #define DOSATO_VERSION "0.1.0"
 

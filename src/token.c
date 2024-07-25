@@ -38,8 +38,8 @@ void printTokens (TokenList list) {
     char* offset = tokens[0].start; // first token start
     for (int i = 0; i < list.count; i++) {
         char* string = getTokenString(tokens[i]);
-        printf("Token '%s' start: %d, end: %d, type: %d, carry: %d\n",
-              string,  tokens[i].start - offset, tokens[i].start - offset + tokens[i].length, tokens[i].type, tokens[i].carry);
+        printf("Token %d: '%s' start: %d, end: %d, type: %d, carry: %d\n",
+              i, string,  tokens[i].start - offset, tokens[i].start - offset + tokens[i].length, tokens[i].type, tokens[i].carry);
         
         free(string);
     }
@@ -56,6 +56,13 @@ int isAssignmentOperator (OperatorType operator) {
         case OPERATOR_AND_ASSIGN:
         case OPERATOR_OR_ASSIGN:
         case OPERATOR_XOR_ASSIGN:
+        case OPERATOR_SHIFT_LEFT_ASSIGN:
+        case OPERATOR_SHIFT_RIGHT_ASSIGN:
+        case OPERATOR_POWER_ASSIGN:
+        case OPERATOR_MIN_ASSIGN:
+        case OPERATOR_MAX_ASSIGN:
+        case OPERATOR_INCREMENT:
+        case OPERATOR_DECREMENT:
             return true;
         default:
             return false;

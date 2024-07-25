@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.sls": "slomescript",
+        "*.h": "c",
+        "compare": "c",
+        "type_traits": "c"
+    }
+}

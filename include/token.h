@@ -8,14 +8,14 @@
 #define EXTENSION_ACCEPTS {NEEDS_EXPRESSION, NEEDS_EXPRESSION, NEEDS_IF_OR_FUNCTION, NEEDS_FUNCTION, NEEDS_FUNCTION, NEEDS_EXPRESSION, NEEDS_EXPRESSION}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR"}
 #define SEPARATORS {';'}
-#define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", ".", ",", "#",  \
+#define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
-                   "**","^/","|>","<|","!-","=>",">>=","<<=","**=","^/=","|>=","<|="}
+                   "**","^/","|>","<|","!-","=>",">>=","<<=","**=","|>=","<|="}
 // operator precedence is borrowed from C
 #define OPERATOR_PRECEDENCE \
                   { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  1,   15,  1,   \
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
-                    2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   14}
+                    2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14}
 
 #define BRACKETS {"()", "{}", "[]"}
 
@@ -28,7 +28,8 @@ typedef enum {
     TOKEN_MASTER_KEYWORD,
     TOKEN_EXT,
     TOKEN_IDENTIFIER,
-    TOKEN_PARENTHESIS,
+    TOKEN_PARENTHESIS_OPEN,
+    TOKEN_PARENTHESIS_CLOSED,
     TOKEN_VAR_TYPE,
     TOKEN_SEPARATOR,
     TOKEN_END = -1
@@ -40,6 +41,8 @@ typedef enum {
     BRACKET_SQUARE = 1 << 14,
     BRACKET_CURLY = 1 << 15,
 } BracketType;
+
+#define CHECK_BRACKET_TYPE(bracket, type) (bracket & type)
 
 typedef enum {
     OPERATOR_NULL = -1,
@@ -58,7 +61,7 @@ typedef enum {
     OPERATOR_NOT_BITWISE,
     OPERATOR_QUESTION,
     OPERATOR_COLON,
-    OPERATOR_DOT,
+    OPERATOR_ARROW,
     OPERATOR_COMMA,
     OPERATOR_HASH,
     OPERATOR_ADD_ASSIGN,
@@ -88,7 +91,6 @@ typedef enum {
     OPERATOR_SHIFT_RIGHT_ASSIGN,
     OPERATOR_SHIFT_LEFT_ASSIGN,
     OPERATOR_POWER_ASSIGN,
-    OPERATOR_ROOT_ASSIGN,
     OPERATOR_MAX_ASSIGN,
     OPERATOR_MIN_ASSIGN,
 } OperatorType;
@@ -148,6 +150,8 @@ void free_TokenList (TokenList* list);
     Token token = { start, end + 1, type, carry }; \
     write_TokenList(list, token);
 
+
+#define DOSATO_TOKEN_START (source, start) (start - source)
 
 BracketType getBracketType (char bracket);
 

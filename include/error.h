@@ -5,7 +5,28 @@
 
 typedef enum {
     E_NULL,
-    E_INVALID_LITERAL,
+    // token errors
+    E_INVALID_NUMBER_LITERAL,
+
+    // parser errors
+    E_EXPECTED_MASTER,
+    E_MISSING_SEPERATOR,
+    E_MISSING_CLOSING_PARENTHESIS,
+    E_UNEXPECTED_TOKEN,
+    E_EXPECTED_IDENTIFIER,
+    E_EXPECTED_TYPE_INDENTIFIER,
+    E_EXPECTED_ASSIGNMENT_OPERATOR,
+    E_EXPECTED_ASSIGNMENT_OPERATOR_PURE,
+    E_EXPECTED_BRACKET_ROUND,
+    E_EXPECTED_BRACKET_CURLY,
+    E_EXPECTED_BRACKET_SQUARE,
+
+    E_UNKNOWN,
+    E_AMOUNT
 } ErrorType;
+
+// extern const char* ERROR_MESSAGES[];
+
+void printError (const char* full_code, const int pos, const ErrorType type);
 
 #endif // dosato_error_h
