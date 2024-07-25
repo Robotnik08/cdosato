@@ -4,12 +4,28 @@
 #include "common.h"
 
 typedef enum {
+    D_NULL = -1,
     TYPE_INT,
-    TYPE_STRING
-} ValueType;
+    TYPE_BOOL,
+    TYPE_STRING,
+    TYPE_FLOAT,
+    TYPE_DOUBLE,
+    TYPE_CHAR,
+    TYPE_SHORT,
+    TYPE_LONG,
+    TYPE_BYTE,
+    TYPE_VOID,
+    TYPE_ARRAY,
+    TYPE_UINT,
+    TYPE_USHORT,
+    TYPE_ULONG,
+    TYPE_UBYTE,
+    TYPE_OBJECT,
+    TYPE_VAR
+} DataType;
 
 typedef struct {
-    ValueType type;
+    DataType type;
     union {
         int intValue;
         char* stringValue;
@@ -22,8 +38,8 @@ typedef struct {
     Value* values;
 } ValueArray;
 
-void initValueArray(ValueArray* array);
-void writeValueArray(ValueArray* array, Value value);
-void freeValueArray(ValueArray* array);
+void init_ValueArray(ValueArray* array);
+void write_ValueArray(ValueArray* array, Value value);
+void free_ValueArray(ValueArray* array);
 
 #endif // dosato_value_h

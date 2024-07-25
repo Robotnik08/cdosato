@@ -1,7 +1,7 @@
 DO SAY ("Hello, world!"); // does a function
 SET str = "Hello, world!"; // sets a variable
 MAKE INT i = 0; // declares a variable
-DEFINE FUNCTION add (INT a, INT b) {
+DEFINE add (INT a, INT b) {
     RETURN a + b;
 }; // defines a function
 IMPORT "demo.lib" AS demo; // imports an external library

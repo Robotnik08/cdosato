@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -Iinclude
+CFLAGS = -Iinclude -Werror
 SRCDIR = src
 INCDIR = include
 BUILDDIR = build
-TARGET = $(BUILDDIR)/main
+TARGET = main
 
 SOURCES := $(wildcard $(SRCDIR)/*.c) main.c
 OBJECTS := $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))

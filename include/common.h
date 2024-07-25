@@ -8,6 +8,10 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <time.h>
+#include <math.h>
+
+#include "strtools.h"
+#include "error.h"
 
 #define DOSATO_VERSION "0.1.0"
 

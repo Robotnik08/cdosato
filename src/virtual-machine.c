@@ -5,18 +5,18 @@
 void initVirtualMachine(VirtualMachine* vm) {
     vm->instance = malloc(sizeof(CodeInstance));
     initCodeInstance(vm->instance);
-    initValueArray(&vm->stack);
+    init_ValueArray(&vm->stack);
     vm->ip = vm->instance->code;
 }
 
 void freeVirtualMachine(VirtualMachine* vm) {
     freeCodeInstance(vm->instance);
-    freeValueArray(&vm->stack);
+    free_ValueArray(&vm->stack);
     free(vm->instance);
 }
 
 void pushValue(ValueArray* array, Value value) {
-    writeValueArray(array, value);
+    write_ValueArray(array, value);
 }
 
 int runVirtualMachine (VirtualMachine* vm) {
