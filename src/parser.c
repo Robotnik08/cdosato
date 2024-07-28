@@ -8,6 +8,13 @@
     printError(source, tokens.tokens[index].start - source, code); \
 } while (0)
 
+#define ENCASED_IN_BRACKETS(start, end, b_type) \
+    (((start).carry == (end).carry) && \
+     ((start).type == TOKEN_PARENTHESIS_OPEN) && \
+     ((end).type == TOKEN_PARENTHESIS_CLOSED) && \
+     CHECK_BRACKET_TYPE((start).carry, b_type))
+
+
 #define SKIP_BLOCK(i) \
     do { \
         if (tokens.tokens[(i)].type == TOKEN_PARENTHESIS_OPEN) {  \
@@ -73,7 +80,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                             body_parsed = true;
                         }
                     } else {
-                        write_NodeList(&root.body, parse(source, length, ext_start, i - 1, tokens, NODE_WHEN_BODY + ext_type));
+                        write_NodeList(&root.body, parse(source, length, ext_start, i, tokens, NODE_WHEN_BODY + ext_type));
                         ext_type = tokens.tokens[i].carry;
                         ext_start = i + 1;
                     }
@@ -86,8 +93,10 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
             break;
         }
-
-        case NODE_MASTER_DO_BODY: {
+        case NODE_MASTER_DO_BODY: 
+        case NODE_THEN_BODY: 
+        case NODE_CATCH_BODY:
+        case NODE_ELSE_BODY: {
             // either a function call or a block
             if (tokens.tokens[start].type == TOKEN_PARENTHESIS_OPEN && CHECK_BRACKET_TYPE(tokens.tokens[start].carry, BRACKET_CURLY)) {
                 int endofblock = getEndOfBlock(tokens, start);
@@ -143,6 +152,12 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
             write_NodeList(&root.body, parse(source, length, start, j - 1, tokens, NODE_EXPRESSION));
             write_NodeList(&root.body, parse(source, length, j - 1, j, tokens, NODE_OPERATOR));
+            if (tokens.tokens[j - 1].carry == OPERATOR_INCREMENT || tokens.tokens[j - 1].carry == OPERATOR_DECREMENT) {
+                if (j != end) {
+                    ERROR(j, E_UNEXPECTED_TOKEN);
+                }
+                break;
+            }
             write_NodeList(&root.body, parse(source, length, j, end, tokens, NODE_EXPRESSION));
             break;
         }
@@ -223,6 +238,284 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (start != end) {
                 ERROR(start, E_UNEXPECTED_TOKEN);
             }
+            break;
+        }
+
+
+        case NODE_FUNCTION_DEFINITION_PARAMETERS: {
+            if (start == end) {
+                // no function parameters
+                break;
+            }
+            // split on the commas
+            int j = start;
+            for (int i = start; i < end; i++) {
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
+                    write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_FUNCTION_DEFINITION_ARGUMENT));
+                    j = i + 1;
+                }
+            }
+            write_NodeList(&root.body, parse(source, length, j, end, tokens, NODE_FUNCTION_DEFINITION_ARGUMENT));
+
+            break;
+        }
+
+        case NODE_FUNCTION_DEFINITION_ARGUMENT: {
+            if (start == end) {
+                ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
+            }
+            // type
+            int i = start;
+            while (tokens.tokens[i++].type == TOKEN_VAR_TYPE) {}
+            i--;
+            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_TYPE));
+            // identifier
+            if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
+                ERROR(i, E_EXPECTED_IDENTIFIER);
+            }
+            write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_INDENTIFIER));
+            if (i + 1 != end) {
+                ERROR(i + 1, E_UNEXPECTED_TOKEN);
+            }
+            break;
+        }
+
+        case NODE_FUNCTION_CALL: {
+            // get the function expression
+            int i = start;
+            for (i = start; i < end; i++) {
+                if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN) {
+                    break;
+                }
+            }
+            if (i == end - 1) {
+                ERROR(i, E_EXPECTED_BRACKET_ROUND);
+            }
+            if (i == start) {
+                ERROR(start, E_EXPECTED_IDENTIFIER);
+            }
+            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION));
+            // get the arguments
+            if (tokens.tokens[i].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i].carry, BRACKET_ROUND)) {
+                ERROR(i, E_EXPECTED_BRACKET_ROUND);
+            }
+            int j = getEndOfBlock(tokens, i);
+            if (j == -1) {
+                ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
+            }
+            write_NodeList(&root.body, parse(source, length, i + 1, j, tokens, NODE_ARGUMENTS));
+            if (j + 1 != end) {
+                ERROR(j + 1, E_UNEXPECTED_TOKEN);
+            }
+            break;
+        }
+    	
+        case NODE_ARRAY_EXPRESSION:
+        case NODE_ARGUMENTS: {
+            if (start == end) {
+                // no arguments
+                break;
+            }
+            // split on the commas
+            int j = start;
+            for (int i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
+                    write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION));
+                    j = i + 1;
+                }
+            }
+            write_NodeList(&root.body, parse(source, length, j, end, tokens, NODE_EXPRESSION));
+            break;
+        }
+
+        case NODE_WHEN_BODY:
+        case NODE_WHILE_BODY:
+        case NODE_IF_BODY: {
+            // expression
+            write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION));
+            break;
+        }
+
+        case NODE_FOR_BODY: {
+            // special type of FOR expression
+            // get rid of parentheses
+            int new_start = start;
+            int new_end = end - 1;
+            while (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end], BRACKET_ROUND)) {
+                new_start++;
+                new_end--;
+            }
+
+            root.start = new_start;
+            root.end = new_end;
+
+            // get the first expression (everything before the => operator)
+            int i = new_start;
+            for (i = new_start; i < new_end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_AS) {
+                    break;
+                }
+            }
+            if (i == new_start) {
+                ERROR(i, E_EXPECTED_IDENTIFIER);
+            }
+            write_NodeList(&root.body, parse(source, length, new_start, i, tokens, NODE_EXPRESSION));
+            // after the arrow must be an identifier
+            if (tokens.tokens[i + 1].type != TOKEN_IDENTIFIER) {
+                ERROR(i + 1, E_EXPECTED_IDENTIFIER);
+            }
+            write_NodeList(&root.body, parse(source, length, i + 1, i + 2, tokens, NODE_INDENTIFIER));
+            if (i + 1 != new_end) {
+                ERROR(i + 2, E_UNEXPECTED_TOKEN);
+            }
+            break;
+        }
+
+        case NODE_OBJECT_EXPRESSION: {
+            if (start == end) {
+                // empty object
+                break;
+            }
+
+            // split on the commas
+            int j = start;
+            for (int i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
+                    write_NodeList(&root.body, parse(source, length, j, i, tokens, NODE_OBJECT_ENTRY));
+                    j = i + 1;
+                }
+            }
+            write_NodeList(&root.body, parse(source, length, j, end, tokens, NODE_OBJECT_ENTRY));
+            break;
+        }
+
+        case NODE_OBJECT_ENTRY: {
+            // get the key
+            if (tokens.tokens[start].type == TOKEN_IDENTIFIER) {
+                write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_INDENTIFIER));
+            } else if (tokens.tokens[start].type == TOKEN_STRING) {
+                write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_STRING_LITERAL));
+            } else {
+                ERROR(start, E_EXPECTED_IDENTIFIER);
+            }
+            if (tokens.tokens[start + 1].type != TOKEN_OPERATOR || tokens.tokens[start + 1].carry != OPERATOR_COLON) {
+                ERROR(start + 1, E_UNEXPECTED_TOKEN);
+            }
+            write_NodeList(&root.body, parse(source, length, start + 2, end, tokens, NODE_EXPRESSION));
+            break;
+        }
+
+
+        case NODE_EXPRESSION: {
+            int new_start = start;
+            int new_end = end;
+            while (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end - 1], BRACKET_ROUND)) {
+                new_start++;
+                new_end--;
+            }
+
+            root.start = new_start;
+            root.end = new_end;
+
+
+            if (new_start == new_end) {
+                ERROR(new_start, E_EMPTY_EXPRESSION);
+            }
+
+            if (new_start == new_end - 1) {
+                // single expression
+                if (tokens.tokens[new_start].type == TOKEN_IDENTIFIER) {
+                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_INDENTIFIER));
+                } else if (tokens.tokens[new_start].type == TOKEN_NUMBER) {
+                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_NUMBER_LITERAL));
+                } else if (tokens.tokens[new_start].type == TOKEN_STRING) {
+                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_STRING_LITERAL));
+                } else {
+                    ERROR(new_start, E_UNEXPECTED_TOKEN);
+                }
+                break;
+            }
+
+            // split on the operators
+            int j = new_start - 1;
+            int highest = -1;
+            int highest_index = -1;
+
+            int precedence_values[] = OPERATOR_PRECEDENCE;
+
+            bool func_call = false;
+            for (int i = new_start; i < new_end; i++) {
+                if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN && CHECK_BRACKET_TYPE(tokens.tokens[i].carry, BRACKET_ROUND)) {
+                    if (j == i - 1) {
+                        SKIP_BLOCK(i);
+                        continue; // it's a normal bracket expression
+                    }
+                    int endofblock = getEndOfBlock(tokens, i);
+                    if (endofblock == -1) {
+                        ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
+                    }
+                    if (1 >= highest) {
+                        highest = 1;
+                        highest_index = i;
+                        func_call = true;
+                    }
+                }
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR) {
+                    j = i;
+                    if (precedence_values[tokens.tokens[i].carry] >= highest) {
+                        highest = precedence_values[tokens.tokens[i].carry];
+                        highest_index = i;
+                        func_call = false;
+                    }
+                }
+            }
+
+            if (func_call) {
+                write_NodeList(&root.body, parse(source, length, new_start, getEndOfBlock(tokens, highest_index) + 1, tokens, NODE_FUNCTION_CALL));
+                break;
+            }
+
+            if (highest == -1) {
+                // no operators
+
+                if (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end - 1], BRACKET_SQUARE)) {
+                    write_NodeList(&root.body, parse(source, length, new_start + 1, new_end - 1, tokens, NODE_ARRAY_EXPRESSION));
+                } else if (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end - 1], BRACKET_CURLY)) {
+                    write_NodeList(&root.body, parse(source, length, new_start + 1, new_end - 1, tokens, NODE_OBJECT_EXPRESSION));
+                } else {
+                    ERROR(new_start, E_UNEXPECTED_TOKEN);
+                }
+            } else {
+                if (highest_index == new_start) {
+                    // unary operator
+                    write_NodeList(&root.body, parse(source, length, highest_index, end, tokens, NODE_UNARY_EXPRESSION));
+                } else if (highest_index == new_end - 1) {
+                    // error
+                    ERROR(highest_index, E_UNEXPECTED_TOKEN);
+                } else {
+                    write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, NODE_EXPRESSION));
+                    write_NodeList(&root.body, parse(source, length, highest_index, highest_index + 1, tokens, NODE_OPERATOR));
+                    write_NodeList(&root.body, parse(source, length, highest_index + 1, new_end, tokens, NODE_EXPRESSION));
+                }
+            }
+            
+            break;
+        }
+
+        case NODE_UNARY_EXPRESSION: {
+            if (start == end) {
+                ERROR(start, E_UNEXPECTED_TOKEN);
+            }
+            if (tokens.tokens[start].type != TOKEN_OPERATOR || !isUnaryOperator(tokens.tokens[start].carry)) {
+                ERROR(start, E_NON_UNARY_OPERATOR);
+            }
+            
+            write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_OPERATOR));
+            write_NodeList(&root.body, parse(source, length, start + 1, end, tokens, NODE_EXPRESSION));
             break;
         }
 

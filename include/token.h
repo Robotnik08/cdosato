@@ -163,4 +163,6 @@ int isAssignmentOperator (OperatorType operator);
 
 int checkIfOnly (TokenList list, TokenType type, int start, int end);
 
+int isUnaryOperator (OperatorType operator);
+
 #endif

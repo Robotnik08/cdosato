@@ -18,6 +18,8 @@ static const char* ERROR_MESSAGES[] = {
     "Expected Round Bracket '()'",
     "Expected Curly Bracket '{}'",
     "Expected Square Bracket '[]'",
+    "Expression can not be empty",
+    "Operator cannot be used as unary operator (+, -, ~, !, !-, ^/)",
 
     "Unknown Error",
     "Error Amount (report this)"
@@ -26,7 +28,12 @@ static const char* ERROR_MESSAGES[] = {
 void printError (const char* full_code, const int pos, const ErrorType type) {
     printf("\nERROR:\n");
     printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
-    printf("At line %i:%i\n", getLine(full_code, pos), getLineCol(full_code, pos));
+
+    if (pos < strlen(full_code)) {
+        printf("At line %i:%i\n", getLine(full_code, pos), getLineCol(full_code, pos));
+    } else {
+        printf("At UNSPECIFIED position\n");
+    }
     #ifdef _WIN32
     _fcloseall(); // close all files if any were opened
     #endif
