@@ -59,7 +59,8 @@ static const char* NODE_NAMES[] = {
     "NODE_FUNCTION_DEFINITION_PARAMETERS",
     "NODE_FUNCTION_DEFINITION_ARGUMENT",
     "NODE_ARGUMENTS",
-    "NODE_OBJECT_ENTRY"
+    "NODE_OBJECT_ENTRY",
+    "NODE_TYPE_CAST"
 };
 
 void printNode (Node node, int depth) {
@@ -96,6 +97,21 @@ int getEndOfBlock (TokenList tokens, int start) {
     int targetcarry = tokens.tokens[start].carry;
     for (int i = start + 1; i < tokens.count; i++) {
         if (tokens.tokens[i].type == TOKEN_PARENTHESIS_CLOSED) {
+            if (tokens.tokens[i].carry == targetcarry) {
+                return i;
+            }
+        }
+    }
+    return -1; // invalid
+}
+
+int getStartOfBlock (TokenList tokens, int start) {
+    if (tokens.tokens[start].type != TOKEN_PARENTHESIS_CLOSED) {
+        return -1; // invalid
+    }
+    int targetcarry = tokens.tokens[start].carry;
+    for (int i = start - 1; i >= 0; i--) {
+        if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN) {
             if (tokens.tokens[i].carry == targetcarry) {
                 return i;
             }

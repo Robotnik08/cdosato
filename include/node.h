@@ -50,7 +50,8 @@ typedef enum {
     NODE_FUNCTION_DEFINITION_PARAMETERS,
     NODE_FUNCTION_DEFINITION_ARGUMENT,
     NODE_ARGUMENTS,
-    NODE_OBJECT_ENTRY
+    NODE_OBJECT_ENTRY,
+    NODE_TYPE_CAST
 } NodeType;
 
 typedef struct Node Node;
@@ -78,5 +79,6 @@ void printNode (Node node, int depth);
 
 int getEndOfLine (TokenList tokens, int start);
 int getEndOfBlock (TokenList tokens, int start);
+int getStartOfBlock (TokenList tokens, int start);
 
 #endif
