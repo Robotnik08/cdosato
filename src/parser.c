@@ -9,10 +9,8 @@
 } while (0)
 
 #define ENCASED_IN_BRACKETS(start, end, b_type) \
-    (((start).carry == (end).carry) && \
-     ((start).type == TOKEN_PARENTHESIS_OPEN) && \
-     ((end).type == TOKEN_PARENTHESIS_CLOSED) && \
-     CHECK_BRACKET_TYPE((start).carry, b_type))
+    (getEndOfBlock(tokens, (start)) == (end) && \
+     CHECK_BRACKET_TYPE(tokens.tokens[(start)].carry, b_type))
 
 
 #define SKIP_BLOCK(i) \
@@ -283,15 +281,16 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_FUNCTION_CALL: {
             // get the function expression
             int i = start;
-            for (i = start; i < end; i++) {
-                if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN) {
-                    break;
+            for (int j = start; j < end; j++) {
+                if (tokens.tokens[j].type == TOKEN_PARENTHESIS_OPEN) {
+                    i = j;
                 }
             }
             if (i == end - 1) {
                 ERROR(i, E_EXPECTED_BRACKET_ROUND);
             }
             if (i == start) {
+                break;
                 ERROR(start, E_EXPECTED_IDENTIFIER);
             }
             write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION));
@@ -342,7 +341,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             // get rid of parentheses
             int new_start = start;
             int new_end = end - 1;
-            while (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end], BRACKET_ROUND)) {
+            while (ENCASED_IN_BRACKETS(new_start, new_end, BRACKET_ROUND)) {
                 new_start++;
                 new_end--;
             }
@@ -412,7 +411,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_EXPRESSION: {
             int new_start = start;
             int new_end = end;
-            while (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end - 1], BRACKET_ROUND)) {
+            while (ENCASED_IN_BRACKETS(new_start, new_end - 1, BRACKET_ROUND)) {
                 new_start++;
                 new_end--;
             }
@@ -434,6 +433,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 } else if (tokens.tokens[new_start].type == TOKEN_STRING) {
                     write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_STRING_LITERAL));
                 } else {
+                    break;
                     ERROR(new_start, E_UNEXPECTED_TOKEN);
                 }
                 break;
@@ -449,6 +449,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             bool func_call = false;
             bool type_cast = false;
             bool is_unary = false;
+            bool is_turnary = false;
             for (int i = new_start; i < new_end; i++) {
                 if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN && CHECK_BRACKET_TYPE(tokens.tokens[i].carry, BRACKET_ROUND)) {
                     if (op_loc == i - 1) {
@@ -461,13 +462,13 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     }
                     if (1 >= highest) {
                         is_unary = false;
+                        is_turnary = false;
                         highest = 1;
                         highest_index = i;
                         func_call = true;
                         type_cast = false;
                     }
                 }
-                SKIP_BLOCK(i);
                 // type cast
                 if (tokens.tokens[i-1].type == TOKEN_PARENTHESIS_CLOSED && CHECK_BRACKET_TYPE(tokens.tokens[i-1].carry, BRACKET_ROUND)) {
                     if (op_loc == i + 1){
@@ -478,17 +479,25 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         ERROR(i, E_MISSING_OPENING_PARENTHESIS);
                     }
 
+                    // check if it's all type tokens in the block
+                    bool all_type = true;
+                    for (int j = startofblock + 1; j < i - 1; j++) {
+                        if (tokens.tokens[j].type != TOKEN_VAR_TYPE) {
+                            all_type = false;
+                            break;
+                        }
+                    }
 
-                    if (2 >= highest) {
+                    if (2 >= highest && all_type) {
                         is_unary = false;
+                        is_turnary = false;
                         highest = 2;
                         highest_index = startofblock;
                         func_call = false;
                         type_cast = true;
                     }
-
-
                 }
+                SKIP_BLOCK(i);
                 if (tokens.tokens[i].type == TOKEN_OPERATOR) {
                     op_loc = i;
                     int precedence = precedence_values[tokens.tokens[i].carry];
@@ -503,13 +512,44 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         }
                     }
 
+                    // ternary operator
+                    bool temp_turnary = false;
+                    if (tokens.tokens[i].carry == OPERATOR_QUESTION) {
+                        // check if theres a colon
+                        bool colon = false;
+                        int j = i + 1;
+                        int q_count = 0;
+                        for (j = i + 1; j < new_end; j++) {
+                            SKIP_BLOCK(j);
+                            if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_QUESTION) {
+                                q_count++;
+                            }
+
+                            if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_COLON) {
+                                if (!q_count--) {
+                                    colon = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!colon) {
+                            ERROR(i, E_INCOMPLETE_TERNARY_OPERATOR);
+                        }
+
+                        i = j;
+                        temp_turnary = true;
+                    }
+
                     if (precedence >= highest) {
                         highest = precedence;
-                        highest_index = is_unary ? highest_index : i; // when it's a unary operator, the highest index is the previous one
+                        highest_index = is_unary ? highest_index : op_loc; // when it's a unary operator, the highest index is the previous one
                         is_unary = temp_unary;
+                        is_turnary = temp_turnary;
                         func_call = false;
                         type_cast = false;
                     }
+                    op_loc = i;
                 }
             }
 
@@ -524,9 +564,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (highest == -1) {
                 // no operators
 
-                if (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end - 1], BRACKET_SQUARE)) {
+                if (ENCASED_IN_BRACKETS(new_start, new_end - 1, BRACKET_SQUARE)) {
                     write_NodeList(&root.body, parse(source, length, new_start + 1, new_end - 1, tokens, NODE_ARRAY_EXPRESSION));
-                } else if (ENCASED_IN_BRACKETS(tokens.tokens[new_start], tokens.tokens[new_end - 1], BRACKET_CURLY)) {
+                } else if (ENCASED_IN_BRACKETS(new_start, new_end - 1, BRACKET_CURLY)) {
                     write_NodeList(&root.body, parse(source, length, new_start + 1, new_end - 1, tokens, NODE_OBJECT_EXPRESSION));
                 } else {
                     ERROR(new_start, E_UNEXPECTED_TOKEN);
@@ -538,6 +578,30 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 } else if (highest_index == new_end - 1) {
                     // error if the last token is an operator
                     ERROR(highest_index, E_UNEXPECTED_TOKEN);
+                } else if (is_turnary) {
+                    // ternary operator
+                    write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, NODE_EXPRESSION)); // condition
+
+                    int j = highest_index + 1;
+                    int q_count = 0;
+                    for (; j < new_end; j++) {
+                        SKIP_BLOCK(j);
+                        if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_QUESTION) {
+                            q_count++;
+                        }
+
+                        if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_COLON) {
+                            if (!q_count--) {
+                                break;
+                            }
+                        }
+                    }
+
+                    write_NodeList(&root.body, parse(source, length, highest_index + 1, j, tokens, NODE_EXPRESSION)); // true_expression
+                    write_NodeList(&root.body, parse(source, length, j + 1, new_end, tokens, NODE_EXPRESSION)); // false_expression
+
+                    root.type = NODE_TERNARY_EXPRESSION;
+                    printNode(root, 0);
                 } else {
                     write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, NODE_EXPRESSION));
                     write_NodeList(&root.body, parse(source, length, highest_index, highest_index + 1, tokens, NODE_OPERATOR));

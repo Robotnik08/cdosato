@@ -4,6 +4,7 @@
 #include "../include/ast.h"
 #include "../include/lexer.h"
 #include "../include/parser.h"
+#include "../include/virtual-machine.h"
 
 void init_AST (AST* ast) {
     ast->source = NULL;
@@ -16,7 +17,7 @@ void init_AST (AST* ast) {
     ast->root.type = NODE_PROGRAM;
 }
 
-void load_AST (AST* ast, char* source, size_t length, char* name) {
+void load_AST (AST* ast, char* source, size_t length, char* name, int debug, VirtualMachine* vm) {
     ast->source = source;
     ast->length = length;
     ast->name = name;
@@ -25,6 +26,10 @@ void load_AST (AST* ast, char* source, size_t length, char* name) {
     if (res != 0) {
         printf("Error tokenising source %d\n", res);
         exit(res);
+    }
+    if (debug & 0b100) {
+        printf("==== Tokens: ====\n");
+        printTokens(ast->tokens);
     }
 
     ast->root = parse(ast->source, ast->length, 0, ast->tokens.count, ast->tokens, NODE_PROGRAM);

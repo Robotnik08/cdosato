@@ -14,7 +14,7 @@ typedef struct {
 } AST;
 
 void init_AST (AST* ast);
-void load_AST (AST* ast, char* source, size_t length, char* name);
+void load_AST (AST* ast, char* source, size_t length, char* name, int debug, VirtualMachine* vm);
 void free_AST (AST* ast);
 
 #endif

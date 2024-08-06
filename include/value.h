@@ -32,14 +32,27 @@ typedef struct {
     } as;
 } Value;
 
+void destroyValue(Value value);
+
 typedef struct {
     size_t count;
     size_t capacity;
     Value* values;
 } ValueArray;
 
+typedef struct {
+    size_t count;
+    size_t capacity;
+    size_t* stack;
+} StackFrames;
+
 void init_ValueArray(ValueArray* array);
 void write_ValueArray(ValueArray* array, Value value);
 void free_ValueArray(ValueArray* array);
+void destroyValueArray(ValueArray* array);
+
+void init_StackFrames(StackFrames* stack);
+void write_StackFrames(StackFrames* stack, size_t frame);
+void free_StackFrames(StackFrames* stack);
 
 #endif // dosato_value_h

@@ -14,12 +14,15 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_RETURN:
             printf("OP_RETURN");
             break;
+        case OP_STOP:
+            printf("OP_STOP");
+            break;
 
         case OP_LOAD_CONSTANT:
             printf("OP_LOAD_CONSTANT");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
 
-            printf(": (0x%d)", address);
+            printf(": (%d)", address);
             break;
         case OP_LOAD_FAST:
             printf("OP_LOAD_FAST");

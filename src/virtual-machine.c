@@ -6,12 +6,16 @@ void initVirtualMachine(VirtualMachine* vm) {
     vm->instance = malloc(sizeof(CodeInstance));
     initCodeInstance(vm->instance);
     init_ValueArray(&vm->stack);
+    init_ValueArray(&vm->constants);
+    init_StackFrames(&vm->stack_frames);
     vm->ip = vm->instance->code;
 }
 
 void freeVirtualMachine(VirtualMachine* vm) {
     freeCodeInstance(vm->instance);
-    free_ValueArray(&vm->stack);
+    destroyValueArray(&vm->stack);    
+    destroyValueArray(&vm->constants);
+    free_StackFrames(&vm->stack_frames);
     free(vm->instance);
 }
 
@@ -19,8 +23,8 @@ void pushValue(ValueArray* array, Value value) {
     write_ValueArray(array, value);
 }
 
-int runVirtualMachine (VirtualMachine* vm) {
-    printf("Running virtual machine\n");
+int runVirtualMachine (VirtualMachine* vm, int debug) {
+    if (debug) printf("Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
     while (!halt) {
@@ -55,6 +59,10 @@ int runVirtualMachine (VirtualMachine* vm) {
             case OP_PRINT: {
                 Value value = POP_VALUE();
                 printf("%d\n", value.as.intValue);
+                break;
+            }
+            case OP_STOP: {
+                halt = true;
                 break;
             }
             case OP_RETURN: {

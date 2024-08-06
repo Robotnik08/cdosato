@@ -7,8 +7,13 @@
 
 typedef struct {
     CodeInstance* instance;
-    ValueArray stack;
+    ValueArray constants;
+    
     uint8_t* ip;
+
+    StackFrames stack_frames;
+    ValueArray stack;
+    
 } VirtualMachine;
 
 void initVirtualMachine(VirtualMachine* vm);
@@ -16,11 +21,12 @@ void freeVirtualMachine(VirtualMachine* vm);
 
 void pushValue(ValueArray* array, Value value);
 
-int runVirtualMachine(VirtualMachine* vm);
+int runVirtualMachine(VirtualMachine* vm, int debug);
 
 
 #define NEXT_BYTE() (*vm->ip++)
 #define NEXT_SHORT() (*vm->ip++) | (*vm->ip++ << 8)
 #define POP_VALUE() (vm->stack.values[--vm->stack.count])
+#define POP_STACK() (vm->stack_frames.stack[--vm->stack_frames.count])
 
 #endif // dosato_virtual_machine_h
