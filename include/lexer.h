@@ -3,8 +3,9 @@
 
 #include "common.h"
 #include "token.h"
+#include "virtual-machine.h"
 
-int tokenise (TokenList* list, char* full_code, const int code_length);
+int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm);
 
 void sortTokens (TokenList* list);
 

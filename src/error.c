@@ -6,6 +6,7 @@ static const char* ERROR_MESSAGES[] = {
     "Invalid NULL error (report this)",
 
     "Invalid Number Literal",
+    "Invalid Character Literal",
 
     "Expected Master Keyword as first token (DO, MAKE, SET, DEFINE, INCLUDE, IMPORT, RETURN, BREAK, CONTINUE)",
     "Line is missing a seperator (;)",
@@ -22,6 +23,9 @@ static const char* ERROR_MESSAGES[] = {
     "Expression can not be empty",
     "Operator cannot be used as unary operator (+, -, ~, !, !-, ^/)",
     "Incomplete Ternary Operator, expected ':'",
+
+    "Undefined Variable",
+    "Variable already defined",
 
     "Unknown Error",
     "Error Amount (report this)"

@@ -7,5 +7,6 @@
 #include "virtual-machine.h"
 
 void compile(VirtualMachine* vm, AST ast);
+void compileNode (VirtualMachine* vm, Node node, TokenList tokens);
 
 #endif // dosato_compiler_h

@@ -7,6 +7,7 @@ typedef enum {
     E_NULL,
     // token errors
     E_INVALID_NUMBER_LITERAL,
+    E_INVALID_CHAR_LITERAL,
 
     // parser errors
     E_EXPECTED_MASTER,
@@ -24,6 +25,10 @@ typedef enum {
     E_EMPTY_EXPRESSION,
     E_NON_UNARY_OPERATOR,
     E_INCOMPLETE_TERNARY_OPERATOR,
+
+    // runtime errors
+    E_UNDEFINED_VARIABLE,
+    E_ALREADY_DEFINED_VARIABLE,
 
     E_UNKNOWN,
     E_AMOUNT

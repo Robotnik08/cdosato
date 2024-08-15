@@ -5,36 +5,42 @@
 
 void initCodeInstance(CodeInstance* instance) {
     instance->code = NULL;
+    instance->token_indices = NULL;
     instance->count = 0;
     instance->capacity = 0;
 }
 
-void writeByteCode(CodeInstance* instance, uint8_t byte) {
+void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index) {
     if (instance->capacity < instance->count + 1) {
         size_t oldCapacity = instance->capacity;
         instance->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
         instance->code = DOSATO_RESIZE_LIST(uint8_t, instance->code, oldCapacity, instance->capacity);
+        instance->token_indices = DOSATO_RESIZE_LIST(size_t, instance->token_indices, oldCapacity, instance->capacity);
     }
 
     instance->code[instance->count] = byte;
+    instance->token_indices[instance->count] = token_index;
     instance->count++;
 }
 
-void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t index) {
+void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index) {
     if (instance->capacity < instance->count + 1) {
         size_t oldCapacity = instance->capacity;
         instance->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
         instance->code = DOSATO_RESIZE_LIST(uint8_t, instance->code, oldCapacity, instance->capacity);
+        instance->token_indices = DOSATO_RESIZE_LIST(size_t, instance->token_indices, oldCapacity, instance->capacity);
     }
 
     instance->code[index] = byte;
+    instance->token_indices[index] = token_index;
 }
 
-void insertByteCode(CodeInstance* instance, uint8_t byte, size_t index) {
+void insertByteCode(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index) {
     if (instance->capacity < instance->count + 1) {
         size_t oldCapacity = instance->capacity;
         instance->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
         instance->code = DOSATO_RESIZE_LIST(uint8_t, instance->code, oldCapacity, instance->capacity);
+        instance->token_indices = DOSATO_RESIZE_LIST(size_t, instance->token_indices, oldCapacity, instance->capacity);
     }
 
     for (size_t i = instance->count; i > index; i--) {
@@ -42,22 +48,24 @@ void insertByteCode(CodeInstance* instance, uint8_t byte, size_t index) {
     }
 
     instance->code[index] = byte;
+    instance->token_indices[index] = token_index;
     instance->count++;
 }
 
-void writeInstruction(CodeInstance* instance, OpCode instruction, ...) {
-    writeByteCode(instance, instruction);
+void writeInstruction(CodeInstance* instance, size_t token_index, OpCode instruction, ...) {
+    writeByteCode(instance, instruction, token_index);
     size_t offset = getOffset(instruction);
     va_list args;
     va_start(args, instruction);
     for (size_t i = 0; i < offset - 1; i++) {
-        writeByteCode(instance, va_arg(args, int));
+        writeByteCode(instance, va_arg(args, int), token_index);
     }
     va_end(args);
 }
 
 void freeCodeInstance(CodeInstance* instance) {
     DOSATO_FREE_LIST(uint8_t, instance->code, instance->capacity);
+    DOSATO_FREE_LIST(size_t, instance->token_indices, instance->capacity);
     instance->count = 0;
     instance->capacity = 0;
 }
@@ -69,10 +77,28 @@ int getOffset(OpCode instruction) {
 
         case OP_LOAD_CONSTANT:
             return 3; // 2 bytes for address
-        case OP_LOAD_NAME:
+        case OP_LOAD:
             return 3; // 2 bytes for address
-        case OP_STORE_NAME:
+        case OP_STORE:
             return 3; // 2 bytes for address
+        case OP_LOAD_FAST:
+            return 3; // 2 bytes for address
+        case OP_STORE_FAST:
+            return 3; // 2 bytes for address
+        case OP_LOAD_SMART:
+            return 3; // 2 bytes for address
+        case OP_STORE_SMART:
+            return 3; // 2 bytes for address
+
+        case OP_DEFINE:
+            return 3; // 2 bytes for address
+        case OP_DEFINE_FAST:
+            return 3; // 2 bytes for address
+            
+
+        case OP_TYPE_CAST:
+            return 1; // 1 byte for the type
+
 
         case OP_BINARY_ADD:
             return 1;

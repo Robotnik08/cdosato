@@ -8,20 +8,24 @@
 typedef struct {
     CodeInstance* instance;
     ValueArray constants;
+    ValueArray globals;
+    ValueArray locals;
     
     uint8_t* ip;
 
     StackFrames stack_frames;
     ValueArray stack;
     
+    NameMap mappings;
 } VirtualMachine;
+#include "ast.h"
 
 void initVirtualMachine(VirtualMachine* vm);
 void freeVirtualMachine(VirtualMachine* vm);
 
 void pushValue(ValueArray* array, Value value);
 
-int runVirtualMachine(VirtualMachine* vm, int debug);
+int runVirtualMachine(VirtualMachine* vm, int debug, AST ast);
 
 
 #define NEXT_BYTE() (*vm->ip++)

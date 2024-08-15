@@ -22,7 +22,7 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_LOAD_CONSTANT");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
 
-            printf(": (%d)", address);
+            printf(": (0x%x)", address);
             break;
         case OP_LOAD_FAST:
             printf("OP_LOAD_FAST");
@@ -34,15 +34,42 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
-        case OP_LOAD_NAME:
+        case OP_LOAD:
             printf("OP_LOAD_NAME");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
-        case OP_STORE_NAME:
+        case OP_STORE:
             printf("OP_STORE_NAME");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
+            break;
+        case OP_LOAD_SMART:
+            printf("OP_LOAD_SMART");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+        case OP_STORE_SMART:
+            printf("OP_STORE_SMART");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
+        case OP_DEFINE:
+            printf("OP_DEFINE");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+        case OP_DEFINE_FAST:
+            printf("OP_DEFINE_FAST");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
+        case OP_TYPE_CAST:
+            printf("OP_TYPE_CAST");
+            int type = code[offset];
+            printf(": (%d)", type);
             break;
 
         case OP_BINARY_ADD:

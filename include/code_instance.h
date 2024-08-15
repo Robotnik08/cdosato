@@ -12,8 +12,15 @@ typedef enum {
     OP_LOAD_CONSTANT,
     OP_LOAD_FAST, // load from local variable
     OP_STORE_FAST, // store to local variable
-    OP_LOAD_NAME, 
-    OP_STORE_NAME,
+    OP_LOAD, 
+    OP_STORE,
+    OP_LOAD_SMART, // auto load from local, otherwise load from global (Used for MAKE calls that might be conditional)
+    OP_STORE_SMART, // auto store to local, otherwise store to global
+
+    OP_DEFINE, // define a global variable
+    OP_DEFINE_FAST, // define a local variable
+
+    OP_TYPE_CAST,
 
     OP_BINARY_ADD,
     OP_BINARY_SUBTRACT,
@@ -31,15 +38,16 @@ typedef enum {
 
 typedef struct {
     uint8_t* code;
+    size_t* token_indices;
     size_t count;
     size_t capacity;
 } CodeInstance;
 
 void initCodeInstance(CodeInstance* instance);
-void writeByteCode(CodeInstance* instance, uint8_t byte);
-void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t index);
-void insertByteCode(CodeInstance* instance, uint8_t byte, size_t index);
-void writeInstruction(CodeInstance* instance, OpCode instruction, ...);
+void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index);
+void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index);
+void insertByteCode(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index);
+void writeInstruction(CodeInstance* instance, size_t token_index, OpCode instruction, ...);
 void freeCodeInstance(CodeInstance* instance);
 
 int getOffset(OpCode instruction);

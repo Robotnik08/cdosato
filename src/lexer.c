@@ -32,8 +32,11 @@ void trimComments (TokenList* list) {
 }
 
 
-int tokenise (TokenList* list, char* full_code, const int code_length) {
+int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm) {
     int tokenCount = list->count;
+
+    NameMap constantMappings;
+    init_NameMap(&constantMappings);
 
     #define SKIP_TOKEN() \
         for (int t = 0; t < tokenCount; t++) { \
@@ -51,6 +54,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
     int end = 0;
     char quotationtype = '\0';
     int escapeCount = 0;
+    int stringCount = 0;
     for (int i = 0; i < code_length; i++) {
         if (!quotationtype) {
             if ((full_code[i] == '"' || full_code[i] == '\'') && escapeCount % 2 == 0) {
@@ -81,7 +85,24 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
         } else {
             if (full_code[i] == quotationtype && escapeCount % 2 == 0) {
                 end = i;
-                DOSATO_ADD_TOKEN(list, TOKEN_STRING, full_code + start, end - start, 0);
+                int id = 0;
+                char* lit = malloc(end - start + 2);
+                memcpy(lit, full_code + start, end - start + 2);
+                lit[end - start + 1] = '\0';
+                
+                if (lit[0] == '\'') {
+                    if (lit[2] != '\'') {
+                        printError(full_code, start, E_INVALID_CHAR_LITERAL);
+                    }
+                }
+
+                if (hasName(&constantMappings, lit)) {
+                    id = getName(&constantMappings, lit);
+                } else {
+                    id = addName(&constantMappings, lit);
+                }
+                stringCount++;
+                DOSATO_ADD_TOKEN(list, TOKEN_STRING, full_code + start, end - start, id);
                 start = end + 1;
                 quotationtype = '\0';
             }
@@ -285,7 +306,16 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
                 }
             }
             if (!invalid) {
-                DOSATO_ADD_TOKEN(list, TOKEN_NUMBER, full_code + start, end - start, 0);
+                int id = 0;
+                char* lit = malloc(end - start + 2);
+                memcpy(lit, full_code + start, end - start + 2);
+                lit[end - start + 1] = '\0';
+                if (hasName(&constantMappings, lit)) {
+                    id = getName(&constantMappings, lit);
+                } else {
+                    id = addName(&constantMappings, lit);
+                }
+                DOSATO_ADD_TOKEN(list, TOKEN_NUMBER, full_code + start, end - start, id);
             }
             i = end;
         }
@@ -331,7 +361,13 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
         if (isAlphaNumeric(full_code[i])) {
             char* word = getWord(full_code, i);
             if (strlen(word) > 0) {
-                DOSATO_ADD_TOKEN(list, TOKEN_IDENTIFIER, full_code + i, strlen(word) - 1, 0);
+                int id = 0;
+                if (hasName(&vm->mappings, word)) {
+                    id = getName(&vm->mappings, word);
+                } else {
+                    id = addName(&vm->mappings, word);
+                }
+                DOSATO_ADD_TOKEN(list, TOKEN_IDENTIFIER, full_code + i, strlen(word) - 1, id);
                 i += strlen(word) - 1;
             }
             free(word);
@@ -341,6 +377,44 @@ int tokenise (TokenList* list, char* full_code, const int code_length) {
     // finalise tokens
     REFRESH_LIST()
     trimComments(list); // comments will be ignored from now on
+    // parse the constant mappings
+    for (int i = 0; i < stringCount; i++) {
+        // check which quotes are used
+        char* lit = constantMappings.names[i];
+        char quote = lit[0];
+        if (quote == '\'') {
+            write_ValueArray(&vm->constants, (Value) { TYPE_CHAR, .as.charValue = lit[1] });
+        }
+        if (quote == '"') {
+            char* val = malloc(strlen(lit) - 1);
+            memcpy(val, lit + 1, strlen(lit) - 2);
+            val[strlen(lit) - 2] = '\0';
+            write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val });
+        }
+    }
+    for (int i = stringCount; i < constantMappings.count; i++) {
+        char* lit = constantMappings.names[i];
+        bool isInt = true;
+        for (int j = 0; j < strlen(lit); j++) {
+            if (lit[j] == '.' || lit[j] == 'F') {
+                if (lit[strlen(lit) - 1] == 'F') {
+                    write_ValueArray(&vm->constants, (Value) { TYPE_FLOAT, .as.floatValue = (float)atof(lit) });
+                } else {
+                    write_ValueArray(&vm->constants, (Value) { TYPE_DOUBLE, .as.doubleValue = atof(lit) });
+                }
+                isInt = false;
+                break;
+            }
+        }
+        if (isInt) {
+            write_ValueArray(&vm->constants, (Value) { TYPE_ULONG, .as.ulongValue = strtoull(lit, NULL, 10) });
+        }
+    }
+
+    // free the mappings
+    for (int i = 0; i < constantMappings.count; i++) {
+        free(constantMappings.names[i]);
+    }
 
     #undef SKIP_TOKEN
     #undef REFRESH_LIST

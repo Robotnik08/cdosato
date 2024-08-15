@@ -12,6 +12,7 @@ typedef struct {
     TokenList tokens;
     Node root;
 } AST;
+#include "virtual-machine.h"
 
 void init_AST (AST* ast);
 void load_AST (AST* ast, char* source, size_t length, char* name, int debug, VirtualMachine* vm);

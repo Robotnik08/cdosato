@@ -46,7 +46,7 @@ int main (int argc, char** argv) {
         } else if (strcmp(argv[3], "-n") == 0 || strcmp(argv[3], "--none") == 0) {
             // do nothing, but still debug mode
         } else {
-            printf("Unknown mode '%s'\n", argv[3]);
+            printf("Unknown debug mode '%s'\n", argv[3]);
             return 1;
         }
     }
@@ -90,7 +90,9 @@ int main (int argc, char** argv) {
 
     if (debug & DEBUG_COMPILE) disassembleCode(vm.instance, "Main");
 
-    runVirtualMachine(&vm, debug);
+    runVirtualMachine(&vm, debug, main_ast);
+
+    if (debug) printf("\nDone running\n");
 
     freeVirtualMachine(&vm);
 
@@ -98,6 +100,6 @@ int main (int argc, char** argv) {
 
     free(source);
 
-    if (debug) printf("\nDone\n");
+    if (debug) printf("Succesfull cleanup\n");
     return 0;
 }

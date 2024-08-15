@@ -22,7 +22,7 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
     ast->length = length;
     ast->name = name;
 
-    int res = tokenise(&ast->tokens, source, length);
+    int res = tokenise(&ast->tokens, source, length, vm);
     if (res != 0) {
         printf("Error tokenising source %d\n", res);
         exit(res);
@@ -33,6 +33,13 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
     }
 
     ast->root = parse(ast->source, ast->length, 0, ast->tokens.count, ast->tokens, NODE_PROGRAM);
+
+    // initialize locals and globals
+    for (int i = 0; i < vm->mappings.count; i++) {
+        write_ValueArray(&vm->locals, UNDEFINED_VALUE);
+        write_ValueArray(&vm->globals, UNDEFINED_VALUE);
+    }
+    
 }
 
 void free_AST (AST* ast) {

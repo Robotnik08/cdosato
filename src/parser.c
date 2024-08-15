@@ -284,6 +284,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             for (int j = start; j < end; j++) {
                 if (tokens.tokens[j].type == TOKEN_PARENTHESIS_OPEN) {
                     i = j;
+                    break;
                 }
             }
             if (i == end - 1) {
@@ -427,11 +428,11 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (new_start == new_end - 1) {
                 // single expression
                 if (tokens.tokens[new_start].type == TOKEN_IDENTIFIER) {
-                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_INDENTIFIER));
+                    root.type = NODE_INDENTIFIER;
                 } else if (tokens.tokens[new_start].type == TOKEN_NUMBER) {
-                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_NUMBER_LITERAL));
+                    root.type = NODE_NUMBER_LITERAL;
                 } else if (tokens.tokens[new_start].type == TOKEN_STRING) {
-                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_STRING_LITERAL));
+                    root.type = NODE_STRING_LITERAL;
                 } else {
                     break;
                     ERROR(new_start, E_UNEXPECTED_TOKEN);
@@ -601,7 +602,6 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     write_NodeList(&root.body, parse(source, length, j + 1, new_end, tokens, NODE_EXPRESSION)); // false_expression
 
                     root.type = NODE_TERNARY_EXPRESSION;
-                    printNode(root, 0);
                 } else {
                     write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, NODE_EXPRESSION));
                     write_NodeList(&root.body, parse(source, length, highest_index, highest_index + 1, tokens, NODE_OPERATOR));
