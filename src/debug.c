@@ -18,6 +18,10 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_STOP");
             break;
 
+        case OP_POP:
+            printf("OP_POP");
+            break;
+
         case OP_LOAD_CONSTANT:
             printf("OP_LOAD_CONSTANT");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
@@ -35,33 +39,18 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x)", address);
             break;
         case OP_LOAD:
-            printf("OP_LOAD_NAME");
+            printf("OP_LOAD");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
         case OP_STORE:
-            printf("OP_STORE_NAME");
-            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
-            printf(": (0x%x)", address);
-            break;
-        case OP_LOAD_SMART:
-            printf("OP_LOAD_SMART");
-            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
-            printf(": (0x%x)", address);
-            break;
-        case OP_STORE_SMART:
-            printf("OP_STORE_SMART");
+            printf("OP_STORE");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
 
         case OP_DEFINE:
             printf("OP_DEFINE");
-            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
-            printf(": (0x%x)", address);
-            break;
-        case OP_DEFINE_FAST:
-            printf("OP_DEFINE_FAST");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
@@ -103,6 +92,10 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_PRINT:
             printf("OP_PRINT");
+            break;
+
+        case OP_PUSH_NULL:
+            printf("OP_PUSH_NULL");
             break;
 
 

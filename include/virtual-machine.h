@@ -9,7 +9,6 @@ typedef struct {
     CodeInstance* instance;
     ValueArray constants;
     ValueArray globals;
-    ValueArray locals;
     
     uint8_t* ip;
 

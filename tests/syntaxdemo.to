@@ -41,7 +41,7 @@ MAKE OBJECT obj = {
     "key5": [1, 2, 3]
 }; // makes an object
 
-SET obj.key = "new value"; // sets a key in an object
+SET obj."key" = "new value"; // sets a key in an object
 DO SAY (obj.key5[1]); // prints: 2
 DO SAY (TYPE(obj.key5)); // prints: ARRAY
 DO SAY (TYPE(obj.key3.key4)); // prints: STRING

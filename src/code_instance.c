@@ -74,6 +74,11 @@ int getOffset(OpCode instruction) {
     switch (instruction) {
         case OP_RETURN:
             return 1;
+        case OP_STOP:
+            return 1;
+
+        case OP_POP:
+            return 1;
 
         case OP_LOAD_CONSTANT:
             return 3; // 2 bytes for address
@@ -85,14 +90,8 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for address
         case OP_STORE_FAST:
             return 3; // 2 bytes for address
-        case OP_LOAD_SMART:
-            return 3; // 2 bytes for address
-        case OP_STORE_SMART:
-            return 3; // 2 bytes for address
 
         case OP_DEFINE:
-            return 3; // 2 bytes for address
-        case OP_DEFINE_FAST:
             return 3; // 2 bytes for address
             
 

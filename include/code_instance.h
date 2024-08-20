@@ -5,20 +5,19 @@
 
 typedef enum {
     OP_NOP,
-    
+
     OP_STOP,
     OP_RETURN,
-    
+
+    OP_POP,
+
     OP_LOAD_CONSTANT,
     OP_LOAD_FAST, // load from local variable
     OP_STORE_FAST, // store to local variable
-    OP_LOAD, 
+    OP_LOAD,
     OP_STORE,
-    OP_LOAD_SMART, // auto load from local, otherwise load from global (Used for MAKE calls that might be conditional)
-    OP_STORE_SMART, // auto store to local, otherwise store to global
 
     OP_DEFINE, // define a global variable
-    OP_DEFINE_FAST, // define a local variable
 
     OP_TYPE_CAST,
 
@@ -27,10 +26,12 @@ typedef enum {
     OP_BINARY_MULTIPLY,
     OP_BINARY_DIVIDE,
 
-    OP_JUMP, 
+    OP_JUMP,
     OP_JUMP_IF_FALSE,
     OP_JUMP_IF_TRUE,
     OP_JUMP_ABSOLUTE,
+
+    OP_PUSH_NULL,
 
     OP_PRINT // print the top of the stack, this is a debug instruction to be removed
 

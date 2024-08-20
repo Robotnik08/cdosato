@@ -26,6 +26,7 @@ typedef enum {
 
 typedef struct {
     DataType type;
+    int array_depth;
     bool defined;
     union {
         char byteValue;
@@ -41,6 +42,8 @@ typedef struct {
         char boolValue;
         char charValue;
         char* stringValue;
+        ValueArray* arrayValue;
+        ValueObject* objectValue;
     } as;
 } Value;
 
@@ -53,6 +56,13 @@ typedef struct {
     size_t capacity;
     Value* values;
 } ValueArray;
+
+typedef struct {
+    size_t count;
+    size_t capacity;
+    Value* values;
+    char** keys;
+} ValueObject;
 
 typedef struct {
     size_t count;

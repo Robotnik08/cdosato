@@ -10,7 +10,6 @@ void initVirtualMachine(VirtualMachine* vm) {
     init_ValueArray(&vm->stack);
     init_ValueArray(&vm->constants);
     init_ValueArray(&vm->globals);
-    init_ValueArray(&vm->locals);
     init_StackFrames(&vm->stack_frames);
     init_NameMap(&vm->mappings);
     vm->ip = vm->instance->code;
@@ -21,7 +20,6 @@ void freeVirtualMachine(VirtualMachine* vm) {
     destroyValueArray(&vm->stack);    
     destroyValueArray(&vm->constants);
     destroyValueArray(&vm->globals);
-    destroyValueArray(&vm->locals);
     free_StackFrames(&vm->stack_frames);
     free_NameMap(&vm->mappings);
     free(vm->instance);
@@ -70,20 +68,20 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT();
-                Value local = vm->locals.values[index];
-                if (!local.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
-                }
+                Value local = vm->stack.values[index];
                 pushValue(&vm->stack, local);
                 break;
             }
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
-                if (!vm->locals.values[index].defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
-                }
-                vm->locals.values[index] = value;
+
+                vm->stack.values[index] = value; // store to local
+                break;
+            }
+
+            case OP_PUSH_NULL: {
+                pushValue(&vm->stack, UNDEFINED_VALUE);
                 break;
             }
 
@@ -99,40 +97,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             case OP_STORE: {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
+                value.defined = true;
                 if (!vm->globals.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
                 vm->globals.values[index] = value;
-                break;
-            }
-
-            case OP_LOAD_SMART: {
-                uint16_t index = NEXT_SHORT();
-                Value local = vm->locals.values[index];
-                if (local.defined) {
-                    pushValue(&vm->stack, local);
-                } else {
-                    Value global = vm->globals.values[index];
-                    if (!global.defined) {
-                        ERROR(E_UNDEFINED_VARIABLE);
-                    }
-                    pushValue(&vm->stack, global);
-                }
-                break;
-            }
-
-            case OP_STORE_SMART: {
-                uint16_t index = NEXT_SHORT();
-                Value value = POP_VALUE();
-                Value local = vm->locals.values[index];
-                if (local.defined) {
-                    vm->locals.values[index] = value;
-                } else {
-                    if (!vm->globals.values[index].defined) {
-                        ERROR(E_UNDEFINED_VARIABLE);
-                    }
-                    vm->globals.values[index] = value;
-                }
                 break;
             }
 
@@ -145,18 +114,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
                 vm->globals.values[index] = value;
                 vm->globals.values[index].defined = true;
-                break;
-            }
-
-            case OP_DEFINE_FAST: {
-                uint16_t index = NEXT_SHORT();
-                Value value = POP_VALUE();
-                if (vm->locals.values[index].defined) {
-                    ERROR(E_ALREADY_DEFINED_VARIABLE);
-                }
-
-                vm->locals.values[index] = value;
-                vm->locals.values[index].defined = true;
                 break;
             }
 
@@ -205,6 +162,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
                 break;
             }
+            case OP_POP: {
+                POP_VALUE();
+                break;
+            }
+
             case OP_STOP: {
                 halt = true;
                 break;
