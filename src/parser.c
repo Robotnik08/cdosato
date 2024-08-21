@@ -148,7 +148,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (j == start) {
                 ERROR(start, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, start, j - 1, tokens, NODE_EXPRESSION));
+            write_NodeList(&root.body, parse(source, length, start, j - 1, tokens, NODE_SUBSCRIPT_EXPRESSION));
             write_NodeList(&root.body, parse(source, length, j - 1, j, tokens, NODE_OPERATOR));
             if (tokens.tokens[j - 1].carry == OPERATOR_INCREMENT || tokens.tokens[j - 1].carry == OPERATOR_DECREMENT) {
                 if (j != end) {
@@ -408,7 +408,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
-
+        case NODE_SUBSCRIPT_EXPRESSION:
         case NODE_EXPRESSION: {
             int new_start = start;
             int new_end = end;
@@ -603,7 +603,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
                     root.type = NODE_TERNARY_EXPRESSION;
                 } else {
-                    write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, NODE_EXPRESSION));
+                    write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, type));
 
                     if (tokens.tokens[highest_index].type != TOKEN_OPERATOR) {
                         ERROR(highest_index, E_UNEXPECTED_TOKEN);
@@ -611,6 +611,10 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     OperatorType op = tokens.tokens[highest_index].carry;
                     if (isAssignmentOperator(op) || op == OPERATOR_NOT || op == OPERATOR_NOT_BITWISE || op == OPERATOR_COMMA || op == OPERATOR_QUESTION || op == OPERATOR_COLON) {
                         ERROR(highest_index, E_NON_BINARY_OPERATOR);
+                    }
+
+                    if (type == NODE_SUBSCRIPT_EXPRESSION && op != OPERATOR_HASH) {
+                        ERROR(highest_index, E_EXPECTED_HASH_OPERATOR);
                     }
 
                     write_NodeList(&root.body, parse(source, length, highest_index, highest_index + 1, tokens, NODE_OPERATOR));

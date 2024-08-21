@@ -109,6 +109,7 @@ void printValue(Value value, bool extensive) {
 
 Value hardCopyValue(Value value) {
     Value copy = value;
+    copy.defined = false;
     if (value.array_depth > 0) {
         ValueArray* array = value.as.objectValue;
         ValueArray* newArray = malloc(sizeof(ValueArray));

@@ -24,6 +24,7 @@ static const char* ERROR_MESSAGES[] = {
     "Operator cannot be used as unary operator (+, -, ~, !, !-, ^/)",
     "Incomplete Ternary Operator, expected ':'",
     "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, ->, <<, >>, **, ^/, <|, |>, #)",
+    "Expected Hash Operator (#)",
 
     "Undefined Variable",
     "Variable already defined",

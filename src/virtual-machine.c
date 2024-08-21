@@ -97,10 +97,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 Value value = array->values[i];
-                if (!value.defined) {
-                    // hard copy the value to save it from literal destruction
-                    value = hardCopyValue(value);
-                }
+                value = hardCopyValue(value);
 
                 pushValue(&vm->stack, value);
 
@@ -109,16 +106,66 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_REFERENCE: {
+                uint16_t index = NEXT_SHORT();
+                Value global = vm->globals.values[index];
+                if (!global.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                pushValue(&vm->stack, global);
+                break;
+            }
+
+            case OP_REFERENCE_FAST: {
+                uint16_t index = NEXT_SHORT();
+                Value local = vm->stack.values[index];
+                if (!local.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                pushValue(&vm->stack, local);
+                break;
+            }
+
+            case OP_REFERENCE_SUBSCR: {
+                Value index = POP_VALUE();
+                Value list = POP_VALUE();
+                if (list.array_depth == 0) {
+                    ERROR(E_NOT_AN_ARRAY);
+                }
+                if (!list.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                int i = index.as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i < 0 || i >= array->count) {
+                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                Value value = array->values[i];
+                pushValue(&vm->stack, value);
+
+                DESTROYIFLITERAL(index);
+                break;
+            }
+
 
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT();
                 Value local = vm->stack.values[index];
-                pushValue(&vm->stack, local);
+
+                Value copy = hardCopyValue(local);
+                pushValue(&vm->stack, copy);
                 break;
             }
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
+                
+                value = hardCopyValue(value);
 
                 // destroy old value
                 destroyValue(vm->stack.values[index]);
@@ -139,20 +186,26 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 if (!global.defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
-                pushValue(&vm->stack, global);
+
+                Value copy = hardCopyValue(global);
+
+                pushValue(&vm->stack, copy);
                 break;
             }
             case OP_STORE: {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
-                markDefined(&value);
                 if (!vm->globals.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
+
+                value = hardCopyValue(value);
+
                 // destroy old value
                 destroyValue(vm->globals.values[index]);
 
                 vm->globals.values[index] = value;
+                markDefined(&vm->globals.values[index]);
                 break;
             }
 
@@ -163,8 +216,39 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
 
+                value = hardCopyValue(value);
+
                 vm->globals.values[index] = value;
                 markDefined(&vm->globals.values[index]);
+                break;
+            }
+
+            case OP_STORE_SUBSCR: {
+                Value index = POP_VALUE();
+                Value list = POP_VALUE();
+                Value value = POP_VALUE();
+                if (list.array_depth == 0) {
+                    ERROR(E_NOT_AN_ARRAY);
+                }
+
+                if (!list.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                int i = index.as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i < 0 || i >= array->count) {
+                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                // destroy old value
+                destroyValue(array->values[i]);
+
+                array->values[i] = value;
+                markDefined(&array->values[i]);
+
+                DESTROYIFLITERAL(index);
                 break;
             }
 
@@ -196,7 +280,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
             case OP_POP: {
-                POP_VALUE();
+                destroyValue(POP_VALUE());
                 break;
             }
 

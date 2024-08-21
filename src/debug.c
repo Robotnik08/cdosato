@@ -150,6 +150,21 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_GETOBJECT");
             break;
 
+        case OP_REFERENCE_SUBSCR:
+            printf("OP_REFERENCE_SUBSCR");
+            break;
+
+        case OP_STORE_SUBSCR:
+            printf("OP_STORE_SUBSCR");
+            break;
+
+        case OP_REFERENCE:
+            printf("OP_REFERENCE");
+            break;
+        case OP_REFERENCE_FAST:
+            printf("OP_REFERENCE_FAST");
+            break;
+
         case OP_JUMP:
             printf("OP_JUMP");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);

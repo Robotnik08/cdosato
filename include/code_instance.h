@@ -16,6 +16,11 @@ typedef enum {
     OP_STORE_FAST, // store to local variable
     OP_LOAD,
     OP_STORE,
+    OP_STORE_SUBSCR, // store to list or object
+    OP_REFERENCE_SUBSCR, // get reference to list or object
+    OP_REFERENCE, // get reference to variable
+    OP_REFERENCE_FAST, // get reference to local variable
+
 
     OP_DEFINE, // define a global variable
 

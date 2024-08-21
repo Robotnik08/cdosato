@@ -4,7 +4,7 @@ MAKE INT i = 0; // declares a variable
 DEFINE add (INT a, INT b) {
     RETURN a + b;
 }; // defines a function
-IMPORT "demo.lib" AS demo; // imports an external library
+IMPORT "demo.lib"; // imports an external library
 INCLUDE "demo.to"; // includes another file, directly inlining it
 RETURN 0; // returns a value
 BREAK; // breaks out of a loop
@@ -26,9 +26,9 @@ DO {
 } FOR (RANGE(100) => i); // does a for loop
 
 MAKE ARRAY INT arr = [1, 2, 3, 4, 5]; // makes an array
-SET arr[0] = 10; // sets an element in an array
+SET arr#0 = 10; // sets an element in an array
 
-MAKE ANY a = 0; // makes a variable of any type
+MAKE VAR a = 0; // makes a variable of any type
 SET a = "Hello, world!"; // sets a variable of any type, switching its type
 SET a = 123; // sets a variable of any type, switching its type
 
@@ -41,8 +41,8 @@ MAKE OBJECT obj = {
     "key5": [1, 2, 3]
 }; // makes an object
 
-SET obj."key" = "new value"; // sets a key in an object
-DO SAY (obj.key5[1]); // prints: 2
-DO SAY (TYPE(obj.key5)); // prints: ARRAY
-DO SAY (TYPE(obj.key3.key4)); // prints: STRING
+SET obj->"key" = "new value"; // sets a key in an object
+DO SAY (obj->key5#1); // prints: 2
+DO SAY (TYPE(obj->key5)); // prints: ARRAY
+DO SAY (TYPE(obj->key3->key4)); // prints: STRING
 DO SAY (TYPE(arr)); // prints: ARRAY INT (type is static, so it already knows the type of the array)

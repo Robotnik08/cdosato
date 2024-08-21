@@ -82,8 +82,47 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
         case NODE_MASTER_SET_BODY: {
             // push the value to the stack
             compileNode(vm, node.body.nodes[2], ast, scope);
+
+            if (node.body.nodes[0].type == NODE_INDENTIFIER) {
+                if (inScope(scope, ast.tokens.tokens[node.body.nodes[0].start].carry)) {
+                    size_t index = getScopeIndex(scope, ast.tokens.tokens[node.body.nodes[0].start].carry);
+                    writeInstruction(vm->instance, node.body.nodes[0].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(index));
+                } else {
+                    writeInstruction(vm->instance, node.body.nodes[0].start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].start].carry));
+                }
+            } else if (node.body.nodes[0].type == NODE_SUBSCRIPT_EXPRESSION) {
+                if (node.body.nodes[0].body.nodes[0].type != NODE_INDENTIFIER) {
+                    compileNode(vm, node.body.nodes[0].body.nodes[0], ast, scope); // the left side of the subscript (the object)
+                } else {
+                    if (inScope(scope, ast.tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)) {
+                        writeInstruction(vm->instance, node.body.nodes[0].body.nodes[0].start, OP_REFERENCE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast.tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)));
+                    } else {
+                        writeInstruction(vm->instance, node.body.nodes[0].body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry));
+                    }
+                }
+
+                compileNode(vm, node.body.nodes[0].body.nodes[2], ast, scope); // the right side of the subscript (the object)
+                writeByteCode(vm->instance, OP_STORE_SUBSCR, node.body.nodes[0].start);
+            }
             
-            writeInstruction(vm->instance, node.body.nodes[0].start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].start].carry)); // store the value in the simple variable
+            break;
+        }
+
+        case NODE_SUBSCRIPT_EXPRESSION: {
+            if (node.body.nodes[0].type != NODE_INDENTIFIER) {
+                compileNode(vm, node.body.nodes[0], ast, scope); // the left side of the subscript (the object)
+            } else {
+                if (inScope(scope, ast.tokens.tokens[node.body.nodes[0].start].carry)) {
+                    writeInstruction(vm->instance, node.body.nodes[0].start, OP_REFERENCE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast.tokens.tokens[node.body.nodes[0].start].carry)));
+                } else {
+                    writeInstruction(vm->instance, node.body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].start].carry));
+                }
+            }
+            compileNode(vm, node.body.nodes[2], ast, scope);
+            if (ast.tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_HASH) {
+                ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
+            }
+            writeByteCode(vm->instance, OP_REFERENCE_SUBSCR, node.body.nodes[1].start);
             break;
         }
 
@@ -277,6 +316,7 @@ void freeScopeData(ScopeData* list) {
 }
 
 bool inScope(ScopeData* scope, size_t index) {
+    if (scope == NULL) return false;
     for (size_t i = 0; i < scope->locals_count; i++) {
         if (scope->locals_lookup[i] == index) return true;
     }
