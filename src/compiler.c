@@ -83,7 +83,7 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
             // push the value to the stack
             compileNode(vm, node.body.nodes[2], ast, scope);
             
-            writeInstruction(vm->instance, node.body.nodes[0].start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].start].carry)); // store the value in the local variable
+            writeInstruction(vm->instance, node.body.nodes[0].start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].start].carry)); // store the value in the simple variable
             break;
         }
 
@@ -104,7 +104,112 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
             }
             compileNode(vm, node.body.nodes[0], ast, scope);
             compileNode(vm, node.body.nodes[2], ast, scope);
-            writeByteCode(vm->instance, OP_BINARY_ADD, node.start); // for now, an expression is just an add
+
+            switch (ast.tokens.tokens[node.body.nodes[1].start].carry) {
+                case OPERATOR_ADD: {
+                    writeByteCode(vm->instance, OP_BINARY_ADD, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_SUBTRACT: {
+                    writeByteCode(vm->instance, OP_BINARY_SUBTRACT, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_MULTIPLY: {
+                    writeByteCode(vm->instance, OP_BINARY_MULTIPLY, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_DIVIDE: {
+                    writeByteCode(vm->instance, OP_BINARY_DIVIDE, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_GREATER: {
+                    writeByteCode(vm->instance, OP_BINARY_GREATER, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_LESS: {
+                    writeByteCode(vm->instance, OP_BINARY_LESS, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_EQUAL: {
+                    writeByteCode(vm->instance, OP_BINARY_EQUAL, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_NOT_EQUAL: {
+                    writeByteCode(vm->instance, OP_BINARY_NOT_EQUAL, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_GREATER_EQUAL: {
+                    writeByteCode(vm->instance, OP_BINARY_GREATER_EQUAL, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_LESS_EQUAL: {
+                    writeByteCode(vm->instance, OP_BINARY_LESS_EQUAL, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_AND: {
+                    writeByteCode(vm->instance, OP_BINARY_AND, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_OR: {
+                    writeByteCode(vm->instance, OP_BINARY_OR, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_AND_AND: {
+                    writeByteCode(vm->instance, OP_BINARY_LOGICAL_AND, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_OR_OR: {
+                    writeByteCode(vm->instance, OP_BINARY_LOGICAL_OR, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_XOR: {
+                    writeByteCode(vm->instance, OP_BINARY_XOR, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_SHIFT_LEFT: {
+                    writeByteCode(vm->instance, OP_BINARY_SHIFT_LEFT, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_SHIFT_RIGHT: {
+                    writeByteCode(vm->instance, OP_BINARY_SHIFT_RIGHT, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_POWER: {
+                    writeByteCode(vm->instance, OP_BINARY_POWER, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_ROOT: {
+                    writeByteCode(vm->instance, OP_BINARY_ROOT, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_MODULO: {
+                    writeByteCode(vm->instance, OP_BINARY_MODULO, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_MIN: {
+                    writeByteCode(vm->instance, OP_BINARY_MIN, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_MAX: {
+                    writeByteCode(vm->instance, OP_BINARY_MAX, node.body.nodes[1].start);
+                    break;
+                }
+
+                case OPERATOR_HASH: {
+                    writeByteCode(vm->instance, OP_GETLIST, node.body.nodes[1].start);
+                    break;
+                }
+                case OPERATOR_ARROW: {
+                    writeByteCode(vm->instance, OP_GETOBJECT, node.body.nodes[1].start);
+                    break;
+                }
+                
+                default: {
+                    ERROR(E_NON_BINARY_OPERATOR, node.body.nodes[1].start);
+                }
+
+            }
+
             break;
         }
         
@@ -128,6 +233,14 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
                 }
                 writeInstruction(vm->instance, node.start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(index)); // load the local variable
             }
+            break;
+        }
+
+        case NODE_ARRAY_EXPRESSION: {
+            for (int i = node.body.count - 1; i >= 0; i--) {
+                compileNode(vm, node.body.nodes[i], ast, scope);
+            }
+            writeInstruction(vm->instance, node.start, OP_BUILD_LIST, DOSATO_SPLIT_SHORT(node.body.count)); // cast to the correct type
             break;
         }
     }

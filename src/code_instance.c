@@ -72,14 +72,6 @@ void freeCodeInstance(CodeInstance* instance) {
 
 int getOffset(OpCode instruction) {
     switch (instruction) {
-        case OP_RETURN:
-            return 1;
-        case OP_STOP:
-            return 1;
-
-        case OP_POP:
-            return 1;
-
         case OP_LOAD_CONSTANT:
             return 3; // 2 bytes for address
         case OP_LOAD:
@@ -93,20 +85,10 @@ int getOffset(OpCode instruction) {
 
         case OP_DEFINE:
             return 3; // 2 bytes for address
+
+        case OP_BUILD_LIST:
+            return 3; // 2 bytes for the count
             
-
-        case OP_TYPE_CAST:
-            return 1; // 1 byte for the type
-
-
-        case OP_BINARY_ADD:
-            return 1;
-        case OP_BINARY_SUBTRACT:
-            return 1;
-        case OP_BINARY_MULTIPLY:
-            return 1;
-        case OP_BINARY_DIVIDE:
-            return 1;
 
         case OP_JUMP:
             return 3; // 2 bytes for the location
@@ -116,7 +98,9 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for the location
         case OP_JUMP_ABSOLUTE:
             return 3; // 2 bytes for the location
+
+
         default:
-            return 1;
+            return 1; // simple instructions
     }
 }

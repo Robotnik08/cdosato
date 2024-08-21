@@ -100,8 +100,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     id = getName(&constantMappings, lit);
                 } else {
                     id = addName(&constantMappings, lit);
+                    stringCount++;
                 }
-                stringCount++;
                 DOSATO_ADD_TOKEN(list, TOKEN_STRING, full_code + start, end - start, id);
                 start = end + 1;
                 quotationtype = '\0';

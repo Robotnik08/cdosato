@@ -321,7 +321,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             for (int i = start; i < end; i++) {
                 SKIP_BLOCK(i);
                 if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
-                    write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION));
+                    write_NodeList(&root.body, parse(source, length, j, i, tokens, NODE_EXPRESSION));
                     j = i + 1;
                 }
             }
@@ -604,6 +604,15 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     root.type = NODE_TERNARY_EXPRESSION;
                 } else {
                     write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, NODE_EXPRESSION));
+
+                    if (tokens.tokens[highest_index].type != TOKEN_OPERATOR) {
+                        ERROR(highest_index, E_UNEXPECTED_TOKEN);
+                    }
+                    OperatorType op = tokens.tokens[highest_index].carry;
+                    if (isAssignmentOperator(op) || op == OPERATOR_NOT || op == OPERATOR_NOT_BITWISE || op == OPERATOR_COMMA || op == OPERATOR_QUESTION || op == OPERATOR_COLON) {
+                        ERROR(highest_index, E_NON_BINARY_OPERATOR);
+                    }
+
                     write_NodeList(&root.body, parse(source, length, highest_index, highest_index + 1, tokens, NODE_OPERATOR));
                     write_NodeList(&root.body, parse(source, length, highest_index + 1, new_end, tokens, NODE_EXPRESSION));
                 }

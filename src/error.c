@@ -23,9 +23,12 @@ static const char* ERROR_MESSAGES[] = {
     "Expression can not be empty",
     "Operator cannot be used as unary operator (+, -, ~, !, !-, ^/)",
     "Incomplete Ternary Operator, expected ':'",
+    "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, ->, <<, >>, **, ^/, <|, |>, #)",
 
     "Undefined Variable",
     "Variable already defined",
+    "Variable is not an array",
+    "Array index is out of bounds",
 
     "Unknown Error",
     "Error Amount (report this)"

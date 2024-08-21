@@ -24,8 +24,10 @@ typedef enum {
     TYPE_VAR
 } DataType;
 
+
 typedef struct {
     DataType type;
+    bool is_variable_type; // non strict type
     int array_depth;
     bool defined;
     union {
@@ -42,14 +44,16 @@ typedef struct {
         char boolValue;
         char charValue;
         char* stringValue;
-        ValueArray* arrayValue;
-        ValueObject* objectValue;
+        void* objectValue;
     } as;
 } Value;
 
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false }
 
 void destroyValue(Value value);
+void printValue(Value value, bool extensive);
+void markDefined(Value* value);
+Value hardCopyValue(Value value);
 
 typedef struct {
     size_t count;

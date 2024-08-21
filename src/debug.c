@@ -61,6 +61,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (%d)", type);
             break;
 
+        case OP_BUILD_LIST:
+            printf("OP_BUILD_LIST");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (%d)", address);
+            break;
+
         case OP_BINARY_ADD:
             printf("OP_BINARY_ADD");
             break;
@@ -72,6 +78,76 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             break;
         case OP_BINARY_DIVIDE:
             printf("OP_BINARY_DIVIDE");
+            break;
+        case OP_BINARY_GREATER:
+            printf("OP_BINARY_GREATER");
+            break;
+        case OP_BINARY_LESS:
+            printf("OP_BINARY_LESS");
+            break;
+        case OP_BINARY_EQUAL:
+            printf("OP_BINARY_EQUAL");
+            break;
+        case OP_BINARY_NOT_EQUAL:
+            printf("OP_BINARY_NOT_EQUAL");
+            break;
+        case OP_BINARY_GREATER_EQUAL:
+            printf("OP_BINARY_GREATER_EQUAL");
+            break;
+        case OP_BINARY_LESS_EQUAL:
+            printf("OP_BINARY_LESS_EQUAL");
+            break;
+        case OP_BINARY_AND:
+            printf("OP_BINARY_AND");
+            break;
+        case OP_BINARY_OR:
+            printf("OP_BINARY_OR");
+            break;
+        case OP_BINARY_XOR:
+            printf("OP_BINARY_XOR");
+            break;
+        case OP_BINARY_MODULO:
+            printf("OP_BINARY_MODULO");
+            break;
+        case OP_BINARY_POWER:
+            printf("OP_BINARY_POWER");
+            break;
+        case OP_BINARY_ROOT:
+            printf("OP_BINARY_ROOT");
+            break;
+        case OP_BINARY_SHIFT_LEFT:
+            printf("OP_BINARY_SHIFT_LEFT");
+            break;
+        case OP_BINARY_SHIFT_RIGHT:
+            printf("OP_BINARY_SHIFT_RIGHT");
+            break;
+        case OP_BINARY_AND_BITWISE:
+            printf("OP_BINARY_AND_BITWISE");
+            break;
+        case OP_BINARY_OR_BITWISE:
+            printf("OP_BINARY_OR_BITWISE");
+            break;
+        case OP_BINARY_XOR_BITWISE:
+            printf("OP_BINARY_XOR_BITWISE");
+            break;
+        case OP_BINARY_MIN:
+            printf("OP_BINARY_MIN");
+            break;
+        case OP_BINARY_MAX:
+            printf("OP_BINARY_MAX");
+            break;
+        case OP_BINARY_LOGICAL_AND:
+            printf("OP_BINARY_LOGICAL_AND");
+            break;
+        case OP_BINARY_LOGICAL_OR:
+            printf("OP_BINARY_LOGICAL_OR");
+            break;
+
+        case OP_GETLIST:
+            printf("OP_GETLIST");
+            break;
+        case OP_GETOBJECT:
+            printf("OP_GETOBJECT");
             break;
 
         case OP_JUMP:

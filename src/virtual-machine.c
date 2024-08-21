@@ -31,6 +31,8 @@ void pushValue(ValueArray* array, Value value) {
 
 #define ERROR(e_code) printError(ast.source, ast.tokens.tokens[vm->instance->token_indices[vm->ip - vm->instance->code - 1]].start - ast.source, e_code)
 
+#define DESTROYIFLITERAL(value) if (!value.defined) { destroyValue(value); }
+
 int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
     if (debug) printf("Running virtual machine\n");
     bool halt = false;
@@ -41,14 +43,23 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             case OP_LOAD_CONSTANT: {
                 uint16_t index = NEXT_SHORT();
                 Value constant = vm->constants.values[index];
+                if (constant.type == TYPE_STRING) {
+                    // copy the string so the original pointer stays intact
+                    char* new_string = malloc(strlen(constant.as.stringValue) + 1);
+                    strcpy(new_string, constant.as.stringValue);
+                    constant.as.stringValue = new_string;
+                }
                 pushValue(&vm->stack, constant);
                 break;
             }
+
             case OP_BINARY_ADD: {
                 Value b = POP_VALUE();
                 Value a = POP_VALUE();
                 Value result = (Value){ TYPE_LONG, .as.longValue = a.as.longValue + b.as.longValue };
                 pushValue(&vm->stack, result);
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
                 break;
             }
             case OP_BINARY_SUBTRACT: {
@@ -56,6 +67,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 Value a = POP_VALUE();
                 Value result = (Value){ TYPE_LONG, .as.longValue = a.as.longValue - b.as.longValue };
                 pushValue(&vm->stack, result);
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
                 break;
             }
             case OP_BINARY_MULTIPLY: {
@@ -63,8 +76,39 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 Value a = POP_VALUE();
                 Value result = (Value){ TYPE_LONG, .as.longValue = a.as.longValue * b.as.longValue };
                 pushValue(&vm->stack, result);
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
                 break;
             }
+
+
+            case OP_GETLIST: {
+                Value index = POP_VALUE();
+                Value list = POP_VALUE();
+                if (list.array_depth == 0) {
+                    ERROR(E_NOT_AN_ARRAY);
+                }
+
+                // TO DO type checking
+                int i = index.as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i < 0 || i >= array->count) {
+                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                Value value = array->values[i];
+                if (!value.defined) {
+                    // hard copy the value to save it from literal destruction
+                    value = hardCopyValue(value);
+                }
+
+                pushValue(&vm->stack, value);
+
+                DESTROYIFLITERAL(list);
+                DESTROYIFLITERAL(index);
+                break;
+            }
+
 
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT();
@@ -76,7 +120,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
 
+                // destroy old value
+                destroyValue(vm->stack.values[index]);
+
                 vm->stack.values[index] = value; // store to local
+                markDefined(&vm->stack.values[index]);
                 break;
             }
 
@@ -97,10 +145,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             case OP_STORE: {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
-                value.defined = true;
+                markDefined(&value);
                 if (!vm->globals.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
+                // destroy old value
+                destroyValue(vm->globals.values[index]);
+
                 vm->globals.values[index] = value;
                 break;
             }
@@ -113,7 +164,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 vm->globals.values[index] = value;
-                vm->globals.values[index].defined = true;
+                markDefined(&vm->globals.values[index]);
                 break;
             }
 
@@ -123,43 +174,25 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_BUILD_LIST: {
+                int count = NEXT_SHORT();
+                Value list = (Value){ TYPE_VAR, .as.objectValue = malloc(sizeof(ValueArray)), .array_depth = 1, .is_variable_type = true };
+                init_ValueArray((ValueArray*)list.as.objectValue);
+                for (int i = 0; i < count; i++) {
+                    Value value = POP_VALUE();
+                    write_ValueArray((ValueArray*)list.as.objectValue, value);
+                }
+                pushValue(&vm->stack, list);
+                break;
+            }
+
             
             case OP_PRINT: {
                 Value value = POP_VALUE();
-                switch (value.type) {
-                    case TYPE_ULONG: {
-                        printf("%llu\n", value.as.ulongValue);
-                        break;
-                    }
-                    case TYPE_LONG: {
-                        printf("%lld\n", value.as.longValue);
-                        break;
-                    }
-                    case TYPE_STRING: {
-                        printf("%s\n", value.as.stringValue);
-                        break;
-                    }
-                    case TYPE_CHAR: {
-                        printf("%c\n", value.as.charValue);
-                        break;
-                    }
-                    case TYPE_FLOAT: {
-                        printf("%f\n", value.as.floatValue);
-                        break;
-                    }
-                    case TYPE_DOUBLE: {
-                        printf("%f\n", value.as.doubleValue);
-                        break;
-                    }
-                    case TYPE_BOOL: {
-                        printf("%s\n", value.as.boolValue ? "TRUE" : "FALSE");
-                        break;
-                    }
-                    default: {
-                        printf("Unknown type\n");
-                        break;
-                    }
-                }
+
+                printValue(value, false);
+                printf("\n");
+                DESTROYIFLITERAL(value);
                 break;
             }
             case OP_POP: {
