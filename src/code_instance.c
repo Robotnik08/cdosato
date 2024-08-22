@@ -95,6 +95,15 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for the address
         case OP_REFERENCE_FAST:
             return 3; // 2 bytes for the address
+
+        case OP_DECREMENT_FAST:
+            return 3; // 2 bytes for the address
+        case OP_INCREMENT_FAST:
+            return 3; // 2 bytes for the address
+        case OP_DECREMENT:
+            return 3; // 2 bytes for the address
+        case OP_INCREMENT:
+            return 3; // 2 bytes for the address
             
 
         case OP_JUMP:

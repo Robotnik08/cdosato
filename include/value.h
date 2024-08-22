@@ -90,6 +90,7 @@ void write_ValueObject(ValueObject* object, char* key, Value value);
 void free_ValueObject(ValueObject* object);
 bool hasKey(ValueObject* object, char* key);
 Value* getValueAtKey(ValueObject* object, char* key);
+void removeFromKey(ValueObject* object, char* key);
 
 void init_StackFrames(StackFrames* stack);
 void write_StackFrames(StackFrames* stack, size_t frame);

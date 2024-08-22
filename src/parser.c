@@ -620,7 +620,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         ERROR(highest_index, E_NON_BINARY_OPERATOR);
                     }
 
-                    if (type == NODE_SUBSCRIPT_EXPRESSION && op != OPERATOR_HASH) {
+                    if (type == NODE_SUBSCRIPT_EXPRESSION && op != OPERATOR_HASH && op != OPERATOR_ARROW) {
                         ERROR(highest_index, E_EXPECTED_HASH_OPERATOR);
                     }
 

@@ -305,13 +305,15 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     ERROR(E_NOT_AN_OBJECT);
                 }
 
+                markDefined(&value);
+
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
                     // add key
                     write_ValueObject(obj, key.as.stringValue, value);
                 } else {
                     // destroy old value
-                    destroyValue(getValueAtKey(obj, key.as.stringValue));
+                    removeFromKey(obj, key.as.stringValue);
 
                     // set new value
                     write_ValueObject(obj, key.as.stringValue, value);
@@ -355,6 +357,135 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     write_ValueObject(obj, key.as.stringValue, value);
                 }
                 pushValue(&vm->stack, object);
+                break;
+            }
+
+
+            case OP_INCREMENT: {
+                uint16_t index = NEXT_SHORT();
+                Value global = vm->globals.values[index];
+                if (!global.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                vm->globals.values[index].as.longValue++;
+                break;
+            }
+
+            case OP_DECREMENT: {
+                uint16_t index = NEXT_SHORT();
+                Value global = vm->globals.values[index];
+                if (!global.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                vm->globals.values[index].as.longValue--;
+                break;
+            }
+
+            case OP_INCREMENT_FAST: {
+                uint16_t index = NEXT_SHORT();
+                Value local = vm->stack.values[index];
+                if (!local.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                vm->stack.values[index].as.longValue++;
+                break;
+            }
+
+            case OP_DECREMENT_FAST: {
+                uint16_t index = NEXT_SHORT();
+                Value local = vm->stack.values[index];
+                if (!local.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                vm->stack.values[index].as.longValue--;
+                break;
+            }
+
+            case OP_INCREMENT_SUBSCR: {
+                Value index = POP_VALUE();
+                Value list = POP_VALUE();
+                if (list.array_depth == 0) {
+                    ERROR(E_NOT_AN_ARRAY);
+                }
+                if (!list.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                int i = index.as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i < 0 || i >= array->count) {
+                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                // TO DO type checking
+                array->values[i].as.longValue++;
+                break;
+            }
+
+            case OP_DECREMENT_SUBSCR: {
+                Value index = POP_VALUE();
+                Value list = POP_VALUE();
+                if (list.array_depth == 0) {
+                    ERROR(E_NOT_AN_ARRAY);
+                }
+                if (!list.defined) {
+                    ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                // TO DO type checking
+                int i = index.as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i < 0 || i >= array->count) {
+                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                // TO DO type checking
+                array->values[i].as.longValue--;
+                break;
+            }
+
+            case OP_INCREMENT_OBJ: {
+                Value key = POP_VALUE();
+                Value object = POP_VALUE();
+                if (object.type != TYPE_OBJECT) {
+                    ERROR(E_NOT_AN_OBJECT);
+                }
+
+                ValueObject* obj = (ValueObject*)object.as.objectValue;
+                if (!hasKey(obj, key.as.stringValue)) {
+                    ERROR(E_KEY_NOT_FOUND);
+                }
+
+                Value* value = getValueAtKey(obj, key.as.stringValue);
+                // to do type checking
+                value->as.longValue++;
+                break;
+            }
+
+            case OP_DECREMENT_OBJ: {
+                Value key = POP_VALUE();
+                Value object = POP_VALUE();
+                if (object.type != TYPE_OBJECT) {
+                    ERROR(E_NOT_AN_OBJECT);
+                }
+
+                ValueObject* obj = (ValueObject*)object.as.objectValue;
+                if (!hasKey(obj, key.as.stringValue)) {
+                    ERROR(E_KEY_NOT_FOUND);
+                }
+
+                Value* value = getValueAtKey(obj, key.as.stringValue);
+                // to do type checking
+                value->as.longValue--;
                 break;
             }
 

@@ -122,6 +122,11 @@ void printValue(Value value, bool extensive) {
             printf("%s", value.as.boolValue ? "TRUE" : "FALSE");
             break;
         }
+
+        case D_NULL: {
+            printf("NULL");
+            break;
+        }
         default: {
             printf("Unknown type\n");
             break;
@@ -162,6 +167,13 @@ void markDefined(Value* value) {
         ValueArray* array = value->as.objectValue;
         for (size_t i = 0; i < array->count; i++) {
             markDefined(&array->values[i]);
+        }
+    }
+
+    if (value->type == TYPE_OBJECT) {
+        ValueObject* object = value->as.objectValue;
+        for (size_t i = 0; i < object->count; i++) {
+            markDefined(&object->values[i]);
         }
     }
 }
@@ -268,4 +280,19 @@ Value* getValueAtKey(ValueObject* object, char* key) {
         }
     }
     return NULL;
+}
+
+void removeFromKey (ValueObject* object, char* key) {
+    for (size_t i = 0; i < object->count; i++) {
+        if (strcmp(object->keys[i], key) == 0) {
+            free(object->keys[i]);
+            destroyValue(&object->values[i]);
+            for (size_t j = i; j < object->count - 1; j++) {
+                object->keys[j] = object->keys[j + 1];
+                object->values[j] = object->values[j + 1];
+            }
+            object->count--;
+            return;
+        }
+    }
 }
