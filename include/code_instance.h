@@ -20,6 +20,8 @@ typedef enum {
     OP_REFERENCE_SUBSCR, // get reference to list or object
     OP_REFERENCE, // get reference to variable
     OP_REFERENCE_FAST, // get reference to local variable
+    OP_REFERENCE_GETOBJ, // get reference to object
+    OP_STORE_OBJ, // store to object
 
 
     OP_DEFINE, // define a global variable
@@ -27,6 +29,7 @@ typedef enum {
     OP_TYPE_CAST,
 
     OP_BUILD_LIST,
+    OP_BUILD_OBJECT,
 
     OP_BINARY_ADD,
     OP_BINARY_SUBTRACT,

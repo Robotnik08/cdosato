@@ -31,7 +31,7 @@ void pushValue(ValueArray* array, Value value) {
 
 #define ERROR(e_code) printError(ast.source, ast.tokens.tokens[vm->instance->token_indices[vm->ip - vm->instance->code - 1]].start - ast.source, e_code)
 
-#define DESTROYIFLITERAL(value) if (!value.defined) { destroyValue(value); }
+#define DESTROYIFLITERAL(value) if (!value.defined) { destroyValue(&value); }
 
 int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
     if (debug) printf("Running virtual machine\n");
@@ -106,6 +106,28 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_GETOBJECT: {
+                Value key = POP_VALUE();
+                Value object = POP_VALUE();
+                if (object.type != TYPE_OBJECT) {
+                    ERROR(E_NOT_AN_OBJECT);
+                }
+
+                ValueObject* obj = (ValueObject*)object.as.objectValue;
+                if (!hasKey(obj, key.as.stringValue)) {
+                    ERROR(E_KEY_NOT_FOUND);
+                }
+
+                Value value = *getValueAtKey(obj, key.as.stringValue);
+                value = hardCopyValue(value);
+
+                pushValue(&vm->stack, value);
+
+                DESTROYIFLITERAL(object);
+                DESTROYIFLITERAL(key);
+                break;
+            }
+
             case OP_REFERENCE: {
                 uint16_t index = NEXT_SHORT();
                 Value global = vm->globals.values[index];
@@ -152,6 +174,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_REFERENCE_GETOBJ: {
+                Value key = POP_VALUE();
+                Value object = POP_VALUE();
+
+                if (object.type != TYPE_OBJECT) {
+                    ERROR(E_NOT_AN_OBJECT);
+                }
+
+                ValueObject* obj = (ValueObject*)object.as.objectValue;
+                if (!hasKey(obj, key.as.stringValue)) {
+                    ERROR(E_KEY_NOT_FOUND);
+                }
+
+                Value value = *getValueAtKey(obj, key.as.stringValue);
+                pushValue(&vm->stack, value);
+
+                DESTROYIFLITERAL(key);
+                break;
+            }
+
+
 
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT();
@@ -168,7 +211,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 value = hardCopyValue(value);
 
                 // destroy old value
-                destroyValue(vm->stack.values[index]);
+                destroyValue(&vm->stack.values[index]);
 
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
@@ -202,7 +245,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 value = hardCopyValue(value);
 
                 // destroy old value
-                destroyValue(vm->globals.values[index]);
+                destroyValue(&vm->globals.values[index]);
 
                 vm->globals.values[index] = value;
                 markDefined(&vm->globals.values[index]);
@@ -243,7 +286,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 // destroy old value
-                destroyValue(array->values[i]);
+                destroyValue(&array->values[i]);
 
                 array->values[i] = value;
                 markDefined(&array->values[i]);
@@ -252,6 +295,30 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            
+            case OP_STORE_OBJ: {
+                Value key = POP_VALUE();
+                Value object = POP_VALUE();
+                Value value = POP_VALUE();
+
+                if (object.type != TYPE_OBJECT) {
+                    ERROR(E_NOT_AN_OBJECT);
+                }
+
+                ValueObject* obj = (ValueObject*)object.as.objectValue;
+                if (!hasKey(obj, key.as.stringValue)) {
+                    // add key
+                    write_ValueObject(obj, key.as.stringValue, value);
+                } else {
+                    // destroy old value
+                    destroyValue(getValueAtKey(obj, key.as.stringValue));
+
+                    // set new value
+                    write_ValueObject(obj, key.as.stringValue, value);
+                }
+
+                break;
+            }
 
             case OP_TYPE_CAST: {
                 // not available for now
@@ -270,6 +337,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_BUILD_OBJECT: {
+                int count = NEXT_SHORT();
+                Value object = (Value){ TYPE_OBJECT, .as.objectValue = malloc(sizeof(ValueObject)) };
+
+                ValueObject* obj = (ValueObject*)object.as.objectValue;
+                init_ValueObject(obj);
+                for (int i = 0; i < count; i++) {
+                    Value value = POP_VALUE();
+                    Value key = POP_VALUE();
+                    if (key.type != TYPE_STRING) {
+                        ERROR(E_INVALID_KEY_TYPE);
+                    }
+                    if (hasKey(obj, key.as.stringValue)) {
+                        ERROR(E_KEY_ALREADY_DEFINED);
+                    }
+                    write_ValueObject(obj, key.as.stringValue, value);
+                }
+                pushValue(&vm->stack, object);
+                break;
+            }
+
             
             case OP_PRINT: {
                 Value value = POP_VALUE();
@@ -280,7 +368,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
             case OP_POP: {
-                destroyValue(POP_VALUE());
+                destroyValue(&POP_VALUE());
                 break;
             }
 

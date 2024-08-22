@@ -393,18 +393,25 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         }
 
         case NODE_OBJECT_ENTRY: {
-            // get the key
-            if (tokens.tokens[start].type == TOKEN_IDENTIFIER) {
-                write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_INDENTIFIER));
-            } else if (tokens.tokens[start].type == TOKEN_STRING) {
-                write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_STRING_LITERAL));
-            } else {
-                ERROR(start, E_EXPECTED_IDENTIFIER);
+            // get the first : operator
+            int i = start;
+            for (i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COLON) {
+                    break;
+                }
             }
-            if (tokens.tokens[start + 1].type != TOKEN_OPERATOR || tokens.tokens[start + 1].carry != OPERATOR_COLON) {
-                ERROR(start + 1, E_UNEXPECTED_TOKEN);
+
+            if (i == start) {
+                ERROR(i, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, start + 2, end, tokens, NODE_EXPRESSION));
+            if (i == end - 1) {
+                ERROR(i, E_EXPECTED_COLON_OPERATOR);
+            }
+
+            
+            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION));
+            write_NodeList(&root.body, parse(source, length, i + 1, end, tokens, NODE_EXPRESSION));
             break;
         }
 

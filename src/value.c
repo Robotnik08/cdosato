@@ -7,22 +7,29 @@ DOSATO_LIST_FUNC_GEN(ValueArray, Value, values)
 
 void destroyValueArray(ValueArray* array) {
     for (size_t i = 0; i < array->count; i++) {
-        destroyValue(array->values[i]);
+        destroyValue(&array->values[i]);
     }
     free_ValueArray(array);
 }
 
-void destroyValue(Value value) {
-    if (value.array_depth > 0) {
-        ValueArray* array = value.as.objectValue;
+void destroyValue(Value* value) {
+    if (value->array_depth > 0) {
+        ValueArray* array = value->as.objectValue;
         destroyValueArray(array);
-        free(array);
+        free(value->as.objectValue);
         return;
     }
 
-    if (value.type == TYPE_STRING) {
-        free(value.as.stringValue);
+    if (value->type == TYPE_OBJECT) {
+        ValueObject* object = value->as.objectValue;
+        free_ValueObject(object);
+        free(value->as.objectValue); // free the object
+    } else if (value->type == TYPE_STRING) {
+        free(value->as.stringValue);
     }
+    value->defined = false;
+    value->type = D_NULL;
+    value->array_depth = 0;
 }
 
 void printValue(Value value, bool extensive) {
@@ -40,6 +47,21 @@ void printValue(Value value, bool extensive) {
     }
 
     switch (value.type) {
+        case TYPE_OBJECT: {
+            printf("{");
+            ValueObject* object = value.as.objectValue;
+            for (size_t i = 0; i < object->count; i++) {
+                printf("\"%s\": ", object->keys[i]);
+                printValue(object->values[i], true);
+                if (i < object->count - 1) {
+                    printf(", ");
+                }
+            }
+            printf("}");
+            break;
+        }
+
+
         case TYPE_UBYTE: {
             printf("%u", value.as.ubyteValue);
             break;
@@ -122,6 +144,14 @@ Value hardCopyValue(Value value) {
         char* newString = malloc(strlen(value.as.stringValue) + 1);
         strcpy(newString, value.as.stringValue);
         copy.as.stringValue = newString;
+    } else if (value.type == TYPE_OBJECT) {
+        ValueObject* object = value.as.objectValue;
+        ValueObject* newObject = malloc(sizeof(ValueObject));
+        init_ValueObject(newObject);
+        for (size_t i = 0; i < object->count; i++) {
+            write_ValueObject(newObject, object->keys[i], hardCopyValue(object->values[i]));
+        }
+        copy.as.objectValue = newObject;
     }
     return copy;
 }
@@ -188,4 +218,54 @@ size_t addName(NameMap* map, char* name) {
     strcpy(newName, name);
     write_NameMap(map, newName);
     return map->count - 1;
+}
+
+void init_ValueObject(ValueObject* object) {
+    object->values = NULL;
+    object->keys = NULL;
+    object->count = 0;
+    object->capacity = 0;
+}
+
+void write_ValueObject(ValueObject* object, char* key, Value value) {
+    if (object->capacity < object->count + 1) {
+        size_t oldCapacity = object->capacity;
+        object->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
+        object->values = DOSATO_RESIZE_LIST(Value, object->values, oldCapacity, object->capacity);
+        object->keys = DOSATO_RESIZE_LIST(char*, object->keys, oldCapacity, object->capacity);
+    }
+    object->values[object->count] = value;
+    // Copy the key
+    char* newKey = malloc(strlen(key) + 1);
+    strcpy(newKey, key);
+    object->keys[object->count] = newKey;
+    object->count++;
+}
+
+void free_ValueObject(ValueObject* object) {
+    for (size_t i = 0; i < object->count; i++) {
+        free(object->keys[i]);
+        destroyValue(&object->values[i]);
+    }
+    free(object->values);
+    free(object->keys);
+    init_ValueObject(object);
+}
+
+bool hasKey(ValueObject* object, char* key) {
+    for (size_t i = 0; i < object->count; i++) {
+        if (strcmp(object->keys[i], key) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Value* getValueAtKey(ValueObject* object, char* key) {
+    for (size_t i = 0; i < object->count; i++) {
+        if (strcmp(object->keys[i], key) == 0) {
+            return &object->values[i];
+        }
+    }
+    return NULL;
 }

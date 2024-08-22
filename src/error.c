@@ -25,11 +25,17 @@ static const char* ERROR_MESSAGES[] = {
     "Incomplete Ternary Operator, expected ':'",
     "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, ->, <<, >>, **, ^/, <|, |>, #)",
     "Expected Hash Operator (#)",
+    "Invalid Expression",
+    "Expected Colon Operator (':')",
 
     "Undefined Variable",
     "Variable already defined",
     "Variable is not an array",
+    "Variable is not an object",
     "Array index is out of bounds",
+    "Invalid key type, expected STRING",
+    "Key is already defined",
+    "Key is not defined",
 
     "Unknown Error",
     "Error Amount (report this)"

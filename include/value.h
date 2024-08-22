@@ -50,7 +50,7 @@ typedef struct {
 
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false }
 
-void destroyValue(Value value);
+void destroyValue(Value* value);
 void printValue(Value value, bool extensive);
 void markDefined(Value* value);
 Value hardCopyValue(Value value);
@@ -84,6 +84,12 @@ void init_ValueArray(ValueArray* array);
 void write_ValueArray(ValueArray* array, Value value);
 void free_ValueArray(ValueArray* array);
 void destroyValueArray(ValueArray* array);
+
+void init_ValueObject(ValueObject* object);
+void write_ValueObject(ValueObject* object, char* key, Value value);
+void free_ValueObject(ValueObject* object);
+bool hasKey(ValueObject* object, char* key);
+Value* getValueAtKey(ValueObject* object, char* key);
 
 void init_StackFrames(StackFrames* stack);
 void write_StackFrames(StackFrames* stack, size_t frame);

@@ -118,7 +118,13 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
                     writeInstruction(vm->instance, node.body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[0].start].carry));
                 }
             }
+            
+            if (node.body.count != 3) {
+                ERROR(E_INVALID_EXPRESSION, node.start);
+            }	
+
             compileNode(vm, node.body.nodes[2], ast, scope);
+
             if (ast.tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_HASH) {
                 ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
             }
@@ -280,6 +286,20 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
                 compileNode(vm, node.body.nodes[i], ast, scope);
             }
             writeInstruction(vm->instance, node.start, OP_BUILD_LIST, DOSATO_SPLIT_SHORT(node.body.count)); // cast to the correct type
+            break;
+        }
+
+        case NODE_OBJECT_EXPRESSION: {
+            for (int i = 0; i < node.body.count; i++) {
+                compileNode(vm, node.body.nodes[i], ast, scope);
+            }
+            writeInstruction(vm->instance, node.start, OP_BUILD_OBJECT, DOSATO_SPLIT_SHORT(node.body.count)); // cast to the correct type
+            break;
+        }
+
+        case NODE_OBJECT_ENTRY: {
+            compileNode(vm, node.body.nodes[0], ast, scope);
+            compileNode(vm, node.body.nodes[1], ast, scope);
             break;
         }
     }

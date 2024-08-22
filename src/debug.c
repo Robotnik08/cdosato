@@ -66,6 +66,11 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (%d)", address);
             break;
+        case OP_BUILD_OBJECT:
+            printf("OP_BUILD_OBJECT");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (%d)", address);
+            break;
 
         case OP_BINARY_ADD:
             printf("OP_BINARY_ADD");

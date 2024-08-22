@@ -88,6 +88,8 @@ int getOffset(OpCode instruction) {
 
         case OP_BUILD_LIST:
             return 3; // 2 bytes for the count
+        case OP_BUILD_OBJECT:
+            return 3; // 2 bytes for the count
 
         case OP_REFERENCE:
             return 3; // 2 bytes for the address
