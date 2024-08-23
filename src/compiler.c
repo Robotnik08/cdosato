@@ -68,8 +68,7 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
             }
 
             compileNode(vm, node.body.nodes[2], ast, scope);
-            if (ast.tokens.tokens[node.body.nodes[0].start].carry != TYPE_VAR)
-                writeInstruction(vm->instance, node.start, OP_TYPE_CAST, ast.tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type (if not var)
+            writeInstruction(vm->instance, node.start, OP_TYPE_CAST, ast.tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
             
             if (scope == NULL) { // global scope
                 writeInstruction(vm->instance, node.body.nodes[1].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[1].start].carry));

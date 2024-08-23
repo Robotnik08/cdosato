@@ -62,7 +62,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 start = i;
                 continue;
             }
-            if (full_code[i] == '/' && full_code[i + 1 < code_length ? i + 1 : 0] == '/') {
+            if (full_code[i] == '/' && full_code[i + 1] == '/') {
                 int foundEnd = 0;
                 start = i;
                 for (int j = i; j < code_length; j++) {
@@ -91,8 +91,12 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 lit[end - start + 1] = '\0';
                 
                 if (lit[0] == '\'') {
-                    if (lit[2] != '\'') {
+                    if (lit[2] != '\'' && !(lit[3] == '\'' && lit[1] == '\\') ) {
                         printError(full_code, start, E_INVALID_CHAR_LITERAL);
+                    } else if (lit[3] == '\'' && lit[1] == '\\') {
+                        if (lit[2] != 'n' && lit[2] != 't' && lit[2] != 'r' && lit[2] != 'b' && lit[2] != 'f' && lit[2] != '0' && lit[2] != '\\' && lit[2] != '\'' && lit[2] != '"') {
+                            printError(full_code, start, E_INVALID_CHAR_LITERAL);
+                        }
                     }
                 }
 
@@ -114,6 +118,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         } else {
             escapeCount = 0;
         }
+    }
+
+    if (quotationtype) {
+        printError(full_code, start, E_UNCLOSED_STRING_LITERAL);
     }
     
     REFRESH_LIST()
@@ -383,12 +391,87 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         char* lit = constantMappings.names[i];
         char quote = lit[0];
         if (quote == '\'') {
-            write_ValueArray(&vm->constants, (Value) { TYPE_CHAR, .as.charValue = lit[1] });
+            char val = lit[1];
+
+            if (lit[1] == '\\') {
+                // parse escape sequences
+
+                switch (lit[2]) {
+                    case 'n':
+                        val = '\n';
+                        break;
+                    case 't':
+                        val = '\t';
+                        break;
+                    case 'r':
+                        val = '\r';
+                        break;
+                    case '0':
+                        val = '\0';
+                        break;
+                    case 'b':
+                        val = '\b';
+                        break;
+                    case 'f':
+                        val = '\f';
+                        break;
+                    case '\\':
+                        val = '\\';
+                        break;
+                    case '\'':
+                        val = '\'';
+                        break;
+                    case '"':
+                        val = '"';
+                        break;
+                }
+            }
+
+            write_ValueArray(&vm->constants, (Value) { TYPE_CHAR, .as.charValue = val });
         }
         if (quote == '"') {
             char* val = malloc(strlen(lit) - 1);
             memcpy(val, lit + 1, strlen(lit) - 2);
             val[strlen(lit) - 2] = '\0';
+
+            // parse escape sequences
+            for (int j = 0; j < strlen(val); j++) {
+                if (val[j] == '\\') {
+                    switch (val[j + 1]) {
+                        case 'n':
+                            val[j] = '\n';
+                            break;
+                        case 't':
+                            val[j] = '\t';
+                            break;
+                        case 'r':
+                            val[j] = '\r';
+                            break;
+                        case '0':
+                            val[j] = '\0';
+                            break;
+                        case 'b':
+                            val[j] = '\b';
+                            break;
+                        case 'f':
+                            val[j] = '\f';
+                            break;
+                        case '\\':
+                            val[j] = '\\';
+                            break;
+                        case '\'':
+                            val[j] = '\'';
+                            break;
+                        case '"':
+                            val[j] = '"';
+                            break;
+                    }
+                    for (int k = j + 1; k < strlen(val); k++) {
+                        val[k] = val[k + 1];
+                    }
+                }
+            }
+
             write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val });
         }
     }

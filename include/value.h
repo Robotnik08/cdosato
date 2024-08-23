@@ -24,11 +24,13 @@ typedef enum {
     TYPE_VAR
 } DataType;
 
+#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE)
+#define ISFLOATTYPE(type) (type == TYPE_FLOAT || type == TYPE_DOUBLE)
+
 
 typedef struct {
     DataType type;
     bool is_variable_type; // non strict type
-    int array_depth;
     bool defined;
     union {
         char byteValue;
@@ -54,6 +56,10 @@ void destroyValue(Value* value);
 void printValue(Value value, bool extensive);
 void markDefined(Value* value);
 Value hardCopyValue(Value value);
+ErrorType castValue(Value* value, DataType type);
+ErrorType incValue (Value* value, int amount);
+
+char* valueToString (Value value, bool extensive);
 
 typedef struct {
     size_t count;

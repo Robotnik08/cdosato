@@ -53,39 +53,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
-            case OP_BINARY_ADD: {
-                Value b = POP_VALUE();
-                Value a = POP_VALUE();
-                Value result = (Value){ TYPE_LONG, .as.longValue = a.as.longValue + b.as.longValue };
-                pushValue(&vm->stack, result);
-                DESTROYIFLITERAL(a);
-                DESTROYIFLITERAL(b);
-                break;
-            }
-            case OP_BINARY_SUBTRACT: {
-                Value b = POP_VALUE();
-                Value a = POP_VALUE();
-                Value result = (Value){ TYPE_LONG, .as.longValue = a.as.longValue - b.as.longValue };
-                pushValue(&vm->stack, result);
-                DESTROYIFLITERAL(a);
-                DESTROYIFLITERAL(b);
-                break;
-            }
-            case OP_BINARY_MULTIPLY: {
-                Value b = POP_VALUE();
-                Value a = POP_VALUE();
-                Value result = (Value){ TYPE_LONG, .as.longValue = a.as.longValue * b.as.longValue };
-                pushValue(&vm->stack, result);
-                DESTROYIFLITERAL(a);
-                DESTROYIFLITERAL(b);
-                break;
-            }
-
 
             case OP_GETLIST: {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
-                if (list.array_depth == 0) {
+                if (list.type != TYPE_ARRAY) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
 
@@ -153,7 +125,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             case OP_REFERENCE_SUBSCR: {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
-                if (list.array_depth == 0) {
+                if (list.type != TYPE_ARRAY) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
                 if (!list.defined) {
@@ -210,6 +182,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 
                 value = hardCopyValue(value);
 
+                DataType type = vm->stack.values[index].type;
+                ErrorType castRes = castValue(&value, type);
+                if (castRes != E_NULL) {
+                    ERROR(castRes);
+                }
+
                 // destroy old value
                 destroyValue(&vm->stack.values[index]);
 
@@ -244,6 +222,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
                 value = hardCopyValue(value);
 
+                DataType type = vm->globals.values[index].type;
+                ErrorType castRes = castValue(&value, type);
+                if (castRes != E_NULL) {
+                    ERROR(castRes);
+                }
+                
+
                 // destroy old value
                 destroyValue(&vm->globals.values[index]);
 
@@ -270,7 +255,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
                 Value value = POP_VALUE();
-                if (list.array_depth == 0) {
+                if (list.type != TYPE_ARRAY) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
 
@@ -322,14 +307,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
-            case OP_TYPE_CAST: {
-                // not available for now
-                break;
-            }
-
             case OP_BUILD_LIST: {
                 int count = NEXT_SHORT();
-                Value list = (Value){ TYPE_VAR, .as.objectValue = malloc(sizeof(ValueArray)), .array_depth = 1, .is_variable_type = true };
+                Value list = (Value){ TYPE_ARRAY, .as.objectValue = malloc(sizeof(ValueArray)) };
                 init_ValueArray((ValueArray*)list.as.objectValue);
                 for (int i = 0; i < count; i++) {
                     Value value = POP_VALUE();
@@ -363,56 +343,58 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
             case OP_INCREMENT: {
                 uint16_t index = NEXT_SHORT();
-                Value global = vm->globals.values[index];
-                if (!global.defined) {
+                if (!vm->globals.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                vm->globals.values[index].as.longValue++;
+                ErrorType code = incValue(&vm->globals.values[index], 1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
                 break;
             }
 
             case OP_DECREMENT: {
                 uint16_t index = NEXT_SHORT();
-                Value global = vm->globals.values[index];
-                if (!global.defined) {
+                if (!vm->globals.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                vm->globals.values[index].as.longValue--;
+                ErrorType code = incValue(&vm->globals.values[index], -1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
                 break;
             }
 
             case OP_INCREMENT_FAST: {
                 uint16_t index = NEXT_SHORT();
-                Value local = vm->stack.values[index];
-                if (!local.defined) {
+                if (!vm->stack.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                vm->stack.values[index].as.longValue++;
+                ErrorType code = incValue(&vm->stack.values[index], 1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
                 break;
             }
 
             case OP_DECREMENT_FAST: {
                 uint16_t index = NEXT_SHORT();
-                Value local = vm->stack.values[index];
-                if (!local.defined) {
+                if (!vm->stack.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 // TO DO type checking
-                vm->stack.values[index].as.longValue--;
+                ErrorType code = incValue(&vm->stack.values[index], -1);
                 break;
             }
 
             case OP_INCREMENT_SUBSCR: {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
-                if (list.array_depth == 0) {
+                if (list.type != TYPE_ARRAY) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
                 if (!list.defined) {
@@ -427,14 +409,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 // TO DO type checking
-                array->values[i].as.longValue++;
+                ErrorType code = incValue(&array->values[i], 1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
                 break;
             }
 
             case OP_DECREMENT_SUBSCR: {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
-                if (list.array_depth == 0) {
+                if (list.type != TYPE_ARRAY) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
                 if (!list.defined) {
@@ -449,7 +434,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 // TO DO type checking
-                array->values[i].as.longValue--;
+                ErrorType code = incValue(&array->values[i], -1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
                 break;
             }
 
@@ -467,7 +455,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
                 Value* value = getValueAtKey(obj, key.as.stringValue);
                 // to do type checking
-                value->as.longValue++;
+                ErrorType code = incValue(value, 1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
                 break;
             }
 
@@ -485,7 +476,24 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
                 Value* value = getValueAtKey(obj, key.as.stringValue);
                 // to do type checking
-                value->as.longValue--;
+                ErrorType code = incValue(value, -1);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                break;
+            }
+            
+
+            case OP_TYPE_CAST: {
+                Value val = POP_VALUE();
+                DataType type = NEXT_BYTE();
+                
+                ErrorType error = castValue(&val, type);
+                if (error != E_NULL) {
+                    ERROR(error);
+                }
+                pushValue(&vm->stack, val);
+
                 break;
             }
 
@@ -514,6 +522,268 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             default: {
                 printf("Unknown instruction: %d\n", instruction);
                 halt = true;
+                break;
+            }
+
+            // arithmetic
+
+            case OP_BINARY_ADD: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (a.type == TYPE_STRING || b.type == TYPE_STRING) {
+                    char* a_str = valueToString(a, false);
+                    char* b_str = valueToString(b, false);
+                    char* new_string = malloc(strlen(a_str) + strlen(b_str) + 1);
+                    strcpy(new_string, a_str);
+                    strcat(new_string, b_str);
+                    free(a_str);
+                    free(b_str);
+                    Value result = (Value){ TYPE_STRING, .as.stringValue = new_string };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue + b.as.doubleValue };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if (a.type == TYPE_ARRAY && b.type == TYPE_ARRAY) {
+                    ValueArray* a_array = (ValueArray*)a.as.objectValue;
+                    ValueArray* b_array = (ValueArray*)b.as.objectValue;
+                    ValueArray* new_array = malloc(sizeof(ValueArray));
+                    init_ValueArray(new_array);
+                    for (int i = 0; i < a_array->count; i++) {
+                        Value val = hardCopyValue(a_array->values[i]);
+                        write_ValueArray(new_array, val);
+                    }
+                    for (int i = 0; i < b_array->count; i++) {
+                        Value val = hardCopyValue(b_array->values[i]);
+                        write_ValueArray(new_array, val);
+                    }
+                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if (a.type == TYPE_OBJECT && b.type == TYPE_OBJECT) {
+                    ValueObject* a_obj = (ValueObject*)a.as.objectValue;
+                    ValueObject* b_obj = (ValueObject*)b.as.objectValue;
+                    ValueObject* new_obj = malloc(sizeof(ValueObject));
+                    init_ValueObject(new_obj);
+                    for (int i = 0; i < a_obj->count; i++) {
+                        Value val = hardCopyValue(a_obj->values[i]);
+                        write_ValueObject(new_obj, a_obj->keys[i], val);
+                    }
+                    for (int i = 0; i < b_obj->count; i++) {
+                        Value val = hardCopyValue(b_obj->values[i]);
+                        write_ValueObject(new_obj, b_obj->keys[i], val);
+                    }
+                    Value result = (Value){ TYPE_OBJECT, .as.objectValue = new_obj };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = a.as.longValue + b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_SUBTRACT: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue - b.as.doubleValue };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                    ValueArray* a_array = (ValueArray*)a.as.objectValue;
+                    ErrorType code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int pop_amount = b.as.longValue;
+                    if (pop_amount < 0) {
+                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+                    if (pop_amount > a_array->count) {
+                        pop_amount = a_array->count;
+                    }
+                    ValueArray* new_array = malloc(sizeof(ValueArray));
+                    init_ValueArray(new_array);
+                    for (int i = 0; i < a_array->count - pop_amount; i++) {
+                        Value val = hardCopyValue(a_array->values[i]);
+                        write_ValueArray(new_array, val);
+                    }
+                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if (a.type == TYPE_OBJECT && b.type == TYPE_STRING) {
+                    ValueObject* a_obj = (ValueObject*)a.as.objectValue;
+                    char* key_to_remove = b.as.stringValue;
+                    if (!hasKey(a_obj, key_to_remove)) {
+                        ERROR(E_KEY_NOT_FOUND);
+                    }
+                    removeFromKey(a_obj, key_to_remove);
+                    pushValue(&vm->stack, a);
+                    DESTROYIFLITERAL(b);
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = a.as.longValue - b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_MULTIPLY: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue * b.as.doubleValue };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                    ValueArray* a_array = (ValueArray*)a.as.objectValue;
+                    ErrorType code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int multiply_amount = b.as.longValue;
+                    if (multiply_amount < 0) {
+                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+                    ValueArray* new_array = malloc(sizeof(ValueArray));
+                    init_ValueArray(new_array);
+                    for (int i = 0; i < multiply_amount; i++) {
+                        for (int j = 0; j < a_array->count; j++) {
+                            Value val = hardCopyValue(a_array->values[j]);
+                            write_ValueArray(new_array, val);
+                        }
+                    }
+                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = a.as.longValue * b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_DIVIDE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    if (b.as.doubleValue == 0) {
+                        ERROR(E_MATH_DOMAIN_ERROR);
+                    }
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue / b.as.doubleValue };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    if (b.as.longValue == 0) {
+                        ERROR(E_MATH_DOMAIN_ERROR);
+                    }
+                    long long int result = a.as.longValue / b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
                 break;
             }
         }

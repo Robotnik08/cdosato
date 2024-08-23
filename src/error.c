@@ -7,6 +7,7 @@ static const char* ERROR_MESSAGES[] = {
 
     "Invalid Number Literal",
     "Invalid Character Literal",
+    "Unclosed String Literal",
 
     "Expected Master Keyword as first token (DO, MAKE, SET, DEFINE, INCLUDE, IMPORT, RETURN, BREAK, CONTINUE)",
     "Line is missing a seperator (;)",
@@ -36,6 +37,13 @@ static const char* ERROR_MESSAGES[] = {
     "Invalid key type, expected STRING",
     "Key is already defined",
     "Key is not defined",
+    "Cannot convert type to integer",
+    "Cannot convert type to float",
+    "Cannot convert type to object",
+    "Cannot convert type to array",
+    "Cannot perform operation",
+    "Cannot perform binary operation",
+    "Math domain error",
 
     "Unknown Error",
     "Error Amount (report this)"

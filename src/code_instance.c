@@ -115,6 +115,9 @@ int getOffset(OpCode instruction) {
         case OP_JUMP_ABSOLUTE:
             return 3; // 2 bytes for the location
 
+        case OP_TYPE_CAST:
+            return 2; // 1 byte for the type
+
 
         default:
             return 1; // simple instructions

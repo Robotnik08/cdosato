@@ -31,7 +31,7 @@ char* getTokenString (Token token) {
 
 void printTokens (TokenList list) {
     Token* tokens = list.tokens;
-    if (tokens == NULL) {
+    if (list.count == 0) {
         printf("No tokens.\n");
         return;
     }
