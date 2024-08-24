@@ -17,6 +17,7 @@ void compile(VirtualMachine* vm, AST ast);
 void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope);
 
 int writeOperatorInstruction (VirtualMachine* vm, OperatorType operator, size_t token_index);
+int writeUnaryInstruction (VirtualMachine* vm, OperatorType operator, size_t token_index);
 
 void initScopeData(ScopeData* scope);
 void pushScopeData(ScopeData* scope, size_t index);

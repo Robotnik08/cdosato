@@ -102,15 +102,6 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_BINARY_LESS_EQUAL:
             printf("OP_BINARY_LESS_EQUAL");
             break;
-        case OP_BINARY_AND:
-            printf("OP_BINARY_AND");
-            break;
-        case OP_BINARY_OR:
-            printf("OP_BINARY_OR");
-            break;
-        case OP_BINARY_XOR:
-            printf("OP_BINARY_XOR");
-            break;
         case OP_BINARY_MODULO:
             printf("OP_BINARY_MODULO");
             break;
@@ -146,6 +137,22 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             break;
         case OP_BINARY_LOGICAL_OR:
             printf("OP_BINARY_LOGICAL_OR");
+            break;
+
+        case OP_UNARY_NEGATE:
+            printf("OP_UNARY_NEGATE");
+            break;
+        case OP_UNARY_LOGICAL_NOT:
+            printf("OP_UNARY_LOGICAL_NOT");
+            break;
+        case OP_UNARY_BITWISE_NOT:
+            printf("OP_UNARY_BITWISE_NOT");
+            break;
+        case OP_UNARY_SQRT:
+            printf("OP_UNARY_SQRT");
+            break;
+        case OP_UNARY_ABSOLUTE:
+            printf("OP_UNARY_ABSOLUTE");
             break;
 
         case OP_GETLIST:

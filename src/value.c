@@ -64,6 +64,85 @@ Value hardCopyValue(Value value) {
     return copy;
 }
 
+bool valueEquals (Value* a, Value* b) {
+    
+    if (ISFLOATTYPE(a->type) || ISFLOATTYPE(b->type)) {
+        double aValue = 0;
+        double bValue = 0;
+
+        ErrorType aError = castValue(a, TYPE_DOUBLE);
+        if (aError != 0) {
+            return false;
+        }
+        aValue = a->as.doubleValue;
+        ErrorType bError = castValue(b, TYPE_DOUBLE);
+        if (bError != 0) {
+            return false;
+        }
+        bValue = b->as.doubleValue;
+
+        return aValue == bValue;
+
+    } else if (a->type == TYPE_STRING || b->type == TYPE_STRING) {
+        char* aStr = valueToString(*a, false);
+        char* bStr = valueToString(*b, false);
+        bool result = strcmp(aStr, bStr) == 0;
+        free(aStr);
+        free(bStr);
+        return result;
+    } else if ((ISINTTYPE(a->type) || a->type == TYPE_CHAR || a->type == TYPE_BOOL) || (ISINTTYPE(b->type) || b->type == TYPE_CHAR || b->type == TYPE_BOOL)) {
+        long long int aValue = 0;
+        long long int bValue = 0;
+
+        ErrorType aError = castValue(a, TYPE_LONG);
+        if (aError != 0) {
+            return false;
+        }
+        aValue = a->as.longValue;
+        ErrorType bError = castValue(b, TYPE_LONG);
+        if (bError != 0) {
+            return false;
+        }
+        bValue = b->as.longValue;
+
+        return aValue == bValue;
+    } else if (a->type == TYPE_OBJECT && b->type == TYPE_OBJECT) {
+        ValueObject* aObject = a->as.objectValue;
+        ValueObject* bObject = b->as.objectValue;
+
+        if (aObject->count != bObject->count) {
+            return false;
+        }
+
+        for (size_t i = 0; i < aObject->count; i++) {
+            if (strcmp(aObject->keys[i], bObject->keys[i]) != 0) {
+                return false;
+            }
+            if (!valueEquals(&aObject->values[i], &bObject->values[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    } else if (a->type == TYPE_ARRAY && b->type == TYPE_ARRAY) {
+        ValueArray* aArray = a->as.objectValue;
+        ValueArray* bArray = b->as.objectValue;
+
+        if (aArray->count != bArray->count) {
+            return false;
+        }
+
+        for (size_t i = 0; i < aArray->count; i++) {
+            if (!valueEquals(&aArray->values[i], &bArray->values[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    return false;
+}
+
 ErrorType castValue(Value* value, DataType type) {
     if (value->type == type) {
         return 0;
@@ -197,7 +276,7 @@ ErrorType castValue(Value* value, DataType type) {
             }
         }
 
-    } else if (ISFLOATTYPE(type)) {
+    } else if (ISFLOATTYPE(type) || type == TYPE_BOOL) {
         double numberValue = 0;
         switch (value->type) {
             case TYPE_UBYTE: {
@@ -273,6 +352,10 @@ ErrorType castValue(Value* value, DataType type) {
             }
             case TYPE_DOUBLE: {
                 newValue.as.doubleValue = (double)numberValue;
+                break;
+            }
+            case TYPE_BOOL: {
+                newValue.as.boolValue = numberValue != 0;
                 break;
             }
             default: {

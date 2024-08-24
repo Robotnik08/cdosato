@@ -44,6 +44,7 @@ static const char* ERROR_MESSAGES[] = {
     "Cannot convert type to array",
     "Cannot perform operation",
     "Cannot perform binary operation",
+    "Cannot perform unary operation",
     "Math domain error",
 
     "Unknown Error",

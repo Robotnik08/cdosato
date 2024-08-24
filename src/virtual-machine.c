@@ -626,7 +626,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
-                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
                         ERROR(code);
@@ -663,7 +663,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
-                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ValueArray* a_array = (ValueArray*)a.as.objectValue;
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
@@ -696,7 +696,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     removeFromKey(a_obj, key_to_remove);
                     pushValue(&vm->stack, a);
                     DESTROYIFLITERAL(b);
-                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
                         ERROR(code);
@@ -733,7 +733,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
-                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ValueArray* a_array = (ValueArray*)a.as.objectValue;
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
@@ -756,7 +756,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
-                } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
                         ERROR(code);
@@ -796,7 +796,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
-                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR)) {
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
                         ERROR(code);
@@ -818,7 +818,536 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
                 break;
             }
+            case OP_BINARY_GREATER: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue > b.as.doubleValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue > b.as.longValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_LESS: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue < b.as.doubleValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue < b.as.longValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                bool result = valueEquals(&a, &b);
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = result });
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_NOT_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                bool result = !valueEquals(&a, &b);
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = result });
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_GREATER_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue >= b.as.doubleValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue >= b.as.longValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_LESS_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue <= b.as.doubleValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue <= b.as.longValue });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
+                } else {
+                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                }
+                break;
+            }
+            case OP_BINARY_LOGICAL_AND: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_BOOL);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_BOOL);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue && b.as.boolValue });
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_LOGICAL_OR: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_BOOL);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_BOOL);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue || b.as.boolValue });
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_MODULO: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    double result = fmod(a.as.doubleValue, b.as.doubleValue);
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                } else {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = a.as.longValue % b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                }
+                break;
+            }
+            case OP_BINARY_POWER: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    double result = pow(a.as.doubleValue, b.as.doubleValue);
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                } else {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = powl(a.as.longValue, b.as.longValue);
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                }
+                break;
+            }
+            case OP_BINARY_ROOT: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_DOUBLE);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_DOUBLE);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                if (b.as.doubleValue < 0) {
+                    ERROR(E_MATH_DOMAIN_ERROR);
+                }
+                double result = 0;
+                if (b.as.doubleValue > 0) {
+                    result = powl(b.as.doubleValue, 1.0 / a.as.doubleValue);
+                }
+                pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_SHIFT_LEFT: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                long long int result = a.as.longValue << b.as.longValue;
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_SHIFT_RIGHT: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                long long int result = a.as.longValue >> b.as.longValue;
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_AND_BITWISE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                long long int result = a.as.longValue & b.as.longValue;
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_OR_BITWISE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                long long int result = a.as.longValue | b.as.longValue;
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_XOR_BITWISE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                code = castValue(&b, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                long long int result = a.as.longValue ^ b.as.longValue;
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                DESTROYIFLITERAL(a);
+                DESTROYIFLITERAL(b);
+                break;
+            }
+            case OP_BINARY_MIN: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    double result = fmin(a.as.doubleValue, b.as.doubleValue);
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                } else {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = a.as.longValue < b.as.longValue ? a.as.longValue : b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                }
+                break;
+            }
+            case OP_BINARY_MAX: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    double result = fmax(a.as.doubleValue, b.as.doubleValue);
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                } else {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                    long long int result = a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue;
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                }
+                break;
+            }
+            
+            // unary operations
+
+            case OP_UNARY_NEGATE: {
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type)) {
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = -a.as.doubleValue };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                } else if (ISINTTYPE(a.type)) {
+                    Value result = (Value){ TYPE_LONG, .as.longValue = -a.as.longValue };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                } else {
+                    ERROR(E_CANT_PERFORM_UNARY_OPERATION);
+                }
+                break;
+            }
+            case OP_UNARY_LOGICAL_NOT: {
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_BOOL);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = !a.as.boolValue });
+                DESTROYIFLITERAL(a);
+                break;
+            }
+            case OP_UNARY_BITWISE_NOT: {
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = ~a.as.longValue });
+                DESTROYIFLITERAL(a);
+                break;
+            }
+            case OP_UNARY_SQRT: {
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_DOUBLE);
+                if (code != E_NULL) {
+                    ERROR(code);
+                }
+                if (a.as.doubleValue < 0) {
+                    ERROR(E_MATH_DOMAIN_ERROR);
+                }
+                double result = sqrt(a.as.doubleValue);
+                pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+
+                DESTROYIFLITERAL(a);
+                break;
+            }
+            case OP_UNARY_ABSOLUTE: {
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type)) {
+                    double result = fabs(a.as.doubleValue);
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    DESTROYIFLITERAL(a);
+                } else if (ISINTTYPE(a.type)) {
+                    long long int result = llabs(a.as.longValue);
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    DESTROYIFLITERAL(a);
+                } else {
+                    ERROR(E_CANT_PERFORM_UNARY_OPERATION);
+                }
+                break;
+            }
         }
+
     }
     return 0;
 }

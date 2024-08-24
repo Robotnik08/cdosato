@@ -198,6 +198,15 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
             break;
         }
 
+        case NODE_UNARY_EXPRESSION: {
+            compileNode(vm, node.body.nodes[1], ast, scope);
+            int res = writeUnaryInstruction(vm, ast.tokens.tokens[node.body.nodes[0].start].carry, node.body.nodes[0].start);
+            if (res == -1) {
+                ERROR(E_NON_UNARY_OPERATOR, node.body.nodes[0].start);
+            }
+            break;
+        }
+
         case NODE_TYPE_CAST: {
             compileNode(vm, node.body.nodes[1], ast, scope);
             writeInstruction(vm->instance, node.start, OP_TYPE_CAST, ast.tokens.tokens[node.body.nodes[0].start].carry);
@@ -301,12 +310,12 @@ int writeOperatorInstruction (VirtualMachine* vm, OperatorType operator, size_t 
         }
         case OPERATOR_AND_ASSIGN:
         case OPERATOR_AND: {
-            writeByteCode(vm->instance, OP_BINARY_AND, token_index);
+            writeByteCode(vm->instance, OP_BINARY_AND_BITWISE, token_index);
             break;
         }
         case OPERATOR_OR_ASSIGN:
         case OPERATOR_OR: {
-            writeByteCode(vm->instance, OP_BINARY_OR, token_index);
+            writeByteCode(vm->instance, OP_BINARY_OR_BITWISE, token_index);
             break;
         }
         case OPERATOR_AND_AND: {
@@ -319,7 +328,7 @@ int writeOperatorInstruction (VirtualMachine* vm, OperatorType operator, size_t 
         }
         case OPERATOR_XOR_ASSIGN:
         case OPERATOR_XOR: {
-            writeByteCode(vm->instance, OP_BINARY_XOR, token_index);
+            writeByteCode(vm->instance, OP_BINARY_XOR_BITWISE, token_index);
             break;
         }
         case OPERATOR_SHIFT_LEFT_ASSIGN:
@@ -373,6 +382,35 @@ int writeOperatorInstruction (VirtualMachine* vm, OperatorType operator, size_t 
     }
     return 0;
 
+}
+
+int writeUnaryInstruction (VirtualMachine* vm, OperatorType operator, size_t token_index) {
+    switch (operator) {
+        case OPERATOR_SUBTRACT: {
+            writeByteCode(vm->instance, OP_UNARY_NEGATE, token_index);
+            break;
+        }
+        case OPERATOR_NOT: {
+            writeByteCode(vm->instance, OP_UNARY_LOGICAL_NOT, token_index);
+            break;
+        }
+        case OPERATOR_NOT_BITWISE: {
+            writeByteCode(vm->instance, OP_UNARY_BITWISE_NOT, token_index);
+            break;
+        }
+        case OPERATOR_ROOT: {
+            writeByteCode(vm->instance, OP_UNARY_SQRT, token_index);
+            break;
+        }
+        case OPERATOR_ABSOLUTE: {
+            writeByteCode(vm->instance, OP_UNARY_ABSOLUTE, token_index);
+            break;
+        }
+        default: {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 void initScopeData(ScopeData* scope) {
