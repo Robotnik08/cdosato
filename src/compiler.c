@@ -197,6 +197,12 @@ void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope) {
 
             break;
         }
+
+        case NODE_TYPE_CAST: {
+            compileNode(vm, node.body.nodes[1], ast, scope);
+            writeInstruction(vm->instance, node.start, OP_TYPE_CAST, ast.tokens.tokens[node.body.nodes[0].start].carry);
+            break;
+        }
         
         case NODE_STRING_LITERAL:
         case NODE_NUMBER_LITERAL: {

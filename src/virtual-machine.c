@@ -57,21 +57,35 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             case OP_GETLIST: {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
-                if (list.type != TYPE_ARRAY) {
+                if (list.type != TYPE_ARRAY && list.type != TYPE_STRING) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
 
-                // TO DO type checking
-                int i = index.as.longValue;
-                ValueArray* array = (ValueArray*)list.as.objectValue;
-                if (i < 0 || i >= array->count) {
-                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                ErrorType code = castValue(&index, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
                 }
+                long long int i = index.as.longValue;
+                if (list.type == TYPE_ARRAY) {
+                    ValueArray* array = (ValueArray*)list.as.objectValue;
+                    if (i < 0 || i >= array->count) {
+                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
 
-                Value value = array->values[i];
-                value = hardCopyValue(value);
+                    Value value = array->values[i];
+                    value = hardCopyValue(value);
 
-                pushValue(&vm->stack, value);
+                    pushValue(&vm->stack, value);
+                } else if (list.type == TYPE_STRING) {
+                    char* string = list.as.stringValue;
+                    if (i < 0 || i >= strlen(string)) {
+                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+
+                    char val = string[i];
+                    Value value = (Value){ TYPE_CHAR, .as.charValue = val };
+                    pushValue(&vm->stack, value);
+                }
 
                 DESTROYIFLITERAL(list);
                 DESTROYIFLITERAL(index);
@@ -255,7 +269,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
                 Value value = POP_VALUE();
-                if (list.type != TYPE_ARRAY) {
+                if (list.type != TYPE_ARRAY && list.type != TYPE_STRING) {
                     ERROR(E_NOT_AN_ARRAY);
                 }
 
@@ -264,17 +278,35 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 // TO DO type checking
-                int i = index.as.longValue;
-                ValueArray* array = (ValueArray*)list.as.objectValue;
-                if (i < 0 || i >= array->count) {
-                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                ErrorType code = castValue(&index, TYPE_LONG);
+                if (code != E_NULL) {
+                    ERROR(code);
                 }
+                long long int i = index.as.longValue;
+                if (list.type == TYPE_ARRAY) {
+                    ValueArray* array = (ValueArray*)list.as.objectValue;
+                    if (i < 0 || i >= array->count) {
+                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
 
-                // destroy old value
-                destroyValue(&array->values[i]);
+                    // destroy old value
+                    destroyValue(&array->values[i]);
 
-                array->values[i] = value;
-                markDefined(&array->values[i]);
+                    array->values[i] = value;
+                    markDefined(&array->values[i]);
+                } else if (list.type == TYPE_STRING) {
+                    char* string = list.as.stringValue;
+                    if (i < 0 || i >= strlen(string)) {
+                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+
+                    ErrorType code = castValue(&value, TYPE_CHAR);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+
+                    string[i] = value.as.charValue;
+                }
 
                 DESTROYIFLITERAL(index);
                 break;

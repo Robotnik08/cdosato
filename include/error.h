@@ -30,6 +30,7 @@ typedef enum {
     E_EXPECTED_HASH_OPERATOR,
     E_INVALID_EXPRESSION,
     E_EXPECTED_COLON_OPERATOR,
+    E_INVALID_TYPE,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,

@@ -674,10 +674,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (start == end) {
                 ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
             }
-            for (int i = start; i < end; i++) {
-                if (tokens.tokens[i].type != TOKEN_VAR_TYPE) {
-                    ERROR(i, E_EXPECTED_TYPE_INDENTIFIER);
-                }
+            if (end - start > 1) {
+                ERROR(start, E_INVALID_TYPE);
             }
             break;
         }

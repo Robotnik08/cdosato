@@ -28,6 +28,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expected Hash Operator (#)",
     "Invalid Expression",
     "Expected Colon Operator (':')",
+    "Invalid Type",
 
     "Undefined Variable",
     "Variable already defined",
