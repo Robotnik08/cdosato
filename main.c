@@ -88,7 +88,13 @@ int main (int argc, char** argv) {
     compile(&vm, main_ast);
 
 
-    if (debug & DEBUG_COMPILE) disassembleCode(vm.instance, "Main");
+    if (debug & DEBUG_COMPILE) {
+        disassembleCode(vm.instance, "Main");
+        for (int i = 0; i < vm.functions.count; i++) {
+            printf("\n");
+            disassembleCode(vm.functions.funcs[i].instance, vm.functions.funcs[i].name);
+        }
+    } 
 
     runVirtualMachine(&vm, debug, main_ast);
 

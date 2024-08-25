@@ -118,6 +118,9 @@ int getOffset(OpCode instruction) {
         case OP_TYPE_CAST:
             return 2; // 1 byte for the type
 
+        case OP_CALL:
+            return 2; // 1 byte for the arity
+
 
         default:
             return 1; // simple instructions

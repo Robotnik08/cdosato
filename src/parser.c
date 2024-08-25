@@ -120,7 +120,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                     ERROR(i, E_EXPECTED_IDENTIFIER);
                 }
-                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_INDENTIFIER));
+                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER));
                 if (tokens.tokens[i + 1].type != TOKEN_OPERATOR || tokens.tokens[i + 1].carry != OPERATOR_ASSIGN) {
                     ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                 }
@@ -175,7 +175,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                     ERROR(i, E_EXPECTED_IDENTIFIER);
                 }
-                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_INDENTIFIER));
+                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER));
 
                 // parameters
                 if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_ROUND)) {
@@ -221,7 +221,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (start + 1 != end) {
                 ERROR(start + 1, E_UNEXPECTED_TOKEN);
             }
-            write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_INDENTIFIER));
+            write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_IDENTIFIER));
             break;
         }
 
@@ -271,7 +271,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                 ERROR(i, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_INDENTIFIER));
+            write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER));
             if (i + 1 != end) {
                 ERROR(i + 1, E_UNEXPECTED_TOKEN);
             }
@@ -366,7 +366,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (tokens.tokens[i + 1].type != TOKEN_IDENTIFIER) {
                 ERROR(i + 1, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, i + 1, i + 2, tokens, NODE_INDENTIFIER));
+            write_NodeList(&root.body, parse(source, length, i + 1, i + 2, tokens, NODE_IDENTIFIER));
             if (i + 1 != new_end) {
                 ERROR(i + 2, E_UNEXPECTED_TOKEN);
             }
@@ -435,7 +435,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (new_start == new_end - 1) {
                 // single expression
                 if (tokens.tokens[new_start].type == TOKEN_IDENTIFIER) {
-                    root.type = NODE_INDENTIFIER;
+                    root.type = NODE_IDENTIFIER;
                 } else if (tokens.tokens[new_start].type == TOKEN_NUMBER) {
                     root.type = NODE_NUMBER_LITERAL;
                 } else if (tokens.tokens[new_start].type == TOKEN_STRING) {

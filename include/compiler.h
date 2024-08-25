@@ -14,10 +14,10 @@ typedef struct {
 } ScopeData;
 
 void compile(VirtualMachine* vm, AST ast);
-void compileNode (VirtualMachine* vm, Node node, AST ast, ScopeData* scope);
+void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, ScopeData* scope);
 
-int writeOperatorInstruction (VirtualMachine* vm, OperatorType operator, size_t token_index);
-int writeUnaryInstruction (VirtualMachine* vm, OperatorType operator, size_t token_index);
+int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t token_index);
+int writeUnaryInstruction (CodeInstance* ci, OperatorType operator, size_t token_index);
 
 void initScopeData(ScopeData* scope);
 void pushScopeData(ScopeData* scope, size_t index);

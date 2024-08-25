@@ -34,7 +34,7 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
 
     ast->root = parse(ast->source, ast->length, 0, ast->tokens.count, ast->tokens, NODE_PROGRAM);
 
-    // initialize locals and globals
+    // initialize globals
     for (int i = 0; i < vm->mappings.count; i++) {
         write_ValueArray(&vm->globals, UNDEFINED_VALUE);
     }

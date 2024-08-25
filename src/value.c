@@ -65,6 +65,9 @@ Value hardCopyValue(Value value) {
 }
 
 bool valueEquals (Value* a, Value* b) {
+    if (a->type == TYPE_FUNCTION || b->type == TYPE_FUNCTION) {
+        return false; // can't compare functions
+    }
     
     if (ISFLOATTYPE(a->type) || ISFLOATTYPE(b->type)) {
         double aValue = 0;
@@ -153,7 +156,7 @@ ErrorType castValue(Value* value, DataType type) {
         return 0; // no need to cast to var
     }
 
-    if (type == TYPE_OBJECT) {
+    if (type == TYPE_OBJECT || type == TYPE_FUNCTION) {
         return E_CANT_CONVERT_TO_OBJECT;
     }
 
@@ -470,6 +473,12 @@ char* valueToString (Value value, bool extensive) {
             }
             string = realloc(string, strlen(string) + 2);
             strcat(string, "]");
+            break;
+        }
+
+        case TYPE_FUNCTION: {
+            string = realloc(string, strlen(string) + 8);
+            strcat(string, "<function>");
             break;
         }
 

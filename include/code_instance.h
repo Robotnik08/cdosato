@@ -9,6 +9,8 @@ typedef enum {
     OP_STOP,
     OP_RETURN,
 
+    OP_CALL,
+
     OP_POP,
 
     OP_LOAD_CONSTANT,
@@ -78,6 +80,8 @@ typedef enum {
     OP_JUMP_ABSOLUTE,
 
     OP_PUSH_NULL,
+
+    OP_END_FUNC,
 
     OP_PRINT // print the top of the stack, this is a debug instruction to be removed
 

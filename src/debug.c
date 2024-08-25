@@ -247,6 +247,16 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_PUSH_NULL");
             break;
 
+        case OP_CALL:
+            printf("OP_CALL");
+            int arity = code[offset];
+            printf(": (%d)", arity);
+            break;
+
+        case OP_END_FUNC:
+            printf("OP_END_FUNC");
+            break;
+
 
         default:
             printf("Unknown opcode: %d", instruction);

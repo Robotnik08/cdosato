@@ -21,7 +21,8 @@ typedef enum {
     TYPE_ULONG,
     TYPE_UBYTE,
     TYPE_OBJECT,
-    TYPE_VAR
+    TYPE_VAR,
+    TYPE_FUNCTION
 } DataType;
 
 #define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE)
@@ -50,7 +51,7 @@ typedef struct {
     } as;
 } Value;
 
-#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false }
+#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false }
 
 void destroyValue(Value* value);
 void printValue(Value value, bool extensive);

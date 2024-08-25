@@ -29,6 +29,7 @@ static const char* ERROR_MESSAGES[] = {
     "Invalid Expression",
     "Expected Colon Operator (':')",
     "Invalid Type",
+    "Master keyword must be global (DEFINE, IMPORT, INCLUDE)",
 
     "Undefined Variable",
     "Variable already defined",
@@ -46,6 +47,8 @@ static const char* ERROR_MESSAGES[] = {
     "Cannot perform binary operation",
     "Cannot perform unary operation",
     "Math domain error",
+    "Not a function",
+    "Wrong number of arguments in function call",
 
     "Unknown Error",
     "Error Amount (report this)"
@@ -55,7 +58,7 @@ void printError (const char* full_code, const int pos, const ErrorType type) {
     printf("\nERROR:\n");
     printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
 
-    if (pos < strlen(full_code)) {
+    if (pos < strlen(full_code) && pos >= 0) {
         printf("At line %i:%i\n", getLine(full_code, pos), getLineCol(full_code, pos));
     } else {
         printf("At UNSPECIFIED position\n");

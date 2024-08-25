@@ -3,6 +3,33 @@
 #include "../include/virtual-machine.h"
 #include "../include/error.h"
 #include "../include/ast.h"
+#include "../include/memory.h"
+
+DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
+
+void destroy_Function(Function* func) {
+    free(func->name);
+    free(func->argv);
+    free(func->argt);
+}
+
+void destroy_FunctionList(FunctionList* list) {
+    for (size_t i = 0; i < list->count; i++) {
+        destroy_Function(&list->funcs[i]);
+    }
+    free_FunctionList(list);
+}
+
+void init_Function(Function* func) {
+    func->name = NULL;
+    func->name_index = 0;
+    func->argv = NULL;
+    func->argt = NULL;
+    func->arity = 0;
+    func->return_type = TYPE_VOID;
+    func->is_compiled = false;
+    func->func_ptr = NULL;
+}
 
 void initVirtualMachine(VirtualMachine* vm) {
     vm->instance = malloc(sizeof(CodeInstance));
@@ -11,6 +38,7 @@ void initVirtualMachine(VirtualMachine* vm) {
     init_ValueArray(&vm->constants);
     init_ValueArray(&vm->globals);
     init_StackFrames(&vm->stack_frames);
+    init_FunctionList(&vm->functions);
     init_NameMap(&vm->mappings);
     vm->ip = vm->instance->code;
 }
@@ -21,6 +49,7 @@ void freeVirtualMachine(VirtualMachine* vm) {
     destroyValueArray(&vm->constants);
     destroyValueArray(&vm->globals);
     free_StackFrames(&vm->stack_frames);
+    destroy_FunctionList(&vm->functions);
     free_NameMap(&vm->mappings);
     free(vm->instance);
 }
@@ -29,7 +58,10 @@ void pushValue(ValueArray* array, Value value) {
     write_ValueArray(array, value);
 }
 
-#define ERROR(e_code) printError(ast.source, ast.tokens.tokens[vm->instance->token_indices[vm->ip - vm->instance->code - 1]].start - ast.source, e_code)
+#define ERROR(e_code) do { \
+    size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
+    printError(ast.source, ast.tokens.tokens[token_index].start - ast.source, e_code);\
+} while(0)
 
 #define DESTROYIFLITERAL(value) if (!value.defined) { destroyValue(&value); }
 
@@ -37,9 +69,59 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
     if (debug) printf("Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
+    CodeInstance* active_instance = vm->instance;
+    char* ip_stack[RECURSION_LIMIT];
+    CodeInstance* active_stack[RECURSION_LIMIT];
+    size_t ip_stack_count = 0;
+    PUSH_STACK(0); // first local frame
+
+    // set all functions to globals
+    for (size_t i = 0; i < vm->functions.count; i++) {
+        Value func = (Value){ TYPE_FUNCTION, .as.longValue = i, .defined = true, .is_variable_type = false };
+        vm->globals.values[vm->functions.funcs[i].name_index] = func;
+    }
+
     while (!halt) {
         OpCode instruction = NEXT_BYTE();
         switch (instruction) {
+
+            case OP_CALL: {
+                uint8_t arity = NEXT_BYTE();
+                Value func = POP_VALUE();
+
+                if (func.type != TYPE_FUNCTION) {
+                    ERROR(E_NOT_A_FUNCTION);
+                }
+                Function* function = &vm->functions.funcs[func.as.longValue];
+                if (arity != function->arity && function->arity != -1) {
+                    ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
+                }
+                
+                // push new frame
+                PUSH_STACK(vm->stack.count - arity);
+
+                // ip stack
+                active_stack[ip_stack_count] = active_instance;
+                ip_stack[ip_stack_count++] = vm->ip;
+
+                // set ip to function
+                vm->ip = function->instance->code;
+                active_instance = function->instance;
+                
+                break;
+            }
+
+            case OP_END_FUNC: {
+                // pop frame
+                size_t frame = POP_STACK();
+
+                // pop ip
+                vm->ip = ip_stack[--ip_stack_count];
+                active_instance = active_stack[ip_stack_count];
+                break;
+            }
+
+
             case OP_LOAD_CONSTANT: {
                 uint16_t index = NEXT_SHORT();
                 Value constant = vm->constants.values[index];
@@ -126,7 +208,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             }
 
             case OP_REFERENCE_FAST: {
-                uint16_t index = NEXT_SHORT();
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
                 if (!local.defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
@@ -183,7 +265,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
 
 
             case OP_LOAD_FAST: {
-                uint16_t index = NEXT_SHORT();
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
 
                 Value copy = hardCopyValue(local);
@@ -191,15 +273,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
             case OP_STORE_FAST: {
-                uint16_t index = NEXT_SHORT();
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value value = POP_VALUE();
                 
                 value = hardCopyValue(value);
 
-                DataType type = vm->stack.values[index].type;
-                ErrorType castRes = castValue(&value, type);
-                if (castRes != E_NULL) {
-                    ERROR(castRes);
+                if (!vm->stack.values[index].is_variable_type && vm->stack.values[index].defined) {
+                    DataType type = vm->stack.values[index].type;
+                    ErrorType castRes = castValue(&value, type);
+                    if (castRes != E_NULL) {
+                        ERROR(castRes);
+                    }
                 }
 
                 // destroy old value
@@ -235,11 +319,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 }
 
                 value = hardCopyValue(value);
-
-                DataType type = vm->globals.values[index].type;
-                ErrorType castRes = castValue(&value, type);
-                if (castRes != E_NULL) {
-                    ERROR(castRes);
+                
+                if (!vm->globals.values[index].is_variable_type) {
+                    DataType type = vm->globals.values[index].type;
+                    ErrorType castRes = castValue(&value, type);
+                    if (castRes != E_NULL) {
+                        ERROR(castRes);
+                    }
                 }
                 
 
@@ -400,7 +486,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             }
 
             case OP_INCREMENT_FAST: {
-                uint16_t index = NEXT_SHORT();
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 if (!vm->stack.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
@@ -413,7 +499,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             }
 
             case OP_DECREMENT_FAST: {
-                uint16_t index = NEXT_SHORT();
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 if (!vm->stack.values[index].defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
