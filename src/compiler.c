@@ -51,16 +51,37 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
 
             break;
         }
-
-        case NODE_MASTER_RETURN:
+        
         case NODE_MASTER_DEFINE:
-        case NODE_MASTER_MAKE:
-        case NODE_MASTER_SET:
-        case NODE_MASTER_DO: {
+        case NODE_MASTER_MAKE: {
+            if (node.body.count > 1) {
+                ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
+            }
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             break;
         }
 
+        case NODE_MASTER_RETURN:
+        case NODE_MASTER_SET:
+        case NODE_MASTER_DO: {
+            
+            int i = node.body.count - 1;
+            for (; i >= 1; i--) {
+                if (node.body.nodes[i].type == NODE_WHEN_BODY || node.body.nodes[i].type == NODE_WHILE_BODY || node.body.nodes[i].type == NODE_FOR_BODY) {
+                    compileNode(vm, ci, node.body.nodes[i], ast, scope);
+                } else {
+                    break;
+                }
+            }
+            
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+
+            // compile extensions if they exist
+            for (int j = 1; j <= i; j++) {
+                compileNode(vm, ci, node.body.nodes[j], ast, scope);
+            }
+            break;
+        }
         case NODE_MASTER_RETURN_BODY: {
             if (scope->return_type != D_NULL) {
                 if (node.body.count != 0) {
@@ -128,6 +149,11 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         }
 
         case NODE_MASTER_DO_BODY: {
+            // empty body does nothing
+            if (node.body.count == 0) {
+                break;
+            }
+
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             // pop the return value
             if (ci->code[ci->count - 1] != OP_PRINT) writeByteCode(ci, OP_POP, node.body.nodes[0].end);
