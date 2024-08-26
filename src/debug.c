@@ -13,6 +13,8 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
     switch (instruction) {
         case OP_RETURN:
             printf("OP_RETURN");
+            int pop_count = code[offset];
+            printf(": (%d)", pop_count);
             break;
         case OP_STOP:
             printf("OP_STOP");

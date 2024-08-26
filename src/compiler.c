@@ -18,7 +18,7 @@ void compile(VirtualMachine* vm, AST ast) {
 
 #define ERROR(e_code, index) printError(ast.source, ast.tokens.tokens[index].start - ast.source, e_code)
 
-void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, ScopeData* scope) {
+int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, ScopeData* scope) {
     NodeType type = node.type;
     if (node.type == NODE_TEMP_SUBSCRIPT_EXPRESSION) {
         type = NODE_EXPRESSION;
@@ -52,11 +52,28 @@ void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scop
             break;
         }
 
+        case NODE_MASTER_RETURN:
         case NODE_MASTER_DEFINE:
         case NODE_MASTER_MAKE:
         case NODE_MASTER_SET:
         case NODE_MASTER_DO: {
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            break;
+        }
+
+        case NODE_MASTER_RETURN_BODY: {
+            if (scope->return_type != D_NULL) {
+                if (node.body.count != 0) {
+                    compileNode(vm, ci, node.body.nodes[0], ast, scope);
+                    // cast to the correct type
+                    writeInstruction(ci, node.start, OP_TYPE_CAST, scope->return_type);
+                } else {
+                    writeByteCode(ci, OP_PUSH_NULL, node.start);
+                }
+                writeInstruction(ci, node.start, OP_RETURN, DOSATO_SPLIT_SHORT(scope->locals_count));
+            } else {
+                ERROR(E_CANT_RETURN_OUTSIDE_FUNCTION, node.body.nodes[0].start);
+            }
             break;
         }
 
@@ -72,10 +89,23 @@ void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scop
             size_t name_index = ast.tokens.tokens[node.body.nodes[1].start].carry;
             CodeInstance* instance = malloc(sizeof(CodeInstance));
             initCodeInstance(instance);
-            compileNode(vm, instance, node.body.nodes[3], ast, scope);
-            writeByteCode(instance, OP_END_FUNC, node.body.nodes[3].end);
+            ScopeData new_scope;
+            initScopeData(&new_scope);
 
             int arity = node.body.nodes[2].body.count;
+            for (int i = 0; i < arity; i++) {
+                pushScopeData(&new_scope, ast.tokens.tokens[node.body.nodes[2].body.nodes[i].body.nodes[1].start].carry);
+            }
+            new_scope.return_type = type;
+
+            ScopeData* scope = &new_scope;
+            compileNode(vm, instance, node.body.nodes[3], ast, scope);
+
+            for (int i = 0; i < arity; i++) {
+                writeByteCode(instance, OP_POP, node.body.nodes[2].body.nodes[i].end);
+            }
+            writeByteCode(instance, OP_END_FUNC, node.body.nodes[3].end);
+
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
@@ -99,6 +129,8 @@ void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scop
 
         case NODE_MASTER_DO_BODY: {
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            // pop the return value
+            if (ci->code[ci->count - 1] != OP_PRINT) writeByteCode(ci, OP_POP, node.body.nodes[0].end);
             break;
         }
 
@@ -314,6 +346,7 @@ void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scop
             break;
         }
     }
+    return 0;
 }
 
 #undef ERROR
@@ -473,6 +506,7 @@ void initScopeData(ScopeData* scope) {
     scope->locals_count = 0;
     scope->locals_capacity = 0;
     scope->locals_lookup = NULL;
+    scope->return_type = D_NULL;
 }
 
 void pushScopeData (ScopeData* list, size_t item) {

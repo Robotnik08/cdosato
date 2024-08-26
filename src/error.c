@@ -30,6 +30,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expected Colon Operator (':')",
     "Invalid Type",
     "Master keyword must be global (DEFINE, IMPORT, INCLUDE)",
+    "Can't return outside of function",
 
     "Undefined Variable",
     "Variable already defined",

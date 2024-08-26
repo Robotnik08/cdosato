@@ -96,6 +96,15 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 if (arity != function->arity && function->arity != -1) {
                     ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
                 }
+
+                // cast arguments
+                for (int i = 0; i < arity; i++) {
+                    Value* arg = &vm->stack.values[vm->stack.count - arity + i];
+                    ErrorType code = castValue(arg, function->argt[i]);
+                    if (code != E_NULL) {
+                        ERROR(code);
+                    }
+                }
                 
                 // push new frame
                 PUSH_STACK(vm->stack.count - arity);
@@ -118,6 +127,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 // pop ip
                 vm->ip = ip_stack[--ip_stack_count];
                 active_instance = active_stack[ip_stack_count];
+
+                // push return value (NULL because END_FUNC is always at the end of a function)
+                pushValue(&vm->stack, UNDEFINED_VALUE);
                 break;
             }
 
@@ -634,7 +646,21 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
             case OP_RETURN: {
-                halt = true;
+                Value return_value = POP_VALUE();
+                int pop_amount = NEXT_BYTE();
+                for (int i = 0; i < pop_amount; i++) {
+                    destroyValue(&POP_VALUE());
+                }
+
+                // pop frame
+                size_t frame = POP_STACK();
+
+                // pop ip
+                vm->ip = ip_stack[--ip_stack_count];
+                active_instance = active_stack[ip_stack_count];
+
+                // push return value
+                pushValue(&vm->stack, return_value);
                 break;
             }
             default: {

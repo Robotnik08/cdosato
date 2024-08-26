@@ -120,6 +120,8 @@ int getOffset(OpCode instruction) {
 
         case OP_CALL:
             return 2; // 1 byte for the arity
+        case OP_RETURN:
+            return 2; // 1 byte for the arity
 
 
         default:

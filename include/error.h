@@ -32,6 +32,7 @@ typedef enum {
     E_EXPECTED_COLON_OPERATOR,
     E_INVALID_TYPE,
     E_MUST_BE_GLOBAL,
+    E_CANT_RETURN_OUTSIDE_FUNCTION,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,

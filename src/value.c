@@ -223,7 +223,8 @@ ErrorType castValue(Value* value, DataType type) {
                 break;
             }
             case TYPE_ARRAY: {
-                return ((ValueArray*)value->as.objectValue)->count;
+                numberValue = ((ValueArray*)value->as.objectValue)->count;
+                break;
             }
 
             case TYPE_OBJECT: {
@@ -336,7 +337,8 @@ ErrorType castValue(Value* value, DataType type) {
                 break;
             }
             case TYPE_ARRAY: {
-                return ((ValueArray*)value->as.objectValue)->count;
+                numberValue = ((ValueArray*)value->as.objectValue)->count;
+                break;
             }
             case TYPE_OBJECT: {
                 return E_CANT_CONVERT_TO_FLOAT;

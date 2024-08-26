@@ -227,6 +227,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
         case NODE_MASTER_RETURN_BODY: {
             // expression
+            if (start == end) {
+                break; // no return value
+            }
             write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION));
             break;
         }
@@ -459,50 +462,52 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             bool is_unary = false;
             bool is_turnary = false;
             for (int i = new_start; i < new_end; i++) {
-                if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN && CHECK_BRACKET_TYPE(tokens.tokens[i].carry, BRACKET_ROUND)) {
-                    if (op_loc == i - 1) {
-                        SKIP_BLOCK(i);
-                        continue; // it's a normal bracket expression
-                    }
-                    int endofblock = getEndOfBlock(tokens, i);
-                    if (endofblock == -1) {
-                        ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
-                    }
-                    if (1 >= highest) {
-                        is_unary = false;
-                        is_turnary = false;
-                        highest = 1;
-                        highest_index = i;
-                        func_call = true;
-                        type_cast = false;
-                    }
-                }
-                // type cast
-                if (tokens.tokens[i-1].type == TOKEN_PARENTHESIS_CLOSED && CHECK_BRACKET_TYPE(tokens.tokens[i-1].carry, BRACKET_ROUND)) {
-                    if (op_loc == i + 1){
-                        continue; // it's a normal bracket expression
-                    }
-                    int startofblock = getStartOfBlock(tokens, i-1);
-                    if (startofblock == -1) {
-                        ERROR(i, E_MISSING_OPENING_PARENTHESIS);
-                    }
-
-                    // check if it's all type tokens in the block
-                    bool all_type = true;
-                    for (int j = startofblock + 1; j < i - 1; j++) {
-                        if (tokens.tokens[j].type != TOKEN_VAR_TYPE) {
-                            all_type = false;
-                            break;
+                if (i > new_start) {
+                    if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN && CHECK_BRACKET_TYPE(tokens.tokens[i].carry, BRACKET_ROUND)) {
+                        if (op_loc == i - 1) {
+                            SKIP_BLOCK(i);
+                            continue; // it's a normal bracket expression
+                        }
+                        int endofblock = getEndOfBlock(tokens, i);
+                        if (endofblock == -1) {
+                            ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
+                        }
+                        if (1 >= highest) {
+                            is_unary = false;
+                            is_turnary = false;
+                            highest = 1;
+                            highest_index = i;
+                            func_call = true;
+                            type_cast = false;
                         }
                     }
+                    // type cast
+                    if (tokens.tokens[i-1].type == TOKEN_PARENTHESIS_CLOSED && CHECK_BRACKET_TYPE(tokens.tokens[i-1].carry, BRACKET_ROUND)) {
+                        if (op_loc == i + 1){
+                            continue; // it's a normal bracket expression
+                        }
+                        int startofblock = getStartOfBlock(tokens, i-1);
+                        if (startofblock == -1) {
+                            ERROR(i, E_MISSING_OPENING_PARENTHESIS);
+                        }
 
-                    if (2 >= highest && all_type) {
-                        is_unary = false;
-                        is_turnary = false;
-                        highest = 2;
-                        highest_index = startofblock;
-                        func_call = false;
-                        type_cast = true;
+                        // check if it's all type tokens in the block
+                        bool all_type = true;
+                        for (int j = startofblock + 1; j < i - 1; j++) {
+                            if (tokens.tokens[j].type != TOKEN_VAR_TYPE) {
+                                all_type = false;
+                                break;
+                            }
+                        }
+
+                        if (2 >= highest && all_type) {
+                            is_unary = false;
+                            is_turnary = false;
+                            highest = 2;
+                            highest_index = startofblock;
+                            func_call = false;
+                            type_cast = true;
+                        }
                     }
                 }
                 SKIP_BLOCK(i);

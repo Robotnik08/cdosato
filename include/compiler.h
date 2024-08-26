@@ -11,10 +11,11 @@ typedef struct {
     size_t locals_count;
     size_t locals_capacity;
     int depth;
+    DataType return_type;
 } ScopeData;
 
 void compile(VirtualMachine* vm, AST ast);
-void compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, ScopeData* scope);
+int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, ScopeData* scope);
 
 int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t token_index);
 int writeUnaryInstruction (CodeInstance* ci, OperatorType operator, size_t token_index);
