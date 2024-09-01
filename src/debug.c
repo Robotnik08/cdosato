@@ -240,6 +240,11 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
+        case OP_FOR_ITER:
+            printf("OP_FOR_ITER");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
 
         case OP_PRINT:
             printf("OP_PRINT");
@@ -247,6 +252,9 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_PUSH_NULL:
             printf("OP_PUSH_NULL");
+            break;
+        case OP_PUSH_MINUS_ONE:
+            printf("OP_PUSH_MINUS_ONE");
             break;
 
         case OP_CALL:

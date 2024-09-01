@@ -181,3 +181,21 @@ int strchl (const char* str, const char character) {
     }
     return count;
 }
+
+int toUpper (char* str) {
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] >= 'a' && str[i] <= 'z') {
+            str[i] -= 32;
+        }
+    }
+    return 0;
+}
+
+int toLower (char* str) {
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] >= 'A' && str[i] <= 'Z') {
+            str[i] += 32;
+        }
+    }
+    return 0;
+}

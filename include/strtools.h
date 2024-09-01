@@ -96,4 +96,17 @@ int strsur (const char* str, const char character);
 */
 int strchl (const char* str, const char character);
 
+
+/**
+ * @brief Convert a string to uppercase
+ * @param str The string to convert
+*/
+int toUpper (char* str);
+
+/**
+ * @brief Convert a string to lowercase
+ * @param str The string to convert
+*/
+int toLower (char* str);
+
 #endif

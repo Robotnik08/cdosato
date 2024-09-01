@@ -35,6 +35,7 @@ typedef enum {
     E_CANT_RETURN_OUTSIDE_FUNCTION,
     E_MASTER_CANT_HAVE_EXTENSIONS,
     E_ELSE_WITHOUT_IF,
+    E_EXPECTED_THEN,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,

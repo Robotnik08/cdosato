@@ -112,6 +112,8 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for the location
         case OP_JUMP_IF_TRUE:
             return 3; // 2 bytes for the location
+        case OP_FOR_ITER:
+            return 3; // 2 bytes for the location
 
 
         case OP_TYPE_CAST:

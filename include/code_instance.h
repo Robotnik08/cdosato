@@ -78,7 +78,10 @@ typedef enum {
     OP_JUMP_IF_FALSE,
     OP_JUMP_IF_TRUE,
 
+    OP_FOR_ITER,
+
     OP_PUSH_NULL,
+    OP_PUSH_MINUS_ONE,
 
     OP_END_FUNC,
 

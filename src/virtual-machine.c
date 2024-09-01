@@ -331,8 +331,37 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_FOR_ITER: {
+                uint16_t offset = NEXT_SHORT();
+                Value* index = &vm->stack.values[vm->stack.count - 1];
+                Value list = PEEK_VALUE_TWO();
+                if (list.type != TYPE_ARRAY) {
+                    ERROR(E_NOT_AN_ARRAY);
+                }
+                
+                int i = ++index->as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i >= array->count) {
+                    destroyValue(&POP_VALUE()); // pop index
+                    destroyValue(&POP_VALUE()); // pop list
+                    vm->ip = offset + active_instance->code;
+                } else {
+                    // push iterator
+                    Value value = array->values[i];
+                    value = hardCopyValue(value);
+                    pushValue(&vm->stack, value);
+                }
+                
+                break;
+            }
+
             case OP_PUSH_NULL: {
                 pushValue(&vm->stack, UNDEFINED_VALUE);
+                break;
+            }
+            case OP_PUSH_MINUS_ONE: {
+                Value val = (Value){ TYPE_LONG, .as.longValue = -1, .is_variable_type = false };
+                pushValue(&vm->stack, val);
                 break;
             }
 

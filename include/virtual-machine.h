@@ -61,6 +61,8 @@ void init_Function(Function* func);
 #define NEXT_BYTE() (*vm->ip++)
 #define NEXT_SHORT() (*vm->ip++) | (*vm->ip++ << 8)
 #define POP_VALUE() (vm->stack.values[--vm->stack.count])
+#define PEEK_VALUE() (vm->stack.values[vm->stack.count - 1])
+#define PEEK_VALUE_TWO() (vm->stack.values[vm->stack.count - 2])
 #define POP_STACK() (vm->stack_frames.stack[--vm->stack_frames.count])
 #define PUSH_STACK(frame) write_StackFrames(&vm->stack_frames, frame)
 #define PEEK_STACK() (vm->stack_frames.stack[vm->stack_frames.count - 1])

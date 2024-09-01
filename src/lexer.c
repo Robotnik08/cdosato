@@ -140,6 +140,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
             char* next_word = getWord(full_code, i);
+            toUpper(next_word);
             if (!strcmp(next_word, mastertokens[j])) {
                 free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_MASTER_KEYWORD, full_code + i, strlen(mastertokens[j]) - 1, j);
@@ -167,6 +168,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
             char* next_word = getWord(full_code, i);
+            toUpper(next_word);
             if (!strcmp(next_word, var_typetokens[j])) {
                 free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_VAR_TYPE, full_code + i, strlen(var_typetokens[j]) - 1, j);
@@ -194,6 +196,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
             char* next_word = getWord(full_code, i);
+            toUpper(next_word);
             if (!strcmp(next_word, extension_tokens[j])) {
                 free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_EXT, full_code + i, strlen(extension_tokens[j]) - 1, j);

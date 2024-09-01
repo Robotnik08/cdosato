@@ -93,6 +93,32 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
 
             // reorganize the body
+            
+            // IF, needs THEN to be be right after it, and it will encapsulate that 1 THEN node
+            NodeList new_temp_body;
+            init_NodeList(&new_temp_body);
+            for (int i = 0; i < temp_body.count; i++) {
+                if (temp_body.nodes[i].type == NODE_IF_BODY) {
+                    if (i + 1 < temp_body.count) {
+                        if (temp_body.nodes[i + 1].type == NODE_THEN_BODY) {
+                            write_NodeList(&temp_body.nodes[i].body, temp_body.nodes[i + 1]);
+                            write_NodeList(&new_temp_body, temp_body.nodes[i]);
+                            i++;
+                        } else {
+                            ERROR(temp_body.nodes[i].start, E_EXPECTED_THEN);
+                        }
+                    } else {
+                        ERROR(temp_body.nodes[i].start, E_EXPECTED_THEN);
+                    }
+                } else {
+                    write_NodeList(&new_temp_body, temp_body.nodes[i]);
+                }
+            }
+
+            free_NodeList(&temp_body);
+            temp_body = new_temp_body;
+
+
             // if WHEN, WHILE, FOR, CATCH they should encapsulate everything before them (in their body)
             NodeList full_body;
             init_NodeList(&full_body);
@@ -102,7 +128,6 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     for (int j = 0; j < full_body.count; j++) {
                         write_NodeList(&temp_body.nodes[i].body, full_body.nodes[j]);
                     }
-                    // clear temp and write the current node
                     free_NodeList(&full_body);
                 }
                 write_NodeList(&full_body, temp_body.nodes[i]);
@@ -354,8 +379,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         }
 
         case NODE_WHEN_BODY:
-        case NODE_WHILE_BODY:
-        case NODE_IF_BODY: {
+        case NODE_IF_BODY:
+        case NODE_WHILE_BODY: {
             // expression
             write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION));
             break;

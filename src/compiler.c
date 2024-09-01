@@ -77,8 +77,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
                         ci->code[jump_index + 1] = ci->count & 0xFF;
                         ci->code[jump_index + 2] = ci->count >> 8;
                         // update the jump instruction for the if statement (the last_result is the jump instruction of the if statement)
-                        ci->code[last_result] = (jump_index + getOffset(OP_JUMP)) & 0xFF;
-                        ci->code[last_result + 1] = (jump_index + getOffset(OP_JUMP)) >> 8;
+                        ci->code[last_result + 1] = (jump_index + getOffset(OP_JUMP)) & 0xFF;
+                        ci->code[last_result + 2] = (jump_index + getOffset(OP_JUMP)) >> 8;
                     } else {
                         ERROR(E_ELSE_WITHOUT_IF, node.body.nodes[i].start - 1);
                     }
@@ -381,19 +381,20 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             break;
         }
 
+        case NODE_IF_BODY:
         case NODE_WHEN_BODY: {
             // compile the condition
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
             writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0)); // jump to the end of the when block if the condition is false
-            int jump_index = ci->count - 2; // index of the jump instruction
+            int jump_index = ci->count - getOffset(OP_JUMP_IF_FALSE); // index of the jump instruction
             // compile the body
             for (int i = 1; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
             }
             // manually edit the jump instruction
-            ci->code[jump_index] = ci->count & 0xFF;
-            ci->code[jump_index + 1] = ci->count >> 8;
+            ci->code[jump_index + 1] = ci->count & 0xFF;
+            ci->code[jump_index + 2] = ci->count >> 8;
             return jump_index; // return the index of the jump instruction, so the ELSE_BODY can update it
         }
 
@@ -419,6 +420,36 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             ci->code[jump_index + 2] = ci->count >> 8;
             break;
         }
+
+        case NODE_FOR_BODY: {
+            // push the list to the stack
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            // push the index to the stack
+            writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
+
+            writeInstruction(ci, node.start, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
+            int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
+
+            // store to iterator
+            if (inScope(scope, ast.tokens.tokens[node.body.nodes[1].start].carry)) {
+                writeInstruction(ci, node.start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast.tokens.tokens[node.body.nodes[1].start].carry)));
+            } else {
+                writeInstruction(ci, node.start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[1].start].carry));
+            }
+
+            // compile the body
+            for (int i = 2; i < node.body.count; i++) {
+                compileNode(vm, ci, node.body.nodes[i], ast, scope);
+            }
+
+            // jump back to the start of the for block
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(jump_index));
+            // manually edit the jump instruction
+            ci->code[jump_index + 1] = ci->count & 0xFF;
+            ci->code[jump_index + 2] = ci->count >> 8;
+            break;
+        }
+        
     }
     return 0;
 }
