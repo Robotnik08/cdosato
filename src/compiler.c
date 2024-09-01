@@ -24,6 +24,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         type = NODE_EXPRESSION;
     }
 
+
     switch (type) {
         case NODE_BLOCK: {
             if (scope == NULL) { // first scope after global
@@ -55,6 +56,16 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             break;
         }
         
+        case NODE_MASTER_IMPORT:
+        case NODE_MASTER_INCLUDE: {
+            return 0;
+            printf("Importing/Including not implemented yet\n");
+            // if (node.body.count > 1) {
+            //     ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
+            // }
+            break;
+        }
+
         case NODE_MASTER_DEFINE:
         case NODE_MASTER_MAKE: {
             if (node.body.count > 1) {
@@ -562,6 +573,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         }
         
     }
+
+
+    // don't know why, but if the count is 0, the program will crash, so add a NOP instruction if the count is 0
+    if (ci->count == 0) {
+        writeByteCode(ci, OP_NOP, 0);
+    }
+
     return 0;
 }
 

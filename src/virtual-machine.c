@@ -106,6 +106,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 break;
             }
 
+            case OP_NOP: {
+                break;
+            }
+
             
             case OP_JUMP: {
                 uint16_t offset = NEXT_SHORT();

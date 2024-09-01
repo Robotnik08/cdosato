@@ -38,7 +38,6 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
     for (int i = 0; i < vm->mappings.count; i++) {
         write_ValueArray(&vm->globals, UNDEFINED_VALUE);
     }
-    
 }
 
 void free_AST (AST* ast) {

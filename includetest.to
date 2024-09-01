@@ -1,0 +1,3 @@
+DEFINE VOID hello () {
+    DO SAY ("Hello, from other file!");
+};

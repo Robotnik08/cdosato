@@ -302,6 +302,9 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x) (%d)", address, pop_count);
             break;
 
+        case OP_NOP:
+            printf("OP_NOP");
+            break;
 
         default:
             printf("Unknown opcode: %d", instruction);
