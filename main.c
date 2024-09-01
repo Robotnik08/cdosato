@@ -33,9 +33,6 @@ int main (int argc, char** argv) {
     if (argc >= 3) {
         if (strcmp(argv[2], "-d") == 0 || strcmp(argv[2], "--debug") == 0) {
             debug = DEBUG;
-        } else {
-            printf("Unknown option '%s'\n", argv[2]);
-            return 1;
         }
     }
 
