@@ -84,6 +84,31 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
     while (!halt) {
         OpCode instruction = NEXT_BYTE();
         switch (instruction) {
+            case OP_JUMP: {
+                uint16_t offset = NEXT_SHORT();
+                vm->ip = offset + active_instance->code;
+                break;
+            }
+
+            case OP_JUMP_IF_FALSE: {
+                uint16_t offset = NEXT_SHORT();
+                Value condition = POP_VALUE();
+                if (condition.as.boolValue == false) {
+                    vm->ip = offset + active_instance->code;
+                }
+                DESTROYIFLITERAL(condition);
+                break;
+            }
+
+            case OP_JUMP_IF_TRUE: {
+                uint16_t offset = NEXT_SHORT();
+                Value condition = POP_VALUE();
+                if (condition.as.boolValue == true) {
+                    vm->ip = offset + active_instance->code;
+                }
+                DESTROYIFLITERAL(condition);
+                break;
+            }
 
             case OP_CALL: {
                 uint8_t arity = NEXT_BYTE();
@@ -317,7 +342,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 if (!global.defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }
-
+                
                 Value copy = hardCopyValue(global);
 
                 pushValue(&vm->stack, copy);

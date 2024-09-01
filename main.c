@@ -96,9 +96,17 @@ int main (int argc, char** argv) {
         }
     } 
 
-    runVirtualMachine(&vm, debug, main_ast);
-
-    if (debug) printf("\nDone running\n");
+    if (!debug) {
+        runVirtualMachine(&vm, debug, main_ast);
+    } else {
+        // time it
+        clock_t start = clock();
+        runVirtualMachine(&vm, debug, main_ast);
+        clock_t end = clock();
+        double time = (double)(end - start) / CLOCKS_PER_SEC;
+        printf("\nExecution time: %f\n", time);
+        printf("Done running\n");
+    }
 
     freeVirtualMachine(&vm);
 

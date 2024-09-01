@@ -64,21 +64,28 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         case NODE_MASTER_RETURN:
         case NODE_MASTER_SET:
         case NODE_MASTER_DO: {
-            
-            int i = node.body.count - 1;
-            for (; i >= 1; i--) {
-                if (node.body.nodes[i].type == NODE_WHEN_BODY || node.body.nodes[i].type == NODE_WHILE_BODY || node.body.nodes[i].type == NODE_FOR_BODY) {
-                    compileNode(vm, ci, node.body.nodes[i], ast, scope);
+            NodeType last_node_type = 0;
+            int last_result = -1;
+            for (int i = 0; i < node.body.count; i++) {
+                if (node.body.nodes[i].type == NODE_ELSE_BODY) {
+                    if (last_node_type == NODE_WHEN_BODY || last_node_type == NODE_IF_BODY) {
+                        // write Jump instruction
+                        writeInstruction(ci, node.body.nodes[i].start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+                        int jump_index = ci->count - getOffset(OP_JUMP);
+                        compileNode(vm, ci, node.body.nodes[i], ast, scope);
+                        // update the jump instruction
+                        ci->code[jump_index + 1] = ci->count & 0xFF;
+                        ci->code[jump_index + 2] = ci->count >> 8;
+                        // update the jump instruction for the if statement (the last_result is the jump instruction of the if statement)
+                        ci->code[last_result] = (jump_index + getOffset(OP_JUMP)) & 0xFF;
+                        ci->code[last_result + 1] = (jump_index + getOffset(OP_JUMP)) >> 8;
+                    } else {
+                        ERROR(E_ELSE_WITHOUT_IF, node.body.nodes[i].start - 1);
+                    }
                 } else {
-                    break;
+                    last_result = compileNode(vm, ci, node.body.nodes[i], ast, scope);
                 }
-            }
-            
-            compileNode(vm, ci, node.body.nodes[0], ast, scope);
-
-            // compile extensions if they exist
-            for (int j = 1; j <= i; j++) {
-                compileNode(vm, ci, node.body.nodes[j], ast, scope);
+                last_node_type = node.body.nodes[i].type;
             }
             break;
         }
@@ -148,6 +155,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             break;
         }
 
+        case NODE_ELSE_BODY:
+        case NODE_THEN_BODY:
         case NODE_MASTER_DO_BODY: {
             // empty body does nothing
             if (node.body.count == 0) {
@@ -156,7 +165,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
 
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             // pop the return value
-            if (ci->code[ci->count - 1] != OP_PRINT) writeByteCode(ci, OP_POP, node.body.nodes[0].end);
+            if (ci->code[ci->count - 1] != OP_PRINT && node.body.nodes[0].type == NODE_FUNCTION_CALL) writeByteCode(ci, OP_POP, node.body.nodes[0].end);
             break;
         }
 
@@ -369,6 +378,45 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         case NODE_OBJECT_ENTRY: {
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             compileNode(vm, ci, node.body.nodes[1], ast, scope);
+            break;
+        }
+
+        case NODE_WHEN_BODY: {
+            // compile the condition
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
+            writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0)); // jump to the end of the when block if the condition is false
+            int jump_index = ci->count - 2; // index of the jump instruction
+            // compile the body
+            for (int i = 1; i < node.body.count; i++) {
+                compileNode(vm, ci, node.body.nodes[i], ast, scope);
+            }
+            // manually edit the jump instruction
+            ci->code[jump_index] = ci->count & 0xFF;
+            ci->code[jump_index + 1] = ci->count >> 8;
+            return jump_index; // return the index of the jump instruction, so the ELSE_BODY can update it
+        }
+
+        case NODE_WHILE_BODY: {
+            // compile the condition
+            int condition_start = ci->count;
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
+            writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0)); // jump to the end of the while block if the condition is false
+            int jump_index = ci->count - getOffset(OP_JUMP_IF_FALSE); // index of the jump instruction
+            // compile the body
+            for (int i = 1; i < node.body.count; i++) {
+                compileNode(vm, ci, node.body.nodes[i], ast, scope);
+            }
+            // copy the condition
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
+            writeInstruction(ci, node.start, OP_JUMP_IF_TRUE, DOSATO_SPLIT_SHORT(jump_index + getOffset(OP_JUMP_IF_FALSE))); // jump to the start of the while block if the condition is true
+
+
+            // manually edit the jump instruction
+            ci->code[jump_index + 1] = ci->count & 0xFF;
+            ci->code[jump_index + 2] = ci->count >> 8;
             break;
         }
     }

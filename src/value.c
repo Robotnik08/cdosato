@@ -38,30 +38,39 @@ void printValue(Value value, bool extensive) {
 }
 
 Value hardCopyValue(Value value) {
-    Value copy = value;
-    copy.defined = false;
-    if (value.type == TYPE_ARRAY) {
-        ValueArray* array = value.as.objectValue;
-        ValueArray* newArray = malloc(sizeof(ValueArray));
-        init_ValueArray(newArray);
-        for (size_t i = 0; i < array->count; i++) {
-            write_ValueArray(newArray, hardCopyValue(array->values[i]));
+    value.defined = false;
+    switch (value.type) {
+        case TYPE_ARRAY: {
+            ValueArray* array = value.as.objectValue;
+            ValueArray* newArray = malloc(sizeof(ValueArray));
+            init_ValueArray(newArray);
+            for (size_t i = 0; i < array->count; i++) {
+                write_ValueArray(newArray, hardCopyValue(array->values[i]));
+            }
+            value.as.objectValue = newArray;
+            break;
         }
-        copy.as.objectValue = newArray;
-    } else if (value.type == TYPE_STRING) {
-        char* newString = malloc(strlen(value.as.stringValue) + 1);
-        strcpy(newString, value.as.stringValue);
-        copy.as.stringValue = newString;
-    } else if (value.type == TYPE_OBJECT) {
-        ValueObject* object = value.as.objectValue;
-        ValueObject* newObject = malloc(sizeof(ValueObject));
-        init_ValueObject(newObject);
-        for (size_t i = 0; i < object->count; i++) {
-            write_ValueObject(newObject, object->keys[i], hardCopyValue(object->values[i]));
+        case TYPE_OBJECT: {
+            ValueObject* object = value.as.objectValue;
+            ValueObject* newObject = malloc(sizeof(ValueObject));
+            init_ValueObject(newObject);
+            for (size_t i = 0; i < object->count; i++) {
+                write_ValueObject(newObject, object->keys[i], hardCopyValue(object->values[i]));
+            }
+            value.as.objectValue = newObject;
+            break;
         }
-        copy.as.objectValue = newObject;
+        case TYPE_STRING: {
+            char* newString = malloc(strlen(value.as.stringValue) + 1);
+            strcpy(newString, value.as.stringValue);
+            value.as.stringValue = newString;
+            break;
+        }
+        default: {
+            break;
+        }
     }
-    return copy;
+    return value;
 }
 
 bool valueEquals (Value* a, Value* b) {
@@ -565,6 +574,12 @@ char* valueToString (Value value, bool extensive) {
         case D_NULL: {
             string = realloc(string, 6);
             sprintf(string, "NULL");
+            break;
+        }
+
+        default: {
+            string = realloc(string, 16);
+            sprintf(string, "<unknown type>");
             break;
         }
     }

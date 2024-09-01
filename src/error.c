@@ -32,6 +32,7 @@ static const char* ERROR_MESSAGES[] = {
     "Master keyword must be global (DEFINE, IMPORT, INCLUDE)",
     "Can't return outside of function",
     "Master keyword can't have extensions (MAKE, DEFINE, IMPORT, INCLUDE)",
+    "Else keyword must come directly after an if or when keyword",
 
     "Undefined Variable",
     "Variable already defined",

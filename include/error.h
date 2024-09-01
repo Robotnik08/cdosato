@@ -34,6 +34,7 @@ typedef enum {
     E_MUST_BE_GLOBAL,
     E_CANT_RETURN_OUTSIDE_FUNCTION,
     E_MASTER_CANT_HAVE_EXTENSIONS,
+    E_ELSE_WITHOUT_IF,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,

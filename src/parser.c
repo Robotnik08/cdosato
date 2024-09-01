@@ -67,6 +67,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             bool body_parsed = false;
             ExtensionKeywordType ext_type = EXT_NULL;
             int ext_start = start;
+            NodeList temp_body; // used to temporarily store the body, so we can reorganize it later
+            init_NodeList(&temp_body);
             for (int i = start; i < end; i++) {
                 SKIP_BLOCK(i);
                 if (tokens.tokens[i].type == TOKEN_EXT) {
@@ -74,21 +76,40 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         ext_type = tokens.tokens[i].carry;
                         ext_start = i + 1;
                         if (!body_parsed) {
-                            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_MASTER_DO_BODY + tokens.tokens[start - 1].carry));
+                            write_NodeList(&temp_body, parse(source, length, start, i, tokens, NODE_MASTER_DO_BODY + tokens.tokens[start - 1].carry));
                             body_parsed = true;
                         }
                     } else {
-                        write_NodeList(&root.body, parse(source, length, ext_start, i, tokens, NODE_WHEN_BODY + ext_type));
+                        write_NodeList(&temp_body, parse(source, length, ext_start, i, tokens, NODE_WHEN_BODY + ext_type));
                         ext_type = tokens.tokens[i].carry;
                         ext_start = i + 1;
                     }
                 }
             }
             if (!body_parsed) {
-                write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_MASTER_DO_BODY + tokens.tokens[start - 1].carry));
+                write_NodeList(&temp_body, parse(source, length, start, end, tokens, NODE_MASTER_DO_BODY + tokens.tokens[start - 1].carry));
             } else {
-                write_NodeList(&root.body, parse(source, length, ext_start, end, tokens, NODE_WHEN_BODY + ext_type));
+                write_NodeList(&temp_body, parse(source, length, ext_start, end, tokens, NODE_WHEN_BODY + ext_type));
             }
+
+            // reorganize the body
+            // if WHEN, WHILE, FOR, CATCH they should encapsulate everything before them (in their body)
+            NodeList full_body;
+            init_NodeList(&full_body);
+            write_NodeList(&full_body, temp_body.nodes[0]);
+            for (int i = 1; i < temp_body.count; i++) {
+                if (temp_body.nodes[i].type == NODE_WHEN_BODY || temp_body.nodes[i].type == NODE_WHILE_BODY || temp_body.nodes[i].type == NODE_FOR_BODY || temp_body.nodes[i].type == NODE_CATCH_BODY) {
+                    for (int j = 0; j < full_body.count; j++) {
+                        write_NodeList(&temp_body.nodes[i].body, full_body.nodes[j]);
+                    }
+                    // clear temp and write the current node
+                    free_NodeList(&full_body);
+                }
+                write_NodeList(&full_body, temp_body.nodes[i]);
+            }
+            free_NodeList(&temp_body);
+            root.body = full_body;
+
             break;
         }
         case NODE_MASTER_DO_BODY: 
