@@ -3,9 +3,38 @@
 #include "../include/memory.h"
 #include "../include/code_instance.h"
 
+void init_LocationList(LocationList* list) {
+    list->locations = NULL;
+    list->stack_count = NULL;
+    list->count = 0;
+    list->capacity = 0;
+}
+
+void write_LocationList(LocationList* list, size_t location, size_t stack_count) {
+    if (list->capacity < list->count + 1) {
+        size_t oldCapacity = list->capacity;
+        list->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
+        list->locations = DOSATO_RESIZE_LIST(size_t, list->locations, oldCapacity, list->capacity);
+        list->stack_count = DOSATO_RESIZE_LIST(size_t, list->stack_count, oldCapacity, list->capacity);
+    }
+    list->locations[list->count] = location;
+    list->stack_count[list->count] = stack_count;
+    list->count++;
+}
+
+void free_LocationList(LocationList* list) {
+    DOSATO_FREE_LIST(size_t, list->locations, list->capacity);
+    DOSATO_FREE_LIST(size_t, list->stack_count, list->capacity);
+    init_LocationList(list);
+}
+
+
+
+
 void initCodeInstance(CodeInstance* instance) {
     instance->code = NULL;
     instance->token_indices = NULL;
+    init_LocationList(&instance->loop_jump_locations);
     instance->count = 0;
     instance->capacity = 0;
 }
@@ -67,6 +96,7 @@ void freeCodeInstance(CodeInstance* instance) {
     DOSATO_FREE_LIST(uint8_t, instance->code, instance->capacity);
     DOSATO_FREE_LIST(size_t, instance->token_indices, instance->capacity);
     instance->count = 0;
+    free_LocationList(&instance->loop_jump_locations);
     instance->capacity = 0;
 }
 
@@ -114,6 +144,14 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for the location
         case OP_FOR_ITER:
             return 3; // 2 bytes for the location
+
+        case OP_JUMP_IF_EXCEPTION:
+            return 3; // 2 bytes for the location
+
+        case OP_BREAK:
+            return 5; // 2 bytes for the location and 2 bytes for the pop count
+        case OP_CONTINUE:
+            return 5; // 2 bytes for the location and 2 bytes for the pop count
 
 
         case OP_TYPE_CAST:

@@ -83,6 +83,18 @@ typedef struct {
 } StackFrames;
 
 typedef struct {
+    uint8_t* error_jump_loc;
+    size_t error_stack_count;
+} ErrorJump;
+
+typedef struct {
+    size_t count;
+    size_t capacity;
+    ErrorJump* jumps;
+} ErrorJumps;
+
+
+typedef struct {
     char** names;
     size_t count;
     size_t capacity;
@@ -103,6 +115,10 @@ void removeFromKey(ValueObject* object, char* key);
 void init_StackFrames(StackFrames* stack);
 void write_StackFrames(StackFrames* stack, size_t frame);
 void free_StackFrames(StackFrames* stack);
+
+void init_ErrorJumps(ErrorJumps* jumps);
+void write_ErrorJumps(ErrorJumps* jumps, ErrorJump jump);
+void free_ErrorJumps(ErrorJumps* jumps);
 
 void init_NameMap(NameMap* map);
 void write_NameMap(NameMap* map, char* name);

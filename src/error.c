@@ -34,6 +34,8 @@ static const char* ERROR_MESSAGES[] = {
     "Master keyword can't have extensions (MAKE, DEFINE, IMPORT, INCLUDE)",
     "Else keyword must come directly after an if or when keyword",
     "If keyword expects Then keyword",
+    "Break keyword can only be used inside a loop",
+    "Continue keyword can only be used inside a loop",
 
     "Undefined Variable",
     "Variable already defined",

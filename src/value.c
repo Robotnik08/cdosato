@@ -605,6 +605,7 @@ void markDefined(Value* value) {
 }
 
 DOSATO_LIST_FUNC_GEN(StackFrames, size_t, stack)
+DOSATO_LIST_FUNC_GEN(ErrorJumps, ErrorJump, jumps)
 
 void init_NameMap(NameMap* map) {
     map->names = NULL;

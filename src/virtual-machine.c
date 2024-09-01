@@ -40,6 +40,7 @@ void initVirtualMachine(VirtualMachine* vm) {
     init_StackFrames(&vm->stack_frames);
     init_FunctionList(&vm->functions);
     init_NameMap(&vm->mappings);
+    init_ErrorJumps(&vm->error_jumps);
     vm->ip = vm->instance->code;
 }
 
@@ -51,6 +52,7 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free_StackFrames(&vm->stack_frames);
     destroy_FunctionList(&vm->functions);
     free_NameMap(&vm->mappings);
+    free_ErrorJumps(&vm->error_jumps);
     free(vm->instance);
 }
 
@@ -59,8 +61,17 @@ void pushValue(ValueArray* array, Value value) {
 }
 
 #define ERROR(e_code) do { \
-    size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
-    printError(ast.source, ast.tokens.tokens[token_index].start - ast.source, e_code);\
+    if (vm->error_jumps.count > 0) { \
+        ErrorJump jump = vm->error_jumps.jumps[--vm->error_jumps.count]; \
+        while (vm->stack.count > jump.error_stack_count) { \
+            destroyValue(&POP_VALUE()); \
+        } \
+        vm->ip = jump.error_jump_loc; \
+        vm->globals.values[0].as.longValue = e_code; \
+    } else { \
+        size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
+        printError(ast.source, ast.tokens.tokens[token_index].start - ast.source, e_code);\
+    } \
 } while(0)
 
 #define DESTROYIFLITERAL(value) if (!value.defined) { destroyValue(&value); }
@@ -75,6 +86,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
     size_t ip_stack_count = 0;
     PUSH_STACK(0); // first local frame
 
+    // set global variable 0 to zero (underscore)
+    Value zero = (Value){ TYPE_LONG, .as.longValue = 0, .defined = false, .is_variable_type = true };
+    vm->globals.values[0] = zero;
+
     // set all functions to globals
     for (size_t i = 0; i < vm->functions.count; i++) {
         Value func = (Value){ TYPE_FUNCTION, .as.longValue = i, .defined = true, .is_variable_type = false };
@@ -84,6 +99,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
     while (!halt) {
         OpCode instruction = NEXT_BYTE();
         switch (instruction) {
+            
+            default: {
+                printf("Unknown instruction: %d at: %d\n", instruction, vm->ip - active_instance->code - 1);
+                halt = true;
+                break;
+            }
+
+            
             case OP_JUMP: {
                 uint16_t offset = NEXT_SHORT();
                 vm->ip = offset + active_instance->code;
@@ -107,6 +130,46 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     vm->ip = offset + active_instance->code;
                 }
                 DESTROYIFLITERAL(condition);
+                break;
+            }
+
+            case OP_JUMP_IF_EXCEPTION: {
+                uint16_t offset = NEXT_SHORT();
+                size_t stack_count = vm->stack.count;
+                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count });
+                break;
+            }
+
+            case OP_CONTINUE: {
+                uint16_t offset = NEXT_SHORT();
+                uint16_t pop_amount = NEXT_SHORT();
+                vm->ip = offset + active_instance->code;
+                for (size_t i = 0; i < pop_amount; i++) {
+                    destroyValue(&POP_VALUE());
+                }
+                break;
+            }
+
+            case OP_BREAK: {
+                uint16_t offset = NEXT_SHORT();
+                uint16_t pop_amount = NEXT_SHORT();
+                vm->ip = offset + active_instance->code;
+                for (size_t i = 0; i < pop_amount; i++) {
+                    destroyValue(&POP_VALUE());
+                }
+
+                if (*vm->ip == OP_FOR_ITER) {
+                    // set the iterator to -2 (so the loop will end)
+                    vm->stack.values[vm->stack.count - 1].as.longValue = -2;
+                } else if (NEXT_BYTE() == OP_JUMP_IF_FALSE) {
+                    uint16_t offset = NEXT_SHORT();
+                    vm->ip = offset + active_instance->code;
+                }
+                break;
+            }
+
+            case OP_CLEAR_EXCEPTION: {
+                --vm->error_jumps.count;
                 break;
             }
 
@@ -169,6 +232,25 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     constant.as.stringValue = new_string;
                 }
                 pushValue(&vm->stack, constant);
+                break;
+            }
+
+            case OP_PUSH_FALSE: {
+                Value value = (Value){ TYPE_BOOL, .as.boolValue = false };
+                pushValue(&vm->stack, value);
+                break;
+            }
+
+            case OP_PUSH_TRUE: {
+                Value value = (Value){ TYPE_BOOL, .as.boolValue = true };
+                pushValue(&vm->stack, value);
+                break;
+            }
+
+            case OP_LOAD_UNDERSCORE: {
+                // underscore is global variable 0
+                Value underscore = vm->globals.values[0];
+                pushValue(&vm->stack, underscore);
                 break;
             }
 
@@ -321,6 +403,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     if (castRes != E_NULL) {
                         ERROR(castRes);
                     }
+                } else if (vm->stack.values[index].defined) {
+                    value.is_variable_type = true;
                 }
 
                 // destroy old value
@@ -341,7 +425,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 
                 int i = ++index->as.longValue;
                 ValueArray* array = (ValueArray*)list.as.objectValue;
-                if (i >= array->count) {
+                if (i >= array->count || i < 0) {
                     destroyValue(&POP_VALUE()); // pop index
                     destroyValue(&POP_VALUE()); // pop list
                     vm->ip = offset + active_instance->code;
@@ -392,6 +476,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                     if (castRes != E_NULL) {
                         ERROR(castRes);
                     }
+                } else {
+                    value.is_variable_type = true;
                 }
                 
 
@@ -717,11 +803,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                 pushValue(&vm->stack, return_value);
                 break;
             }
-            default: {
-                printf("Unknown instruction: %d\n", instruction);
-                halt = true;
-                break;
-            }
 
             // arithmetic
 
@@ -784,6 +865,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
                         write_ValueObject(new_obj, a_obj->keys[i], val);
                     }
                     for (int i = 0; i < b_obj->count; i++) {
+                        if (hasKey(new_obj, b_obj->keys[i])) {
+                            ERROR(E_KEY_ALREADY_DEFINED);
+                        }
                         Value val = hardCopyValue(b_obj->values[i]);
                         write_ValueObject(new_obj, b_obj->keys[i], val);
                     }

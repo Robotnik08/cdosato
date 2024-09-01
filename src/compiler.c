@@ -47,6 +47,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
                     writeByteCode(ci, OP_POP, 0);
                     popScopeData(scope);
                 }
+                if (scope->depth == 0) {
+                    freeScopeData(scope);
+                }
             }
 
             break;
@@ -61,6 +64,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             break;
         }
 
+        case NODE_MASTER_CONTINUE:
+        case NODE_MASTER_BREAK:
         case NODE_MASTER_RETURN:
         case NODE_MASTER_SET:
         case NODE_MASTER_DO: {
@@ -178,6 +183,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             compileNode(vm, ci, node.body.nodes[2], ast, scope);
             writeInstruction(ci, node.start, OP_TYPE_CAST, ast.tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
             
+            if (ast.tokens.tokens[node.body.nodes[1].start].carry == 0) {
+                ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+            }
+
             if (scope == NULL) { // global scope
                 writeInstruction(ci, node.body.nodes[1].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[1].start].carry));
             } else {
@@ -341,8 +350,21 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             writeInstruction(ci, node.start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.start].carry));
             break;
         }
+        case NODE_TRUE: {
+            writeByteCode(ci, OP_PUSH_TRUE, node.start);
+            break;
+        }
+        case NODE_FALSE: {
+            writeByteCode(ci, OP_PUSH_FALSE, node.start);
+            break;
+        }
 
         case NODE_IDENTIFIER: {
+            if (ast.tokens.tokens[node.start].carry == 0) {
+                writeInstruction(ci, node.start, OP_LOAD_UNDERSCORE); // load the underscore variable
+                break;
+            }
+
             if (scope == NULL) { // global scope
                 writeInstruction(ci, node.start, OP_LOAD, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.start].carry)); // load the global variable
             } else {
@@ -405,6 +427,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
             writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0)); // jump to the end of the while block if the condition is false
             int jump_index = ci->count - getOffset(OP_JUMP_IF_FALSE); // index of the jump instruction
+
+            bool is_local = scope != NULL;
+
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, condition_start, is_local ? scope->locals_count : 0); // this is for the CONTINUE instruction, continue reevaluates the condition
+            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 0); // this is for the BREAK instruction, break jumps to the end of the while block without reevaluating the condition
+            
             // compile the body
             for (int i = 1; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
@@ -418,6 +447,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             // manually edit the jump instruction
             ci->code[jump_index + 1] = ci->count & 0xFF;
             ci->code[jump_index + 2] = ci->count >> 8;
+
+            // pop the loop location data
+            ci->loop_jump_locations.count -= 2;
             break;
         }
 
@@ -427,19 +459,47 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             // push the index to the stack
             writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
 
+            bool is_local = scope != NULL;
+
+            if (is_local) {
+                pushScopeData(scope, -1);
+                pushScopeData(scope, -1);
+            }
+
             writeInstruction(ci, node.start, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
             int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
 
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 2);
+
             // store to iterator
-            if (inScope(scope, ast.tokens.tokens[node.body.nodes[1].start].carry)) {
-                writeInstruction(ci, node.start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast.tokens.tokens[node.body.nodes[1].start].carry)));
+            if (ast.tokens.tokens[node.body.nodes[1].start].carry != 0) {
+                if (inScope(scope, ast.tokens.tokens[node.body.nodes[1].start].carry)) {
+                    writeInstruction(ci, node.body.nodes[1].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast.tokens.tokens[node.body.nodes[1].start].carry)));
+                } else {
+                    writeInstruction(ci, node.body.nodes[1].start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[1].start].carry));
+                }
             } else {
-                writeInstruction(ci, node.start, OP_STORE, DOSATO_SPLIT_SHORT(ast.tokens.tokens[node.body.nodes[1].start].carry));
+                // if underscore, don't store the value just pop it
+                writeByteCode(ci, OP_POP, node.body.nodes[1].start);
             }
 
+            // if global scope, the 2 locals must be added to the scope
+            if (scope == NULL) {
+                ScopeData new_scope;
+                initScopeData(&new_scope);
+                scope = &new_scope;
+                pushScopeData(scope, -1);
+                pushScopeData(scope, -1);
+            }
             // compile the body
             for (int i = 2; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
+            }
+            // back to global scope
+            if (!is_local) {
+                freeScopeData(scope);
+                scope = NULL;
             }
 
             // jump back to the start of the for block
@@ -447,6 +507,57 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             // manually edit the jump instruction
             ci->code[jump_index + 1] = ci->count & 0xFF;
             ci->code[jump_index + 2] = ci->count >> 8;
+
+            if (is_local) {
+                scope->locals_count -= 2;
+            }
+
+            // pop the loop location data
+            ci->loop_jump_locations.count--;
+            break;
+        }
+        
+        case NODE_MASTER_BREAK_BODY:
+        case NODE_MASTER_CONTINUE_BODY: {
+            if (ci->loop_jump_locations.count == 0) {
+                ERROR(type == NODE_MASTER_BREAK_BODY ? E_BREAK_OUTSIDE_LOOP : E_CONTINUE_OUTSIDE_LOOP, node.start);
+            }
+            size_t top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 1];
+            if (ci->code[top_jump_index] == OP_JUMP_IF_FALSE && type == NODE_MASTER_CONTINUE_BODY) {
+                top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 2]; // get the condition start index instead of the jump index
+            }
+
+            // top_stack_amount is the amount of locals in the loop, and the same for both the break and continue instruction
+            size_t top_stack_amount = ci->loop_jump_locations.stack_count[ci->loop_jump_locations.count - 1];
+            bool is_local = scope != NULL;
+            writeInstruction(ci, node.start, type == NODE_MASTER_BREAK_BODY ? OP_BREAK : OP_CONTINUE, DOSATO_SPLIT_SHORT(top_jump_index), DOSATO_SPLIT_SHORT((is_local ? scope->locals_count - top_stack_amount : 0)));
+            break;
+        }
+
+        case NODE_CATCH_BODY: {
+            // compile the body
+            writeInstruction(ci, node.start, OP_JUMP_IF_EXCEPTION, DOSATO_SPLIT_SHORT(0)); // jump to the end of the catch block if there is no exception
+            int jump_index = ci->count - getOffset(OP_JUMP_IF_EXCEPTION); // index of the jump instruction
+            for (int i = 1; i < node.body.count; i++) {
+                compileNode(vm, ci, node.body.nodes[i], ast, scope);
+            }
+
+            // jump to the end of the catch block
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_end_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+
+            // manually edit the jump instruction
+            ci->code[jump_index + 1] = ci->count & 0xFF;
+            ci->code[jump_index + 2] = ci->count >> 8;
+
+            // catch statement
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+
+            // manually edit the jump instruction
+            ci->code[jump_end_index + 1] = ci->count & 0xFF;
+            ci->code[jump_end_index + 2] = ci->count >> 8;
+
+            writeByteCode(ci, OP_CLEAR_EXCEPTION, node.start);
             break;
         }
         

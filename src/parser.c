@@ -489,8 +489,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     root.type = NODE_NUMBER_LITERAL;
                 } else if (tokens.tokens[new_start].type == TOKEN_STRING) {
                     root.type = NODE_STRING_LITERAL;
+                } else if (tokens.tokens[new_start].type == TOKEN_BOOLEAN) {
+                    root.type = tokens.tokens[new_start].carry == 0 ? NODE_FALSE : NODE_TRUE;
                 } else {
-                    break;
                     ERROR(new_start, E_UNEXPECTED_TOKEN);
                 }
                 break;

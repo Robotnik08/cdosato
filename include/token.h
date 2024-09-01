@@ -5,9 +5,9 @@
 
 #define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE"}
 #define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "IF"}
-#define EXTENSION_ACCEPTS {NEEDS_EXPRESSION, NEEDS_EXPRESSION, NEEDS_IF_OR_FUNCTION, NEEDS_FUNCTION, NEEDS_FUNCTION, NEEDS_EXPRESSION, NEEDS_EXPRESSION}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR"}
 #define SEPARATORS {';'}
+#define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
                    "**","^/","|>","<|","!-","=>",">>=","<<=","**=","|>=","<|="}
@@ -32,6 +32,7 @@ typedef enum {
     TOKEN_PARENTHESIS_CLOSED,
     TOKEN_VAR_TYPE,
     TOKEN_SEPARATOR,
+    TOKEN_BOOLEAN,
     TOKEN_END = -1
 } TokenType;
 

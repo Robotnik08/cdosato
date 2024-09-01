@@ -38,6 +38,8 @@ typedef struct {
     ValueArray stack;
     
     NameMap mappings;
+
+    ErrorJumps error_jumps;
 } VirtualMachine;
 #include "ast.h"
 

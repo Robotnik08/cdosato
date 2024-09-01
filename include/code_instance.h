@@ -80,6 +80,17 @@ typedef enum {
 
     OP_FOR_ITER,
 
+    OP_JUMP_IF_EXCEPTION,
+    OP_CLEAR_EXCEPTION,
+
+    OP_LOAD_UNDERSCORE,
+
+    OP_PUSH_TRUE,
+    OP_PUSH_FALSE,
+
+    OP_BREAK,
+    OP_CONTINUE,
+
     OP_PUSH_NULL,
     OP_PUSH_MINUS_ONE,
 
@@ -90,11 +101,23 @@ typedef enum {
 } OpCode;
 
 typedef struct {
+    size_t* locations;
+    size_t* stack_count;
+    size_t count;
+    size_t capacity;
+} LocationList;
+
+typedef struct {
     uint8_t* code;
     size_t* token_indices;
+    LocationList loop_jump_locations;
     size_t count;
     size_t capacity;
 } CodeInstance;
+
+void init_LocationList(LocationList* list);
+void write_LocationList(LocationList* list, size_t location, size_t stack_count);
+void free_LocationList(LocationList* list);
 
 void initCodeInstance(CodeInstance* instance);
 void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index);

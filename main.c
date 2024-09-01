@@ -109,6 +109,7 @@ int main (int argc, char** argv) {
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);
+        printf("Stack size: %d (%s)\n", vm.stack.count, vm.stack.count == 0 ? "passed" : "failed");
         printf("Done running\n");
     }
 

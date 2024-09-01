@@ -10,10 +10,11 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
     OpCode instruction = code[offset++];
 
     int address = 0;
+    int pop_count = 0;
     switch (instruction) {
         case OP_RETURN:
             printf("OP_RETURN");
-            int pop_count = code[offset];
+            pop_count = code[offset];
             printf(": (%d)", pop_count);
             break;
         case OP_STOP:
@@ -246,6 +247,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x)", address);
             break;
 
+        case OP_JUMP_IF_EXCEPTION:
+            printf("OP_JUMP_IF_EXCEPTION");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
         case OP_PRINT:
             printf("OP_PRINT");
             break;
@@ -256,6 +263,17 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_PUSH_MINUS_ONE:
             printf("OP_PUSH_MINUS_ONE");
             break;
+        case OP_CLEAR_EXCEPTION:
+            printf("OP_CLEAR_EXCEPTION");
+            break;
+
+        case OP_PUSH_TRUE:
+            printf("OP_PUSH_TRUE");
+            break;
+        case OP_PUSH_FALSE:
+            printf("OP_PUSH_FALSE");
+            break;
+
 
         case OP_CALL:
             printf("OP_CALL");
@@ -265,6 +283,23 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_END_FUNC:
             printf("OP_END_FUNC");
+            break;
+
+        case OP_LOAD_UNDERSCORE:
+            printf("OP_LOAD_UNDERSCORE");
+            break;
+
+        case OP_BREAK:
+            printf("OP_BREAK");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            pop_count = DOSATO_GET_ADDRESS_SHORT(code, offset + 2);
+            printf(": (0x%x) (%d)", address, pop_count);
+            break;
+        case OP_CONTINUE:
+            printf("OP_CONTINUE");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            pop_count = DOSATO_GET_ADDRESS_SHORT(code, offset + 2);
+            printf(": (0x%x) (%d)", address, pop_count);
             break;
 
 
