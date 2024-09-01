@@ -1,0 +1,4 @@
+DEFINE INT add (INT a, INT b) {
+    RETURN a + b;
+};
+DO SAY (add (1, 2));

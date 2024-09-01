@@ -1,0 +1,5 @@
+MAKE LONG i = 0;
+DO {
+    SET i++;
+} WHILE (i < 100);
+DO SAY (i);

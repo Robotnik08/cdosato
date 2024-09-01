@@ -12,7 +12,7 @@ int debug = 0b0;
 #define DEBUG_PARSE 0b1000
 #define DEBUG_COMPILE 0b10000
 
-#define PRINT_USAGE printf("Usage: dosato <source file> [-d|--debug] [debugmode]\n");
+#define PRINT_USAGE printf("Usage: dosato <source file> \n");
 
 int main (int argc, char** argv) {
     if (argc < 2) {
@@ -20,11 +20,18 @@ int main (int argc, char** argv) {
         return 1;
     }
 
-    if (argc >= 3) {
-        if (strcmp(argv[2], "-h") == 0 || strcmp(argv[2], "--help") == 0) {
+    if (argc == 2) {
+        if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
             PRINT_USAGE
             return 0;
-        } else if (strcmp(argv[2], "-d") == 0 || strcmp(argv[2], "--debug") == 0) {
+        } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
+            printf("Dosato version %s\n", DOSATO_VERSION);
+            return 0;
+        }
+    }
+
+    if (argc >= 3) {
+        if (strcmp(argv[2], "-d") == 0 || strcmp(argv[2], "--debug") == 0) {
             debug = DEBUG;
         } else {
             printf("Unknown option '%s'\n", argv[2]);

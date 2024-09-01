@@ -1,0 +1,13 @@
+MAKE INT a = 1;	
+
+DO {
+    MAKE INT b = 2;
+    DO SAY (a + b);
+    DO {
+        MAKE INT c = 3;
+        DO SAY (a + b + c);
+    }
+    MAKE INT a = 4;
+    DO SAY (a + b);
+}
+DO SAY (a);

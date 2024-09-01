@@ -1,0 +1,21 @@
+MAKE ARRAY arr = [];
+
+SET arr = [1, 2, 3, 4, 5];
+
+DO SAY (arr);
+
+DO SAY (arr#0);
+
+SET arr#1 *= 2;
+
+DO SAY (arr);
+
+DO SAY (arr#1);
+
+SET arr += [6, 7, 8, 9, 10];
+
+DO SAY (arr);
+
+SET arr -= 8;
+
+DO SAY (arr);
