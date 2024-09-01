@@ -1,19 +1,19 @@
-MAKE INT int = 0;
+MAKE INT integer = 0;
 MAKE STRING str = "";
 MAKE ARRAY arr = [];
 
-SET int = 1;
+SET integer = 1;
 SET str = "Hello, World";
 SET arr = [1, 2, 3, 4, 5];
 
-DO SAY (int);
+DO SAY (integer);
 DO SAY (str);
 DO SAY (arr);
 
-SET int += 1;
+SET integer += 1;
 SET str += "!";
 SET arr += [6, 7, 8, 9, 10];
 
-DO SAY (int);
+DO SAY (integer);
 DO SAY (str);
 DO SAY (arr);

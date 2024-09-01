@@ -1,0 +1,5 @@
+MAKE INT i = 0;
+DO {
+    SET i++;
+} WHILE (i < 10);
+DO SAY (i);

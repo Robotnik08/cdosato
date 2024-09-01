@@ -1,0 +1,2 @@
+MAKE VAR i = 0;
+DO SAY (i) FOR (["Hey", 1, true, 2.5, 3.0] => i);

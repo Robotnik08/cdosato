@@ -1,0 +1,40 @@
+DEFINE INT r () {
+    MAKE INT i = 0;
+    DO {
+        DO {
+            MAKE INT j = 5;
+            BREAK WHEN (i >= j);
+        };
+    } FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i);
+    RETURN i;
+};
+
+DO SAY (r()); // 5
+
+MAKE INT i = 0;
+DO {
+    DO {
+        MAKE INT j = 5;
+        BREAK WHEN (i >= j);
+    };
+} FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i);
+DO SAY (i); // 5
+
+MAKE INT j = 0;
+BREAK WHEN (j >= 5) FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j);
+DO SAY (j); // 5
+
+
+// continue
+SET i = 0;
+DO SAY ("");
+DO {
+    DO {
+        CONTINUE WHEN (i % 2 != 0);
+        DO SAY (i);
+    };
+} FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i);
+
+SET j = 0;
+CONTINUE WHEN (true) FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j);
+DO SAY("j: " +  j); // 10
