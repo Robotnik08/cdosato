@@ -21,6 +21,6 @@ if %mins% lss 0 set /a hours = %hours% - 1 & set /a mins = 60%mins%
 if %hours% lss 0 set /a hours = 24%hours%
 if 1%ms% lss 100 set ms=0%ms%
 
-:: Mission accomplished
+:: Mission accomplished lol
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo command took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
