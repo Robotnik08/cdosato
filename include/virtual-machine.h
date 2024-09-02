@@ -41,6 +41,7 @@ typedef struct {
 
     ErrorJumps error_jumps;
 } VirtualMachine;
+
 #include "ast.h"
 
 void initVirtualMachine(VirtualMachine* vm);

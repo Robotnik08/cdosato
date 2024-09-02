@@ -60,7 +60,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         case NODE_MASTER_INCLUDE:
         case NODE_MASTER_DEFINE:
         case NODE_MASTER_MAKE: {
-            if (node.body.count > 1) {
+            if (node.body.nodes[0].type != NODE_MASTER_DO_BODY + type - 1 || node.body.count > 1) {
                 ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
             }
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
