@@ -55,17 +55,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
 
             break;
         }
-        
-        case NODE_MASTER_IMPORT:
-        case NODE_MASTER_INCLUDE: {
-            return 0;
-            printf("Importing/Including not implemented yet\n");
-            // if (node.body.count > 1) {
-            //     ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
-            // }
-            break;
-        }
 
+        case NODE_MASTER_IMPORT:
+        case NODE_MASTER_INCLUDE:
         case NODE_MASTER_DEFINE:
         case NODE_MASTER_MAKE: {
             if (node.body.count > 1) {
@@ -182,6 +174,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             // pop the return value
             if (ci->code[ci->count - 1] != OP_PRINT && node.body.nodes[0].type == NODE_FUNCTION_CALL) writeByteCode(ci, OP_POP, node.body.nodes[0].end);
+            break;
+        }
+
+        case NODE_MASTER_INCLUDE_BODY: {
+            if (scope != NULL) {
+                ERROR(E_MUST_BE_GLOBAL, node.start - 1);
+            }
             break;
         }
 
