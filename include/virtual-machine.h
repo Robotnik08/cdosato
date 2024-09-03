@@ -49,7 +49,7 @@ void freeVirtualMachine(VirtualMachine* vm);
 
 void pushValue(ValueArray* array, Value value);
 
-int runVirtualMachine(VirtualMachine* vm, int debug, AST ast);
+int runVirtualMachine(VirtualMachine* vm, int debug);
 
 void init_FunctionList(FunctionList* list);
 void write_FunctionList(FunctionList* list, Function func);

@@ -36,6 +36,7 @@ static const char* ERROR_MESSAGES[] = {
     "If keyword expects Then keyword",
     "Break keyword can only be used inside a loop",
     "Continue keyword can only be used inside a loop",
+    "Expected String Literal",
 
     "Undefined Variable",
     "Variable already defined",

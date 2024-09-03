@@ -113,6 +113,7 @@ typedef struct {
     LocationList loop_jump_locations;
     size_t count;
     size_t capacity;
+    void* ast;
 } CodeInstance;
 
 void init_LocationList(LocationList* list);

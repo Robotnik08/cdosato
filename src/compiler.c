@@ -10,10 +10,12 @@
 void compile(VirtualMachine* vm, AST ast) { 
 
     // Compile the AST into byte code
+    vm->instance->ast = &ast;
     compileNode(vm, vm->instance, ast.root, ast, NULL);
 
 
     writeByteCode(vm->instance, OP_STOP, 0);
+
 }
 
 #define ERROR(e_code, index) printError(ast.source, ast.tokens.tokens[index].start - ast.source, e_code)
@@ -24,13 +26,17 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         type = NODE_EXPRESSION;
     }
 
+    if (vm->functions.count > 0) {
+        printf("Begin:\ntype:  %d\n", type);
+        printf("%p, %p\n", (AST*)vm->functions.funcs[0].instance->ast, ((AST*)vm->functions.funcs[0].instance->ast)->name);
+    }
 
     switch (type) {
         case NODE_BLOCK: {
             if (scope == NULL) { // first scope after global
-                ScopeData new_scope;
-                initScopeData(&new_scope);
-                scope = &new_scope;
+                ScopeData* new_scope = malloc(sizeof(ScopeData));
+                initScopeData(new_scope);
+                scope = new_scope;
             }
             // fall through
         }
@@ -50,6 +56,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
                 }
                 if (scope->depth == 0) {
                     freeScopeData(scope);
+                    free(scope);
                 }
             }
 
@@ -64,7 +71,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
                 ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
             }
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
-            break;
+            if (type == NODE_MASTER_INCLUDE) {
+                printf("Middle include:\n");
+        printf("%p, %p\n", ((AST*)vm->functions.funcs[0].instance->ast), ((AST*)vm->functions.funcs[0].instance->ast)->name);
+                // disassembleCode(vm->functions.funcs[0].instance, "test");
+        printf("%p, %p\n", ((AST*)vm->functions.funcs[0].instance->ast), ((AST*)vm->functions.funcs[0].instance->ast)->name);
+            }
+            break;      
         }
 
         case NODE_MASTER_CONTINUE:
@@ -121,21 +134,26 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             }
 
             DataType type = ast.tokens.tokens[node.body.nodes[0].start].carry;
-            char* name = getTokenString(ast.tokens.tokens[node.body.nodes[1].start]);
+            // char* name = getTokenString(ast.tokens.tokens[node.body.nodes[1].start]);
+            char* name = malloc(3);
+            strcpy(name, "fn");
             size_t name_index = ast.tokens.tokens[node.body.nodes[1].start].carry;
             CodeInstance* instance = malloc(sizeof(CodeInstance));
             initCodeInstance(instance);
-            ScopeData new_scope;
-            initScopeData(&new_scope);
+            instance->ast = &ast;
+            ScopeData* new_scope = malloc(sizeof(ScopeData));
+            initScopeData(new_scope);
 
             int arity = node.body.nodes[2].body.count;
             for (int i = 0; i < arity; i++) {
-                pushScopeData(&new_scope, ast.tokens.tokens[node.body.nodes[2].body.nodes[i].body.nodes[1].start].carry);
+                pushScopeData(new_scope, ast.tokens.tokens[node.body.nodes[2].body.nodes[i].body.nodes[1].start].carry);
             }
-            new_scope.return_type = type;
+            new_scope->return_type = type;
 
-            ScopeData* scope = &new_scope;
-            compileNode(vm, instance, node.body.nodes[3], ast, scope);
+            compileNode(vm, instance, node.body.nodes[3], ast, new_scope);
+
+            freeScopeData(new_scope);
+            free(new_scope);
 
             for (int i = 0; i < arity; i++) {
                 writeByteCode(instance, OP_POP, node.body.nodes[2].body.nodes[i].end);
@@ -160,6 +178,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             func.return_type = type;
 
             write_FunctionList(&vm->functions, func);
+
             break;
         }
 
@@ -181,6 +200,24 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
             if (scope != NULL) {
                 ERROR(E_MUST_BE_GLOBAL, node.start - 1);
             }
+
+            if (node.body.nodes[0].type != NODE_STRING_LITERAL) {
+                ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
+            }
+
+            char* path = vm->constants.values[ast.tokens.tokens[node.body.nodes[0].start].carry].as.stringValue;
+            AST* included_ast = malloc(sizeof(AST));
+            init_AST(included_ast);
+            parseFile(included_ast, path, 0, vm);
+
+            CodeInstance* included_instance = malloc(sizeof(CodeInstance));
+            initCodeInstance(included_instance);
+
+            included_instance->ast = included_ast;
+
+            compileNode(vm, included_instance, included_ast->root, *included_ast, NULL);
+            
+
             break;
         }
 
@@ -295,12 +332,15 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
         case NODE_FUNCTION_CALL: {
 
             // debug force SAY to be the print function
-            if (strcmp(getTokenString(ast.tokens.tokens[node.body.nodes[0].start]), "SAY") == 0) {
-                // push first argument
-                compileNode(vm, ci, node.body.nodes[1].body.nodes[0], ast, scope);
-                writeInstruction(ci, node.start, OP_PRINT, 0);
-                break;
-            }
+            // char* name = getTokenString(ast.tokens.tokens[node.body.nodes[0].start]);
+            // char* name = malloc(sizeof(char) * 5);
+            // strcpy(name, "SAY1");
+            // if (strcmp(name, "SAY") == 0) {
+            //     // push first argument
+            //     compileNode(vm, ci, node.body.nodes[1].body.nodes[0], ast, scope);
+            //     writeInstruction(ci, node.start, OP_PRINT, 0);
+            //     break;
+            // }
 
 
             // push arguments
@@ -577,6 +617,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST ast, Scope
     // don't know why, but if the count is 0, the program will crash, so add a NOP instruction if the count is 0
     if (ci->count == 0) {
         writeByteCode(ci, OP_NOP, 0);
+    }
+
+    
+    if (vm->functions.count > 0) {
+        printf("End:\ntype:  %d\n", type);
+        printf("%p, %p\n", (AST*)vm->functions.funcs[0].instance->ast, ((AST*)vm->functions.funcs[0].instance->ast)->name);
     }
 
     return 0;

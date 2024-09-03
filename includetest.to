@@ -1,5 +1,6 @@
 DEFINE VOID hello () {
     DO SAY ("Hello, from other file!");
+    DO SAY (error);
 };
 
 DO SAY ("Included includetest.to");

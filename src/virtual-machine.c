@@ -70,13 +70,17 @@ void pushValue(ValueArray* array, Value value) {
         vm->globals.values[0].as.longValue = e_code; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
-        printError(ast.source, ast.tokens.tokens[token_index].start - ast.source, e_code);\
+        printf("Error at: %d\n", token_index); \
+        printf("%p", ((AST*)active_instance->ast)->source); \
+        printf(((AST*)active_instance->ast)->source);\
+        printf("Source is not corrupted");\
+        printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, e_code);\
     } \
 } while(0)
 
 #define DESTROYIFLITERAL(value) if (!value.defined) { destroyValue(&value); }
 
-int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
+int runVirtualMachine (VirtualMachine* vm, int debug) {
     if (debug) printf("Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
@@ -456,6 +460,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, AST ast) {
             case OP_LOAD: {
                 uint16_t index = NEXT_SHORT();
                 Value global = vm->globals.values[index];
+                
                 if (!global.defined) {
                     ERROR(E_UNDEFINED_VARIABLE);
                 }

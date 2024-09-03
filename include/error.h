@@ -38,6 +38,7 @@ typedef enum {
     E_EXPECTED_THEN,
     E_BREAK_OUTSIDE_LOOP,
     E_CONTINUE_OUTSIDE_LOOP,
+    E_EXPECTED_STRING,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,

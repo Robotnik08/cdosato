@@ -24,12 +24,15 @@ BracketType getBracketType (char bracket) {
 
 char* getTokenString (Token token) {
     char* string = malloc(token.length + 1);
-    memcpy(string, token.start, token.length);
+    for (int i = 0; i < token.length; i++) {
+        string[i] = token.start[i];
+    }
     string[token.length] = '\0';
     return string;
 }
 
 void printTokens (TokenList list) {
+    return;
     Token* tokens = list.tokens;
     if (list.count == 0) {
         printf("No tokens.\n");
