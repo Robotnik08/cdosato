@@ -24,7 +24,7 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
     ast->length = length;
     ast->name = name;
 
-    int res = tokenise(&ast->tokens, ast->source, length, vm);
+    int res = tokenise(&ast->tokens, ast->source, length, vm, name);
     if (res != 0) {
         printf("Error tokenising source %d\n", res);
         exit(res);
@@ -34,7 +34,7 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
         printTokens(ast->tokens);
     }
 
-    ast->root = parse(ast->source, ast->length, 0, ast->tokens.count, ast->tokens, NODE_PROGRAM);
+    ast->root = parse(ast->source, ast->length, 0, ast->tokens.count, ast->tokens, NODE_PROGRAM, name);
 
     // initialize globals
     free_ValueArray(&vm->globals);
@@ -68,6 +68,4 @@ void parseFile (AST* ast, char* name, int debug, VirtualMachine* vm) {
     fclose(file);
 
     load_AST(ast, source, length, name, debug, vm);
-
-    printf("%p, %p\n", ast->source, source);
 }

@@ -302,6 +302,16 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x) (%d)", address, pop_count);
             break;
 
+        case OP_INCLUDE:
+            printf("OP_INCLUDE");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
+        case OP_END_INCLUDE:
+            printf("OP_END_INCLUDE");
+            break;
+
         case OP_NOP:
             printf("OP_NOP");
             break;

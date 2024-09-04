@@ -32,11 +32,8 @@ void trimComments (TokenList* list) {
 }
 
 
-int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm) {
+int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm, const char* file_name) {
     int tokenCount = list->count;
-
-    NameMap constantMappings;
-    init_NameMap(&constantMappings);
 
     #define SKIP_TOKEN() \
         for (int t = 0; t < tokenCount; t++) { \
@@ -92,18 +89,18 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 
                 if (lit[0] == '\'') {
                     if (lit[2] != '\'' && !(lit[3] == '\'' && lit[1] == '\\') ) {
-                        printError(full_code, start, E_INVALID_CHAR_LITERAL);
+                        printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL);
                     } else if (lit[3] == '\'' && lit[1] == '\\') {
                         if (lit[2] != 'n' && lit[2] != 't' && lit[2] != 'r' && lit[2] != 'b' && lit[2] != 'f' && lit[2] != '0' && lit[2] != '\\' && lit[2] != '\'' && lit[2] != '"') {
-                            printError(full_code, start, E_INVALID_CHAR_LITERAL);
+                            printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL);
                         }
                     }
                 }
 
-                if (hasName(&constantMappings, lit)) {
-                    id = getName(&constantMappings, lit);
+                if (hasName(&vm->constants_map, lit)) {
+                    id = getName(&vm->constants_map, lit);
                 } else {
-                    id = addName(&constantMappings, lit);
+                    id = addName(&vm->constants_map, lit);
                     stringCount++;
                 }
                 DOSATO_ADD_TOKEN(list, TOKEN_STRING, full_code + start, end - start, id);
@@ -121,7 +118,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     }
 
     if (quotationtype) {
-        printError(full_code, start, E_UNCLOSED_STRING_LITERAL);
+        printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL);
     }
     
     REFRESH_LIST()
@@ -255,12 +252,13 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     
     REFRESH_LIST()
 
+    int numberCount = 0;
     // getNumber tokens
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
         if (isFloateric(full_code[i])) {
             if (!(isNumeric(full_code[i]) || full_code[i] == '.') || isAlphaNameric(full_code[i-1]) || isAlphaNameric(full_code[i+1])) {
-                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, E_INVALID_NUMBER_LITERAL);
+                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, file_name, E_INVALID_NUMBER_LITERAL);
                 for (int k = i; k < code_length && isFloateric(full_code[i]); k++) {
                     i = k;
                 }
@@ -277,7 +275,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                         end = k;
                     }
-                    printError(full_code, start, E_INVALID_NUMBER_LITERAL);
+                    printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
                 }
                 if (full_code[j] == '.') {
                     if (foundDot) {
@@ -285,7 +283,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                             end = k;
                         }
-                        printError(full_code, start, E_INVALID_NUMBER_LITERAL);
+                        printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
                     }
                     foundDot = true;
                     if (!isNumeric(full_code[j+1])) {
@@ -293,7 +291,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                             end = k;
                         }
-                        printError(full_code, start, E_INVALID_NUMBER_LITERAL);
+                        printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
                     }
                 }
                 if (isFloateric(full_code[j])) {
@@ -303,7 +301,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                             for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                                 end = k;
                             }
-                            printError(full_code, start, E_INVALID_NUMBER_LITERAL);
+                            printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
                         }
                         if (isNumeric(full_code[j-1])) {
                             end = j;
@@ -321,10 +319,11 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 char* lit = malloc(end - start + 2);
                 memcpy(lit, full_code + start, end - start + 2);
                 lit[end - start + 1] = '\0';
-                if (hasName(&constantMappings, lit)) {
-                    id = getName(&constantMappings, lit);
+                if (hasName(&vm->constants_map, lit)) {
+                    id = getName(&vm->constants_map, lit);
                 } else {
-                    id = addName(&constantMappings, lit);
+                    id = addName(&vm->constants_map, lit);
+                    numberCount++;
                 }
                 DOSATO_ADD_TOKEN(list, TOKEN_NUMBER, full_code + start, end - start, id);
             }
@@ -424,7 +423,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     // parse the constant mappings
     for (int i = 0; i < stringCount; i++) {
         // check which quotes are used
-        char* lit = constantMappings.names[i];
+        char* lit = vm->constants_map.names[i + vm->constants_map.count - stringCount - numberCount];
         char quote = lit[0];
         if (quote == '\'') {
             char val = lit[1];
@@ -511,8 +510,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val });
         }
     }
-    for (int i = stringCount; i < constantMappings.count; i++) {
-        char* lit = constantMappings.names[i];
+    for (int i = 0; i < numberCount; i++) {
+        char* lit = vm->constants_map.names[i + vm->constants_map.count - numberCount];
         bool isInt = true;
         for (int j = 0; j < strlen(lit); j++) {
             if (lit[j] == '.' || lit[j] == 'F') {
@@ -528,11 +527,6 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         if (isInt) {
             write_ValueArray(&vm->constants, (Value) { TYPE_ULONG, .as.ulongValue = strtoull(lit, NULL, 10) });
         }
-    }
-
-    // free the mappings
-    for (int i = 0; i < constantMappings.count; i++) {
-        free(constantMappings.names[i]);
     }
 
     #undef SKIP_TOKEN

@@ -29,6 +29,7 @@ void free_LocationList(LocationList* list) {
     init_LocationList(list);
 }
 
+DOSATO_LIST_FUNC_GEN(CodeInstanceList, CodeInstance, instances)
 
 
 
@@ -164,6 +165,10 @@ int getOffset(OpCode instruction) {
             return 2; // 1 byte for the arity
         case OP_RETURN:
             return 2; // 1 byte for the arity
+
+        case OP_INCLUDE:
+            return 3; // 2 bytes for the instance index
+            
 
 
         default:

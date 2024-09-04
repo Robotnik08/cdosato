@@ -39,6 +39,7 @@ typedef enum {
     E_BREAK_OUTSIDE_LOOP,
     E_CONTINUE_OUTSIDE_LOOP,
     E_EXPECTED_STRING,
+    E_TOO_MANY_INCLUDES,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,
@@ -66,6 +67,6 @@ typedef enum {
 
 // extern const char* ERROR_MESSAGES[];
 
-void printError (const char* full_code, const int pos, const ErrorType type);
+void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type);
 
 #endif // dosato_error_h

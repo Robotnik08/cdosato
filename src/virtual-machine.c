@@ -40,7 +40,9 @@ void initVirtualMachine(VirtualMachine* vm) {
     init_StackFrames(&vm->stack_frames);
     init_FunctionList(&vm->functions);
     init_NameMap(&vm->mappings);
+    init_NameMap(&vm->constants_map);
     init_ErrorJumps(&vm->error_jumps);
+    init_CodeInstanceList(&vm->includes);
     vm->ip = vm->instance->code;
 }
 
@@ -52,7 +54,9 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free_StackFrames(&vm->stack_frames);
     destroy_FunctionList(&vm->functions);
     free_NameMap(&vm->mappings);
+    free_NameMap(&vm->constants_map);
     free_ErrorJumps(&vm->error_jumps);
+    free_CodeInstanceList(&vm->includes);
     free(vm->instance);
 }
 
@@ -70,11 +74,7 @@ void pushValue(ValueArray* array, Value value) {
         vm->globals.values[0].as.longValue = e_code; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
-        printf("Error at: %d\n", token_index); \
-        printf("%p", ((AST*)active_instance->ast)->source); \
-        printf(((AST*)active_instance->ast)->source);\
-        printf("Source is not corrupted");\
-        printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, e_code);\
+        printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code);\
     } \
 } while(0)
 
@@ -111,6 +111,23 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             }
 
             case OP_NOP: {
+                break;
+            }
+
+            case OP_INCLUDE: {
+                uint16_t index = NEXT_SHORT();
+                CodeInstance* included_instance = &vm->includes.instances[index];
+                active_stack[ip_stack_count] = active_instance;
+                ip_stack[ip_stack_count++] = vm->ip;
+
+                vm->ip = included_instance->code;
+                active_instance = included_instance;
+                break;
+            }
+
+            case OP_END_INCLUDE: {
+                vm->ip = ip_stack[--ip_stack_count];
+                active_instance = active_stack[ip_stack_count];
                 break;
             }
 

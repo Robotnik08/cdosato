@@ -89,11 +89,15 @@ int main (int argc, char** argv) {
     } 
 
 
-    compile(&vm, main_ast);
+    compile(&vm, &main_ast);
 
 
     if (debug & DEBUG_COMPILE) {
         disassembleCode(vm.instance, "Main");
+        for (int i = 0; i < vm.includes.count; i++) {
+            disassembleCode(&vm.includes.instances[i], ((AST*)vm.includes.instances[i].ast)->name);
+        }
+
         for (int i = 0; i < vm.functions.count; i++) {
             printf("\n");
             disassembleCode(vm.functions.funcs[i].instance, vm.functions.funcs[i].name);
@@ -110,6 +114,14 @@ int main (int argc, char** argv) {
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);
         printf("Stack size: %d (%s)\n", vm.stack.count, vm.stack.count == 0 ? "passed" : "failed");
+        if (vm.stack.count > 0) {
+            printf("Left over stack: ");
+            for (int i = 0; i < vm.stack.count; i++) {
+                printf("%d: ", i);
+                printValue(vm.stack.values[i], true);
+                printf("\n");
+            }
+        }
         printf("Done running\n");
     }
 

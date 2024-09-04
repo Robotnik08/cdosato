@@ -94,6 +94,9 @@ typedef enum {
     OP_PUSH_NULL,
     OP_PUSH_MINUS_ONE,
 
+    OP_INCLUDE,
+    OP_END_INCLUDE,
+
     OP_END_FUNC,
 
     OP_PRINT // print the top of the stack, this is a debug instruction to be removed
@@ -116,9 +119,19 @@ typedef struct {
     void* ast;
 } CodeInstance;
 
+typedef struct {
+    CodeInstance* instances;
+    size_t count;
+    size_t capacity;
+} CodeInstanceList;
+
 void init_LocationList(LocationList* list);
 void write_LocationList(LocationList* list, size_t location, size_t stack_count);
 void free_LocationList(LocationList* list);
+
+void init_CodeInstanceList(CodeInstanceList* list);
+void write_CodeInstanceList(CodeInstanceList* list, CodeInstance instance);
+void free_CodeInstanceList(CodeInstanceList* list);
 
 void initCodeInstance(CodeInstance* instance);
 void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index);

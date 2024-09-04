@@ -6,6 +6,6 @@
 #include "token.h"
 #include "ast.h"
 
-Node parse (const char *source, size_t length, const int start, const int end, TokenList tokens, NodeType type);
+Node parse (const char *source, size_t length, const int start, const int end, TokenList tokens, NodeType type, const char* file_name);
 
 #endif
