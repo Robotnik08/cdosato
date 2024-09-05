@@ -19,4 +19,6 @@ void init_AST (AST* ast);
 void load_AST (AST* ast, char* source, size_t length, char* name, int debug, VirtualMachine* vm);
 void free_AST (AST* ast);
 
+void parseFile (AST* ast, char* name, int debug, VirtualMachine* vm);
+
 #endif

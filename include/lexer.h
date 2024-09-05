@@ -5,7 +5,7 @@
 #include "token.h"
 #include "virtual-machine.h"
 
-int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm);
+int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm, const char* file_name);
 
 void sortTokens (TokenList* list);
 

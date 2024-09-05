@@ -2,6 +2,7 @@
 
 #include "../include/memory.h"
 #include "../include/code_instance.h"
+#include "../include/ast.h"
 
 void init_LocationList(LocationList* list) {
     list->locations = NULL;
@@ -28,6 +29,7 @@ void free_LocationList(LocationList* list) {
     init_LocationList(list);
 }
 
+DOSATO_LIST_FUNC_GEN(CodeInstanceList, CodeInstance, instances)
 
 
 
@@ -37,6 +39,7 @@ void initCodeInstance(CodeInstance* instance) {
     init_LocationList(&instance->loop_jump_locations);
     instance->count = 0;
     instance->capacity = 0;
+    instance->ast = NULL;
 }
 
 void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index) {
@@ -98,6 +101,7 @@ void freeCodeInstance(CodeInstance* instance) {
     instance->count = 0;
     free_LocationList(&instance->loop_jump_locations);
     instance->capacity = 0;
+    free_AST(instance->ast);
 }
 
 int getOffset(OpCode instruction) {
@@ -161,6 +165,10 @@ int getOffset(OpCode instruction) {
             return 2; // 1 byte for the arity
         case OP_RETURN:
             return 2; // 1 byte for the arity
+
+        case OP_INCLUDE:
+            return 3; // 2 bytes for the instance index
+            
 
 
         default:

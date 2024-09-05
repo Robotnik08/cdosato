@@ -36,6 +36,8 @@ static const char* ERROR_MESSAGES[] = {
     "If keyword expects Then keyword",
     "Break keyword can only be used inside a loop",
     "Continue keyword can only be used inside a loop",
+    "Expected String Literal",
+    "Too many includes (Might be a circular include)",	
 
     "Undefined Variable",
     "Variable already defined",
@@ -60,12 +62,12 @@ static const char* ERROR_MESSAGES[] = {
     "Error Amount (report this)"
 };
 
-void printError (const char* full_code, const int pos, const ErrorType type) {
+void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type) {
     printf("\nERROR:\n");
     printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
 
     if (pos < strlen(full_code) && pos >= 0) {
-        printf("At line %i:%i\n", getLine(full_code, pos), getLineCol(full_code, pos));
+        printf("At line %i:%i in <%s>\n", getLine(full_code, pos), getLineCol(full_code, pos), file_name);
     } else {
         printf("At UNSPECIFIED position\n");
     }
