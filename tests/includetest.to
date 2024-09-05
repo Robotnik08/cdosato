@@ -1,0 +1,3 @@
+INCLUDE "tests/func.to";
+
+DO SAY (add (10, 20));
