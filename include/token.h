@@ -34,7 +34,7 @@ typedef enum {
     TOKEN_SEPARATOR,
     TOKEN_BOOLEAN,
     TOKEN_END = -1
-} TokenType;
+} LexTokenType;
 
 typedef enum {
     BRACKET_NULL,
@@ -125,7 +125,7 @@ typedef enum {
 typedef struct {
     char* start;
     int length;
-    TokenType type;
+    LexTokenType type;
     int carry; // flags for token data
 } Token;
 
@@ -162,7 +162,7 @@ void printTokens (TokenList list);
 
 int isAssignmentOperator (OperatorType operator);
 
-int checkIfOnly (TokenList list, TokenType type, int start, int end);
+int checkIfOnly (TokenList list, LexTokenType type, int start, int end);
 
 int isUnaryOperator (OperatorType operator);
 

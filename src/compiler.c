@@ -6,6 +6,7 @@
 #include "../include/error.h"
 #include "../include/code_instance.h"
 #include "../include/debug.h"
+#include "../include/dynamic_library_loader.h"
 
 void compile(VirtualMachine* vm, AST* ast) { 
 
@@ -18,7 +19,7 @@ void compile(VirtualMachine* vm, AST* ast) {
 
 }
 
-#define ERROR(e_code, index) printError(ast->source, ast->tokens.tokens[index].start - ast->source, ast->name, e_code)
+#define PRINT_ERROR(e_code, index) printError(ast->source, ast->tokens.tokens[index].start - ast->source, ast->name, e_code)
 
 int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, ScopeData* scope) {
     NodeType type = node.type;
@@ -62,7 +63,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_DEFINE:
         case NODE_MASTER_MAKE: {
             if (node.body.nodes[0].type != NODE_MASTER_DO_BODY + type - 1 || node.body.count > 1) {
-                ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
+                PRINT_ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
             }
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             break;      
@@ -89,7 +90,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                         ci->code[last_result + 1] = (jump_index + getOffset(OP_JUMP)) & 0xFF;
                         ci->code[last_result + 2] = (jump_index + getOffset(OP_JUMP)) >> 8;
                     } else {
-                        ERROR(E_ELSE_WITHOUT_IF, node.body.nodes[i].start - 1);
+                        PRINT_ERROR(E_ELSE_WITHOUT_IF, node.body.nodes[i].start - 1);
                     }
                 } else {
                     last_result = compileNode(vm, ci, node.body.nodes[i], ast, scope);
@@ -109,7 +110,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 }
                 writeInstruction(ci, node.start, OP_RETURN, DOSATO_SPLIT_SHORT(scope->locals_count));
             } else {
-                ERROR(E_CANT_RETURN_OUTSIDE_FUNCTION, node.body.nodes[0].start);
+                PRINT_ERROR(E_CANT_RETURN_OUTSIDE_FUNCTION, node.body.nodes[0].start);
             }
             break;
         }
@@ -118,7 +119,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // compile function
 
             if (scope != NULL) { 
-                ERROR(E_MUST_BE_GLOBAL, node.start - 1);
+                PRINT_ERROR(E_MUST_BE_GLOBAL, node.start - 1);
             }
 
             DataType type = ast->tokens.tokens[node.body.nodes[0].start].carry;
@@ -184,11 +185,11 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
         case NODE_MASTER_INCLUDE_BODY: {
             if (scope != NULL) {
-                ERROR(E_MUST_BE_GLOBAL, node.start - 1);
+                PRINT_ERROR(E_MUST_BE_GLOBAL, node.start - 1);
             }
 
             if (node.body.nodes[0].type != NODE_STRING_LITERAL) {
-                ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
+                PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
             char* pathValue = vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue;
@@ -207,7 +208,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             write_CodeInstanceList(&vm->includes, included_instance);
             
             if (vm->includes.count > MAX_INCLUDES) {
-                ERROR(E_TOO_MANY_INCLUDES, node.start);
+                PRINT_ERROR(E_TOO_MANY_INCLUDES, node.start);
             }
 
             compileNode(vm, &included_instance, included_ast->root, included_ast, NULL);
@@ -220,8 +221,23 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // update the include
             vm->includes.instances[index] = included_instance;
 
+            break;
+        }
+
+        case NODE_MASTER_IMPORT_BODY: {
+            if (scope != NULL) {
+                PRINT_ERROR(E_MUST_BE_GLOBAL, node.start - 1);
+            }
+
+            if (node.body.nodes[0].type != NODE_STRING_LITERAL) {
+                PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
+            }
+
+            char* path = strdup(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue);
             
+            DynamicLibrary lib = loadLib(path);
             
+            lib.init();
 
             break;
         }
@@ -236,14 +252,14 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             writeInstruction(ci, node.start, OP_TYPE_CAST, ast->tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
             
             if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
-                ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
             }
 
             if (scope == NULL) { // global scope
                 writeInstruction(ci, node.body.nodes[1].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
             } else {
                 if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
-                    ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
                 }
                 writeInstruction(ci, node.body.nodes[1].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
                 pushScopeData(scope, ast->tokens.tokens[node.body.nodes[1].start].carry);
@@ -320,7 +336,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
             
             if (node.body.count != 3) {
-                ERROR(E_INVALID_EXPRESSION, node.start);
+                PRINT_ERROR(E_INVALID_EXPRESSION, node.start);
             }
 
             OperatorType operator = ast->tokens.tokens[node.body.nodes[1].start].carry;
@@ -328,7 +344,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             compileNode(vm, ci, node.body.nodes[2], ast, scope);
 
             if (ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_HASH && ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_ARROW) {
-                ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
+                PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
             }
             writeByteCode(ci, operator == OPERATOR_HASH ? OP_REFERENCE_SUBSCR : OP_REFERENCE_GETOBJ, node.body.nodes[1].start);
             break;
@@ -377,7 +393,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             int res = writeOperatorInstruction(ci, ast->tokens.tokens[node.body.nodes[1].start].carry, node.body.nodes[1].start);
             if (res == -1) {
-                ERROR(E_NON_BINARY_OPERATOR, node.body.nodes[1].start);
+                PRINT_ERROR(E_NON_BINARY_OPERATOR, node.body.nodes[1].start);
             }
 
             break;
@@ -387,7 +403,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             compileNode(vm, ci, node.body.nodes[1], ast, scope);
             int res = writeUnaryInstruction(ci, ast->tokens.tokens[node.body.nodes[0].start].carry, node.body.nodes[0].start);
             if (res == -1) {
-                ERROR(E_NON_UNARY_OPERATOR, node.body.nodes[0].start);
+                PRINT_ERROR(E_NON_UNARY_OPERATOR, node.body.nodes[0].start);
             }
             break;
         }
@@ -428,7 +444,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 }
                 size_t index = getScopeIndex(scope, ast->tokens.tokens[node.start].carry);
                 if (index == -1) {
-                    ERROR(E_UNDEFINED_VARIABLE, node.start);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE, node.start);
                 }
                 writeInstruction(ci, node.start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(index)); // load the local variable
             }
@@ -574,7 +590,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_BREAK_BODY:
         case NODE_MASTER_CONTINUE_BODY: {
             if (ci->loop_jump_locations.count == 0) {
-                ERROR(type == NODE_MASTER_BREAK_BODY ? E_BREAK_OUTSIDE_LOOP : E_CONTINUE_OUTSIDE_LOOP, node.start);
+                PRINT_ERROR(type == NODE_MASTER_BREAK_BODY ? E_BREAK_OUTSIDE_LOOP : E_CONTINUE_OUTSIDE_LOOP, node.start);
             }
             size_t top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 1];
             if (ci->code[top_jump_index] == OP_JUMP_IF_FALSE && type == NODE_MASTER_CONTINUE_BODY) {
@@ -626,7 +642,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
     return 0;
 }
 
-#undef ERROR
+#undef PRINT_ERROR
 
 int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t token_index) {
     switch (operator) {

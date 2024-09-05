@@ -64,7 +64,7 @@ void pushValue(ValueArray* array, Value value) {
     write_ValueArray(array, value);
 }
 
-#define ERROR(e_code) do { \
+#define PRINT_ERROR(e_code) do { \
     if (vm->error_jumps.count > 0) { \
         ErrorJump jump = vm->error_jumps.jumps[--vm->error_jumps.count]; \
         while (vm->stack.count > jump.error_stack_count) { \
@@ -203,11 +203,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value func = POP_VALUE();
 
                 if (func.type != TYPE_FUNCTION) {
-                    ERROR(E_NOT_A_FUNCTION);
+                    PRINT_ERROR(E_NOT_A_FUNCTION);
                 }
                 Function* function = &vm->functions.funcs[func.as.longValue];
                 if (arity != function->arity && function->arity != -1) {
-                    ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
+                    PRINT_ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
                 }
 
                 // cast arguments
@@ -215,7 +215,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     Value* arg = &vm->stack.values[vm->stack.count - arity + i];
                     ErrorType code = castValue(arg, function->argt[i]);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                 }
                 
@@ -284,18 +284,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
                 if (list.type != TYPE_ARRAY && list.type != TYPE_STRING) {
-                    ERROR(E_NOT_AN_ARRAY);
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
 
                 ErrorType code = castValue(&index, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int i = index.as.longValue;
                 if (list.type == TYPE_ARRAY) {
                     ValueArray* array = (ValueArray*)list.as.objectValue;
                     if (i < 0 || i >= array->count) {
-                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
 
                     Value value = array->values[i];
@@ -305,7 +305,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if (list.type == TYPE_STRING) {
                     char* string = list.as.stringValue;
                     if (i < 0 || i >= strlen(string)) {
-                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
 
                     char val = string[i];
@@ -322,12 +322,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value key = POP_VALUE();
                 Value object = POP_VALUE();
                 if (object.type != TYPE_OBJECT) {
-                    ERROR(E_NOT_AN_OBJECT);
+                    PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
-                    ERROR(E_KEY_NOT_FOUND);
+                    PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
                 Value value = *getValueAtKey(obj, key.as.stringValue);
@@ -344,7 +344,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t index = NEXT_SHORT();
                 Value global = vm->globals.values[index];
                 if (!global.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 pushValue(&vm->stack, global);
@@ -355,7 +355,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
                 if (!local.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 pushValue(&vm->stack, local);
@@ -366,17 +366,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
                 if (list.type != TYPE_ARRAY) {
-                    ERROR(E_NOT_AN_ARRAY);
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
                 if (!list.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 // TO DO type checking
                 int i = index.as.longValue;
                 ValueArray* array = (ValueArray*)list.as.objectValue;
                 if (i < 0 || i >= array->count) {
-                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
                 Value value = array->values[i];
@@ -391,12 +391,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value object = POP_VALUE();
 
                 if (object.type != TYPE_OBJECT) {
-                    ERROR(E_NOT_AN_OBJECT);
+                    PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
-                    ERROR(E_KEY_NOT_FOUND);
+                    PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
                 Value value = *getValueAtKey(obj, key.as.stringValue);
@@ -426,7 +426,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     DataType type = vm->stack.values[index].type;
                     ErrorType castRes = castValue(&value, type);
                     if (castRes != E_NULL) {
-                        ERROR(castRes);
+                        PRINT_ERROR(castRes);
                     }
                 } else if (vm->stack.values[index].defined) {
                     value.is_variable_type = true;
@@ -445,7 +445,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value* index = &vm->stack.values[vm->stack.count - 1];
                 Value list = PEEK_VALUE_TWO();
                 if (list.type != TYPE_ARRAY) {
-                    ERROR(E_NOT_AN_ARRAY);
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
                 
                 int i = ++index->as.longValue;
@@ -479,7 +479,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value global = vm->globals.values[index];
                 
                 if (!global.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
                 
                 Value copy = hardCopyValue(global);
@@ -491,7 +491,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
                 if (!vm->globals.values[index].defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 value = hardCopyValue(value);
@@ -500,7 +500,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     DataType type = vm->globals.values[index].type;
                     ErrorType castRes = castValue(&value, type);
                     if (castRes != E_NULL) {
-                        ERROR(castRes);
+                        PRINT_ERROR(castRes);
                     }
                 } else {
                     value.is_variable_type = true;
@@ -519,7 +519,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
                 if (vm->globals.values[index].defined) {
-                    ERROR(E_ALREADY_DEFINED_VARIABLE);
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
 
                 value = hardCopyValue(value);
@@ -534,23 +534,23 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value list = POP_VALUE();
                 Value value = POP_VALUE();
                 if (list.type != TYPE_ARRAY && list.type != TYPE_STRING) {
-                    ERROR(E_NOT_AN_ARRAY);
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
 
                 if (!list.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 // TO DO type checking
                 ErrorType code = castValue(&index, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int i = index.as.longValue;
                 if (list.type == TYPE_ARRAY) {
                     ValueArray* array = (ValueArray*)list.as.objectValue;
                     if (i < 0 || i >= array->count) {
-                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
 
                     // destroy old value
@@ -561,12 +561,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if (list.type == TYPE_STRING) {
                     char* string = list.as.stringValue;
                     if (i < 0 || i >= strlen(string)) {
-                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
 
                     ErrorType code = castValue(&value, TYPE_CHAR);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
 
                     string[i] = value.as.charValue;
@@ -583,7 +583,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value value = POP_VALUE();
 
                 if (object.type != TYPE_OBJECT) {
-                    ERROR(E_NOT_AN_OBJECT);
+                    PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
                 markDefined(&value);
@@ -625,10 +625,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     Value value = POP_VALUE();
                     Value key = POP_VALUE();
                     if (key.type != TYPE_STRING) {
-                        ERROR(E_INVALID_KEY_TYPE);
+                        PRINT_ERROR(E_INVALID_KEY_TYPE);
                     }
                     if (hasKey(obj, key.as.stringValue)) {
-                        ERROR(E_KEY_ALREADY_DEFINED);
+                        PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                     }
                     write_ValueObject(obj, key.as.stringValue, value);
                 }
@@ -640,12 +640,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_INCREMENT: {
                 uint16_t index = NEXT_SHORT();
                 if (!vm->globals.values[index].defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 ErrorType code = incValue(&vm->globals.values[index], 1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -653,12 +653,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_DECREMENT: {
                 uint16_t index = NEXT_SHORT();
                 if (!vm->globals.values[index].defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 ErrorType code = incValue(&vm->globals.values[index], -1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -666,12 +666,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_INCREMENT_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 if (!vm->stack.values[index].defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 ErrorType code = incValue(&vm->stack.values[index], 1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -679,7 +679,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_DECREMENT_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 if (!vm->stack.values[index].defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 // TO DO type checking
@@ -691,23 +691,23 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
                 if (list.type != TYPE_ARRAY) {
-                    ERROR(E_NOT_AN_ARRAY);
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
                 if (!list.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 // TO DO type checking
                 int i = index.as.longValue;
                 ValueArray* array = (ValueArray*)list.as.objectValue;
                 if (i < 0 || i >= array->count) {
-                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
                 // TO DO type checking
                 ErrorType code = incValue(&array->values[i], 1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -716,23 +716,23 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
                 if (list.type != TYPE_ARRAY) {
-                    ERROR(E_NOT_AN_ARRAY);
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
                 if (!list.defined) {
-                    ERROR(E_UNDEFINED_VARIABLE);
+                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
                 // TO DO type checking
                 int i = index.as.longValue;
                 ValueArray* array = (ValueArray*)list.as.objectValue;
                 if (i < 0 || i >= array->count) {
-                    ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
                 // TO DO type checking
                 ErrorType code = incValue(&array->values[i], -1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -741,19 +741,19 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value key = POP_VALUE();
                 Value object = POP_VALUE();
                 if (object.type != TYPE_OBJECT) {
-                    ERROR(E_NOT_AN_OBJECT);
+                    PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
-                    ERROR(E_KEY_NOT_FOUND);
+                    PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
                 Value* value = getValueAtKey(obj, key.as.stringValue);
                 // to do type checking
                 ErrorType code = incValue(value, 1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -762,19 +762,19 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value key = POP_VALUE();
                 Value object = POP_VALUE();
                 if (object.type != TYPE_OBJECT) {
-                    ERROR(E_NOT_AN_OBJECT);
+                    PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
-                    ERROR(E_KEY_NOT_FOUND);
+                    PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
                 Value* value = getValueAtKey(obj, key.as.stringValue);
                 // to do type checking
                 ErrorType code = incValue(value, -1);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 break;
             }
@@ -786,7 +786,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 
                 ErrorType error = castValue(&val, type);
                 if (error != E_NULL) {
-                    ERROR(error);
+                    PRINT_ERROR(error);
                 }
                 pushValue(&vm->stack, val);
 
@@ -852,11 +852,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue + b.as.doubleValue };
                     pushValue(&vm->stack, result);
@@ -892,7 +892,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     }
                     for (int i = 0; i < b_obj->count; i++) {
                         if (hasKey(new_obj, b_obj->keys[i])) {
-                            ERROR(E_KEY_ALREADY_DEFINED);
+                            PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                         }
                         Value val = hardCopyValue(b_obj->values[i]);
                         write_ValueObject(new_obj, b_obj->keys[i], val);
@@ -905,11 +905,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue + b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -917,7 +917,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -928,11 +928,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue - b.as.doubleValue };
                     pushValue(&vm->stack, result);
@@ -943,11 +943,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     ValueArray* a_array = (ValueArray*)a.as.objectValue;
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int pop_amount = b.as.longValue;
                     if (pop_amount < 0) {
-                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
                     if (pop_amount > a_array->count) {
                         pop_amount = a_array->count;
@@ -967,7 +967,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     ValueObject* a_obj = (ValueObject*)a.as.objectValue;
                     char* key_to_remove = b.as.stringValue;
                     if (!hasKey(a_obj, key_to_remove)) {
-                        ERROR(E_KEY_NOT_FOUND);
+                        PRINT_ERROR(E_KEY_NOT_FOUND);
                     }
                     removeFromKey(a_obj, key_to_remove);
                     pushValue(&vm->stack, a);
@@ -975,11 +975,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue - b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -987,7 +987,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -998,11 +998,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue * b.as.doubleValue };
                     pushValue(&vm->stack, result);
@@ -1013,11 +1013,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     ValueArray* a_array = (ValueArray*)a.as.objectValue;
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int multiply_amount = b.as.longValue;
                     if (multiply_amount < 0) {
-                        ERROR(E_INDEX_OUT_OF_BOUNDS);
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
                     ValueArray* new_array = malloc(sizeof(ValueArray));
                     init_ValueArray(new_array);
@@ -1035,11 +1035,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue * b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1047,7 +1047,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -1058,14 +1058,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     if (b.as.doubleValue == 0) {
-                        ERROR(E_MATH_DOMAIN_ERROR);
+                        PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                     }
                     Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue / b.as.doubleValue };
                     pushValue(&vm->stack, result);
@@ -1075,14 +1075,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     if (b.as.longValue == 0) {
-                        ERROR(E_MATH_DOMAIN_ERROR);
+                        PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                     }
                     long long int result = a.as.longValue / b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1090,7 +1090,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -1101,11 +1101,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue > b.as.doubleValue });
                     DESTROYIFLITERAL(a);
@@ -1114,18 +1114,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue > b.as.longValue });
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -1136,11 +1136,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue < b.as.doubleValue });
                     DESTROYIFLITERAL(a);
@@ -1149,18 +1149,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue < b.as.longValue });
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -1191,11 +1191,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue >= b.as.doubleValue });
                     DESTROYIFLITERAL(a);
@@ -1204,18 +1204,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue >= b.as.longValue });
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -1226,11 +1226,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue <= b.as.doubleValue });
                     DESTROYIFLITERAL(a);
@@ -1239,18 +1239,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue <= b.as.longValue });
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
                     break;
                 } else {
-                    ERROR(E_CANT_PERFORM_BINARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
                 }
                 break;
             }
@@ -1260,11 +1260,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_BOOL);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_BOOL);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
 
                 pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue && b.as.boolValue });
@@ -1278,11 +1278,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_BOOL);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_BOOL);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
 
                 pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue || b.as.boolValue });
@@ -1297,11 +1297,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     double result = fmod(a.as.doubleValue, b.as.doubleValue);
                     pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
@@ -1310,11 +1310,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue % b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1330,11 +1330,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     double result = pow(a.as.doubleValue, b.as.doubleValue);
                     pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
@@ -1344,11 +1344,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = powl(a.as.longValue, b.as.longValue);
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1363,14 +1363,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_DOUBLE);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_DOUBLE);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 if (b.as.doubleValue < 0) {
-                    ERROR(E_MATH_DOMAIN_ERROR);
+                    PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                 }
                 double result = 0;
                 if (b.as.doubleValue > 0) {
@@ -1388,11 +1388,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue << b.as.longValue;
                 pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1407,11 +1407,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue >> b.as.longValue;
                 pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1426,11 +1426,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue & b.as.longValue;
                 pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1445,11 +1445,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue | b.as.longValue;
                 pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1464,11 +1464,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 code = castValue(&b, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue ^ b.as.longValue;
                 pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1484,11 +1484,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     double result = fmin(a.as.doubleValue, b.as.doubleValue);
                     pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
@@ -1498,11 +1498,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue < b.as.longValue ? a.as.longValue : b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1519,11 +1519,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
                     ErrorType code = castValue(&a, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_DOUBLE);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     double result = fmax(a.as.doubleValue, b.as.doubleValue);
                     pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
@@ -1533,11 +1533,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
-                        ERROR(code);
+                        PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue;
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
@@ -1562,7 +1562,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     pushValue(&vm->stack, result);
                     DESTROYIFLITERAL(a);
                 } else {
-                    ERROR(E_CANT_PERFORM_UNARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_UNARY_OPERATION);
                 }
                 break;
             }
@@ -1571,7 +1571,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_BOOL);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
 
                 pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = !a.as.boolValue });
@@ -1583,7 +1583,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_LONG);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
 
                 pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = ~a.as.longValue });
@@ -1595,10 +1595,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 ErrorType code = castValue(&a, TYPE_DOUBLE);
                 if (code != E_NULL) {
-                    ERROR(code);
+                    PRINT_ERROR(code);
                 }
                 if (a.as.doubleValue < 0) {
-                    ERROR(E_MATH_DOMAIN_ERROR);
+                    PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                 }
                 double result = sqrt(a.as.doubleValue);
                 pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
@@ -1618,7 +1618,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
                     DESTROYIFLITERAL(a);
                 } else {
-                    ERROR(E_CANT_PERFORM_UNARY_OPERATION);
+                    PRINT_ERROR(E_CANT_PERFORM_UNARY_OPERATION);
                 }
                 break;
             }
@@ -1628,4 +1628,4 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
     return 0;
 }
 
-#undef ERROR
+#undef PRINT_ERROR
