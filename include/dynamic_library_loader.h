@@ -11,7 +11,7 @@
 #include <dlfcn.h>
 #endif
 
-typedef ErrorType (*DosatoFunction)(ValueArray, bool debug);
+typedef Value (*DosatoFunction)(ValueArray, bool debug);
 typedef void (*DosatoFunctionEmpty)();
 
 typedef struct {

@@ -8,7 +8,7 @@
 #include "../include/debug.h"
 #include "../include/dynamic_library_loader.h"
 
-void compile(VirtualMachine* vm, AST* ast) { 
+void compile(VirtualMachine* vm, AST* ast) {
 
     // Compile the AST into byte code
     vm->instance->ast = ast;
@@ -237,7 +237,33 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             
             DynamicLibrary lib = loadLib(path);
             
-            lib.init();
+            // register functions
+            for (int i = 0; i < lib.functions.count; i++) {
+                DosatoFunctionMap func = lib.functions.functions[i];
+                Function new_func;
+                init_Function(&new_func);
+                new_func.name = strdup(func.name);
+
+                // check if name is in name map
+                size_t name_index = -1;
+                for (int j = 0; j < vm->mappings.count; j++) {
+                    if (strcmp(vm->mappings.names[j], new_func.name) == 0) {
+                        name_index = j;
+                        break;
+                    }
+                }
+                // if not, add it
+                if (name_index == -1) {
+                    name_index = vm->mappings.count;
+                    write_NameMap(&vm->mappings, new_func.name);
+                }
+                new_func.name_index = name_index;
+                
+                new_func.func_ptr = func.function;
+                new_func.is_compiled = true;
+
+                write_FunctionList(&vm->functions, new_func);
+            }
 
             break;
         }
@@ -351,19 +377,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_FUNCTION_CALL: {
-
-            // debug force SAY to be the print function
-            char* name = getTokenString(ast->tokens.tokens[node.body.nodes[0].start]);
-            if (strcmp(name, "SAY") == 0) {
-                // push first argument
-                compileNode(vm, ci, node.body.nodes[1].body.nodes[0], ast, scope);
-                writeInstruction(ci, node.start, OP_PRINT, 0);
-                break;
-            }
-
-
             // push arguments
-
             int arity = node.body.nodes[1].body.count;
             for (int i = 0; i < arity; i++) {
                 compileNode(vm, ci, node.body.nodes[1].body.nodes[i], ast, scope);

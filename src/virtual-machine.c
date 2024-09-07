@@ -4,13 +4,16 @@
 #include "../include/error.h"
 #include "../include/ast.h"
 #include "../include/memory.h"
+#include "../include/dynamic_library_loader.h"
 
 DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
 
 void destroy_Function(Function* func) {
-    free(func->name);
-    free(func->argv);
-    free(func->argt);
+    if (!func->is_compiled) {
+        free(func->name);
+        free(func->argv);
+        free(func->argt);
+    }
 }
 
 void destroy_FunctionList(FunctionList* list) {
@@ -206,6 +209,22 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_NOT_A_FUNCTION);
                 }
                 Function* function = &vm->functions.funcs[func.as.longValue];
+                if (function->is_compiled) {
+                    // call the compiled function
+                    ValueArray args;
+                    init_ValueArray(&args);
+                    for (int i = 0; i < arity; i++) {
+                        pushValue(&args, POP_VALUE());
+                    }
+                    Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
+                    if (return_val.type == TYPE_EXPECTION) {
+                        PRINT_ERROR(return_val.as.longValue);
+                    }
+                    pushValue(&vm->stack, return_val);
+
+                    break;
+                }
+
                 if (arity != function->arity && function->arity != -1) {
                     PRINT_ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
                 }

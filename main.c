@@ -4,6 +4,8 @@
 #include "include/ast.h"
 #include "include/debug.h"
 #include "include/compiler.h"
+#include "include/filetools.h"
+#include "include/standard_libraries/load_std.h"
 
 int debug = 0b0;
 #define DEBUG 0b1
@@ -88,6 +90,8 @@ int main (int argc, char** argv) {
         printNode(main_ast.root, 0);
     } 
 
+    // initialize the standard library
+    loadStandardLibrary(&vm);
 
     compile(&vm, &main_ast);
 
@@ -99,6 +103,7 @@ int main (int argc, char** argv) {
         }
 
         for (int i = 0; i < vm.functions.count; i++) {
+            if (vm.functions.funcs[i].is_compiled) continue;
             printf("\n");
             disassembleCode(vm.functions.funcs[i].instance, vm.functions.funcs[i].name);
         }

@@ -1,11 +1,14 @@
 #ifndef test_library_h
 #define test_library_h
 
-#include "../include/dynamic_library_loader.h"
+#include "dosato.h"
 
 
-void init();
+Value sayHello(ValueArray args, bool debug);
+Value multiply(ValueArray args, bool debug);
+Value count (ValueArray args, bool debug);
 
 DosatoFunctionMapList functions;
+void init();
 
 #endif // test_library_h

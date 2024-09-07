@@ -4,6 +4,8 @@
 #include "../include/value.h"
 
 DOSATO_LIST_FUNC_GEN(ValueArray, Value, values)
+DOSATO_LIST_FUNC_GEN(StackFrames, size_t, stack)
+DOSATO_LIST_FUNC_GEN(ErrorJumps, ErrorJump, jumps)
 
 void destroyValueArray(ValueArray* array) {
     for (size_t i = 0; i < array->count; i++) {
@@ -604,8 +606,6 @@ void markDefined(Value* value) {
     }
 }
 
-DOSATO_LIST_FUNC_GEN(StackFrames, size_t, stack)
-DOSATO_LIST_FUNC_GEN(ErrorJumps, ErrorJump, jumps)
 
 void init_NameMap(NameMap* map) {
     map->names = NULL;

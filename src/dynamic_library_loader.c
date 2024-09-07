@@ -47,6 +47,9 @@ DynamicLibrary loadLib (const char* path) {
         exit(1);
     }
 
+    // call the init function
+    lib.init();
+
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)GetProcAddress(lib.handle, "functions");
 
     if (!functions) {
@@ -63,11 +66,14 @@ DynamicLibrary loadLib (const char* path) {
         exit(1);
     }
 
-    lib.init = (DosatoFunction)dlsym(lib.handle, "init");
+    lib.init = (DosatoFunctionEmpty)dlsym(lib.handle, "init");
     if (!lib.init) {
         printf("Error, library must have init function: %s\n", dlerror());
         exit(1);
     }
+    
+    // call the init function
+    lib.init();
 
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)dlsym(lib.handle, "functions");
 

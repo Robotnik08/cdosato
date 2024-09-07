@@ -1,19 +1,37 @@
 CC = gcc
-CFLAGS = -Iinclude -Werror
+CFLAGS = -Iinclude -Iinclude/standard_libraries -Werror
 SRCDIR = src
 INCDIR = include
 BUILDDIR = build
-TARGET = main
+TEMPDIR = temp
+TARGET = $(BUILDDIR)/dosato
+LIB_TARGET = $(BUILDDIR)/dosato_lib
 
-SOURCES := $(wildcard $(SRCDIR)/*.c) main.c
-OBJECTS := $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))
+SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/standard_libraries/*.c) main.c
+OBJECTS := $(patsubst $(SRCDIR)/%.c,$(TEMPDIR)/%.o,$(patsubst $(SRCDIR)/standard_libraries/%.c,$(TEMPDIR)/standard_libraries/%.o,$(SOURCES:main.c=$(TEMPDIR)/main.o)))
 
-all: $(BUILDDIR) $(TARGET)
+all: $(BUILDDIR) $(TEMPDIR) $(TARGET) lib
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+lib: $(LIB_TARGET)
+
+ifeq ($(OS),Windows_NT)
+$(LIB_TARGET): $(OBJECTS)
+	$(CC) -shared -o $(LIB_TARGET).dll $^
+else
+$(LIB_TARGET): $(OBJECTS)
+	$(CC) -shared -o $(LIB_TARGET).so $^
+endif
+
+$(TEMPDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(TEMPDIR)/standard_libraries/%.o: $(SRCDIR)/standard_libraries/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(TEMPDIR)/main.o: main.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILDDIR):
@@ -23,14 +41,23 @@ else
 	mkdir -p $(BUILDDIR)
 endif
 
-clean:
+$(TEMPDIR):
 ifeq ($(OS),Windows_NT)
-	rmdir /s /q $(BUILDDIR)
+	if not exist $(TEMPDIR) mkdir $(TEMPDIR)
+	if not exist $(TEMPDIR)\standard_libraries mkdir $(TEMPDIR)\standard_libraries
 else
-	rm -rf $(BUILDDIR)
+	mkdir -p $(TEMPDIR)
+	mkdir -p $(TEMPDIR)/standard_libraries
 endif
 
-run:
+clean:
+ifeq ($(OS),Windows_NT)
+	rmdir /s /q $(TEMPDIR)
+else
+	rm -rf $(TEMPDIR)
+endif
+
+run: $(TARGET)
 	./$(TARGET)
 
-.PHONY: all clean run
+.PHONY: all clean run lib
