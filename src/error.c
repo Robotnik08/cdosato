@@ -43,7 +43,7 @@ static const char* ERROR_MESSAGES[] = {
     "Variable already defined",
     "Variable is not an array",
     "Variable is not an object",
-    "Array index is out of bounds",
+    "Index is out of bounds",
     "Invalid key type, expected STRING",
     "Key is already defined",
     "Key is not defined",

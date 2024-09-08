@@ -49,7 +49,26 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"ACOS", math_acos},
         {"ATAN", math_atan},
         {"ATAN2", math_atan2},
-        {"CLAMP", math_clamp}
+        {"CLAMP", math_clamp},
+
+        {"SPLIT", string_split},
+        {"LOWER", string_lower},
+        {"UPPER", string_upper},
+        {"LENGTH", string_length},
+        {"SUBSTR", string_substr},
+        {"INDEXOF", string_indexof},
+        {"LASTINDEXOF", string_lastindexof},
+        {"STARTSWITH", string_startswith},
+        {"ENDSWITH", string_endswith},
+        {"REPLACE", string_replace},
+        {"TRIM", string_trim},
+        {"REVERSE", string_reverse},
+        {"CONTAINS", string_contains},
+        {"REMOVE", string_remove},
+        {"INSERT", string_insert},
+        {"STRINGTOINT", string_atoi},
+        {"STRINGTODOUBLE", string_atod},
+        {"COUNT", string_count},
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

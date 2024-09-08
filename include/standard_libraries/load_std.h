@@ -13,6 +13,7 @@
 #include "std_random.h"
 #include "std_time.h"
 #include "std_math.h"
+#include "std_string.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
 

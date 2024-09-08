@@ -11,7 +11,7 @@ Value io_seed_random (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    srand(arg.as.longValue);
+    srand(arg.as.uintValue);
 
     return UNDEFINED_VALUE;
 }
@@ -53,6 +53,7 @@ Value io_random_range (ValueArray args, bool debug) {
     }
 
     long long int result = rand() % (arg2.as.longValue - arg1.as.longValue + 1) + arg1.as.longValue;
+
     return (Value){ TYPE_LONG, .as.longValue = result };
 }
 
