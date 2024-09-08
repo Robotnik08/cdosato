@@ -1,8 +1,6 @@
 #include "../../include/standard_libraries/std_io.h"
 
-#ifndef _WIN32
 #include <errno.h>
-#endif
 
 Value io_say (ValueArray args, bool debug) {
     if (args.count == 0) {
@@ -87,9 +85,8 @@ Value io_read_file (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     FILE* file = fopen(arg.as.stringValue, "r");
@@ -97,7 +94,7 @@ Value io_read_file (ValueArray args, bool debug) {
         #ifdef _WIN32
         _fcloseall(); // close all files if any were opened
         #endif
-
+        
         return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
     }
 
@@ -120,14 +117,8 @@ Value io_write_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg1.type != TYPE_STRING || arg2.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     FILE* file = fopen(arg1.as.stringValue, "w");
@@ -153,14 +144,8 @@ Value io_append_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg1.type != TYPE_STRING || arg2.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     FILE* file = fopen(arg1.as.stringValue, "a");
@@ -184,9 +169,8 @@ Value io_delete_file (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     int result = remove(arg.as.stringValue);
@@ -207,9 +191,8 @@ Value io_file_exists (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     FILE* file = fopen(arg.as.stringValue, "r");
@@ -229,14 +212,8 @@ Value io_move_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg1.type != TYPE_STRING || arg2.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     int result = rename(arg1.as.stringValue, arg2.as.stringValue);
@@ -259,14 +236,8 @@ Value io_copy_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg1.type != TYPE_STRING || arg2.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     FILE* file1 = fopen(arg1.as.stringValue, "r");
