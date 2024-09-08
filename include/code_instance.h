@@ -135,8 +135,6 @@ void free_CodeInstanceList(CodeInstanceList* list);
 
 void initCodeInstance(CodeInstance* instance);
 void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index);
-void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index);
-void insertByteCode(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index);
 void writeInstruction(CodeInstance* instance, size_t token_index, OpCode instruction, ...);
 void freeCodeInstance(CodeInstance* instance);
 

@@ -92,6 +92,11 @@ int main (int argc, char** argv) {
 
     // initialize the standard library
     loadStandardLibrary(&vm);
+    
+    init_ValueArray(&vm.globals);
+    for (int i = 0; i < vm.mappings.count; i++) {
+        write_ValueArray(&vm.globals, UNDEFINED_VALUE);
+    }
 
     compile(&vm, &main_ast);
 
@@ -107,7 +112,7 @@ int main (int argc, char** argv) {
             printf("\n");
             disassembleCode(vm.functions.funcs[i].instance, vm.functions.funcs[i].name);
         }
-    } 
+    }
 
     if (!debug) {
         runVirtualMachine(&vm, debug);

@@ -55,35 +55,6 @@ void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index) {
     instance->count++;
 }
 
-void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index) {
-    if (instance->capacity < instance->count + 1) {
-        size_t oldCapacity = instance->capacity;
-        instance->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
-        instance->code = DOSATO_RESIZE_LIST(uint8_t, instance->code, oldCapacity, instance->capacity);
-        instance->token_indices = DOSATO_RESIZE_LIST(size_t, instance->token_indices, oldCapacity, instance->capacity);
-    }
-
-    instance->code[index] = byte;
-    instance->token_indices[index] = token_index;
-}
-
-void insertByteCode(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index) {
-    if (instance->capacity < instance->count + 1) {
-        size_t oldCapacity = instance->capacity;
-        instance->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
-        instance->code = DOSATO_RESIZE_LIST(uint8_t, instance->code, oldCapacity, instance->capacity);
-        instance->token_indices = DOSATO_RESIZE_LIST(size_t, instance->token_indices, oldCapacity, instance->capacity);
-    }
-
-    for (size_t i = instance->count; i > index; i--) {
-        instance->code[i] = instance->code[i - 1];
-    }
-
-    instance->code[index] = byte;
-    instance->token_indices[index] = token_index;
-    instance->count++;
-}
-
 void writeInstruction(CodeInstance* instance, size_t token_index, OpCode instruction, ...) {
     writeByteCode(instance, instruction, token_index);
     size_t offset = getOffset(instruction);

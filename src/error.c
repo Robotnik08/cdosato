@@ -58,6 +58,10 @@ static const char* ERROR_MESSAGES[] = {
     "Not a function",
     "Wrong number of arguments in function call",
 
+    "File not found",
+    "File already exists",
+    "Permission denied",
+
     "Unknown Error",
     "Error Amount (report this)"
 };

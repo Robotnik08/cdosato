@@ -15,6 +15,7 @@ void destroyValueArray(ValueArray* array) {
 }
 
 void destroyValue(Value* value) {
+    
     if (value->type == TYPE_ARRAY) {
         ValueArray* array = value->as.objectValue;
         destroyValueArray(array);

@@ -51,7 +51,7 @@ void initVirtualMachine(VirtualMachine* vm) {
 
 void freeVirtualMachine(VirtualMachine* vm) {
     freeCodeInstance(vm->instance);
-    destroyValueArray(&vm->stack);    
+    destroyValueArray(&vm->stack);
     destroyValueArray(&vm->constants);
     destroyValueArray(&vm->globals);
     free_StackFrames(&vm->stack_frames);
@@ -105,6 +105,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
     while (!halt) {
         OpCode instruction = NEXT_BYTE();
+        
         switch (instruction) {
             
             default: {

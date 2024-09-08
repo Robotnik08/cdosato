@@ -5,7 +5,14 @@ int loadStandardLibrary(VirtualMachine* vm) {
     DosatoFunctionMap functions[] = {
         {"SAY", io_say},
         {"SAYLN", io_sayln},
-        {"LISTEN", io_listen}
+        {"LISTEN", io_listen},
+        {"READ", io_read_file},
+        {"WRITE", io_write_file},
+        {"APPEND", io_append_file},
+        {"DELETE", io_delete_file},
+        {"EXISTS", io_file_exists},
+        {"MOVE", io_move_file},
+        {"COPY", io_copy_file}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

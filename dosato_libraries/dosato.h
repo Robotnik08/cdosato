@@ -80,9 +80,15 @@ typedef enum {
     E_NOT_A_FUNCTION,
     E_WRONG_NUMBER_OF_ARGUMENTS,
 
+    // standard library errors
+    E_FILE_NOT_FOUND,
+    E_FILE_ALREADY_EXISTS,
+    E_FILE_PERMISSION_DENIED,
+
     E_UNKNOWN,
     E_AMOUNT
 } ErrorType;
+
 
 
 /// value.h

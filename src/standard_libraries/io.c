@@ -1,5 +1,9 @@
 #include "../../include/standard_libraries/io.h"
 
+#ifndef _WIN32
+#include <errno.h>
+#endif
+
 Value io_say (ValueArray args, bool debug) {
     if (args.count == 0) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
@@ -74,4 +78,225 @@ Value io_listen (ValueArray args, bool debug) {
     }
 
     return (Value){ TYPE_STRING, .as.stringValue = input };
+}
+
+
+Value io_read_file (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    int cast_result = castValue(&arg, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    FILE* file = fopen(arg.as.stringValue, "r");
+    if (file == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    long long int file_size = getFileSize(file);
+
+    char* buffer = malloc(file_size + 1);
+    fread(buffer, 1, file_size, file);
+    buffer[file_size] = '\0';
+
+    fclose(file);
+
+    return (Value){ TYPE_STRING, .as.stringValue = buffer };
+}
+
+Value io_write_file (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+
+    int cast_result = castValue(&arg1, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    cast_result = castValue(&arg2, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    FILE* file = fopen(arg1.as.stringValue, "w");
+    if (file == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    fwrite(arg2.as.stringValue, sizeof(char), strlen(arg2.as.stringValue), file);
+    fclose(file);
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_append_file (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+
+    int cast_result = castValue(&arg1, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    cast_result = castValue(&arg2, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    FILE* file = fopen(arg1.as.stringValue, "a");
+    if (file == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    fwrite(arg2.as.stringValue, sizeof(char), strlen(arg2.as.stringValue), file);
+    fclose(file);
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_delete_file (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    int cast_result = castValue(&arg, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    int result = remove(arg.as.stringValue);
+    if (result != 0) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_file_exists (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    int cast_result = castValue(&arg, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    FILE* file = fopen(arg.as.stringValue, "r");
+    if (file == NULL) {
+        return (Value){ TYPE_BOOL, .as.boolValue = false };
+    }
+
+    fclose(file);
+    return (Value){ TYPE_BOOL, .as.boolValue = true };
+}
+
+Value io_move_file (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+
+    int cast_result = castValue(&arg1, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    cast_result = castValue(&arg2, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    int result = rename(arg1.as.stringValue, arg2.as.stringValue);
+    if (result != 0) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_ALREADY_EXISTS));
+    }
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_copy_file (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+
+    int cast_result = castValue(&arg1, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    cast_result = castValue(&arg2, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    FILE* file1 = fopen(arg1.as.stringValue, "r");
+    if (file1 == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    FILE* file2 = fopen(arg2.as.stringValue, "w");
+    if (file2 == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        fclose(file1);
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    long long int file_size = getFileSize(file1);
+    char* buffer = malloc(file_size);
+    fread(buffer, 1, file_size, file1);
+    fwrite(buffer, 1, file_size, file2);
+
+    free(buffer);
+
+    fclose(file1);
+    fclose(file2);
+
+    return UNDEFINED_VALUE;
 }
