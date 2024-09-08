@@ -12,7 +12,44 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"DELETE", io_delete_file},
         {"EXISTS", io_file_exists},
         {"MOVE", io_move_file},
-        {"COPY", io_copy_file}
+        {"COPY", io_copy_file},
+
+        {"CLEAR", io_clear},
+        {"END", io_end},
+        {"PAUSE", io_pause},
+        {"SYSTEM", io_system},
+
+        {"SRANDOM", io_seed_random},
+        {"RANDOM", io_random_double},
+        {"RANDOMINT", io_random_int},
+        {"RANDOMRANGE", io_random_range},
+        {"RANDOMBOOL", io_random_bool},
+
+        {"TIME", io_time},
+        {"SLEEP", io_sleep},
+        {"DATETIME", io_datetime},
+        {"CLOCK", io_clock},
+
+        {"ABS", math_abs},
+        {"ROUND", math_round},
+        {"FLOOR", math_floor},
+        {"CEIL", math_ceil},
+        {"POW", math_pow},
+        {"SQRT", math_sqrt},
+        {"MIN", math_min},
+        {"MAX", math_max},
+        {"LOG", math_log},
+        {"LOG10", math_log10},
+        {"LOG2", math_log2},
+        {"EXP", math_exp},
+        {"SIN", math_sin},
+        {"COS", math_cos},
+        {"TAN", math_tan},
+        {"ASIN", math_asin},
+        {"ACOS", math_acos},
+        {"ATAN", math_atan},
+        {"ATAN2", math_atan2},
+        {"CLAMP", math_clamp}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

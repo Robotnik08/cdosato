@@ -22,7 +22,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expected Curly Bracket '{}'",
     "Expected Square Bracket '[]'",
     "Expression can not be empty",
-    "Operator cannot be used as unary operator (+, -, ~, !, !-, ^/)",
+    "Operator cannot be used as unary operator (-, ~, !, !-, ^/)",
     "Incomplete Ternary Operator, expected ':'",
     "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, ->, <<, >>, **, ^/, <|, |>, #)",
     "Expected Hash Operator (#)",

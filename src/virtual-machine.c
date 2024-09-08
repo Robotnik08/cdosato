@@ -221,6 +221,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (return_val.type == TYPE_EXPECTION) {
                         PRINT_ERROR(return_val.as.longValue);
                     }
+                    if (return_val.type == TYPE_HLT) {
+                        halt = true;
+                        return return_val.as.longValue;
+                    }
                     pushValue(&vm->stack, return_val);
 
                     break;
@@ -1357,6 +1361,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     double result = pow(a.as.doubleValue, b.as.doubleValue);
+                    if (isnan(result)) {
+                        PRINT_ERROR(E_MATH_DOMAIN_ERROR);
+                    }
                     pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
 
                     DESTROYIFLITERAL(a);

@@ -5,6 +5,7 @@
 #include "include/debug.h"
 #include "include/compiler.h"
 #include "include/filetools.h"
+
 #include "include/standard_libraries/load_std.h"
 
 int debug = 0b0;
@@ -114,12 +115,14 @@ int main (int argc, char** argv) {
         }
     }
 
+    int exit_code = 0;
+
     if (!debug) {
-        runVirtualMachine(&vm, debug);
+        exit_code = runVirtualMachine(&vm, debug);
     } else {
         // time it
         clock_t start = clock();
-        runVirtualMachine(&vm, debug);
+        exit_code = runVirtualMachine(&vm, debug);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);
@@ -142,5 +145,5 @@ int main (int argc, char** argv) {
     free(source);
 
     if (debug) printf("Succesfull cleanup\n");
-    return 0;
+    return exit_code;
 }

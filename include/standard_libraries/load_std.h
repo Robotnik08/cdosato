@@ -8,7 +8,11 @@
 #include "dynamic_library_loader.h"
 
 
-#include "io.h"
+#include "std_io.h"
+#include "std_system.h"
+#include "std_random.h"
+#include "std_time.h"
+#include "std_math.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
 
