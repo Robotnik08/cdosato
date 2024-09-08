@@ -475,7 +475,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
             root.start = new_start;
             root.end = new_end;
-
+            
 
             if (new_start == new_end) {
                 PRINT_ERROR(new_start, E_EMPTY_EXPRESSION);
@@ -603,7 +603,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
                     if (precedence >= highest) {
                         highest = precedence;
-                        highest_index = is_unary ? highest_index : op_loc; // when it's a unary operator, the highest index is the previous one
+                        highest_index = temp_turnary ? highest_index : op_loc; // when it's a unary operator, the highest index is the previous one
                         is_unary = temp_unary;
                         is_turnary = temp_turnary;
                         func_call = false;
