@@ -60,6 +60,7 @@ typedef enum {
     E_MATH_DOMAIN_ERROR,
     E_NOT_A_FUNCTION,
     E_WRONG_NUMBER_OF_ARGUMENTS,
+    E_EXPECTED_STRING_TYPE,
 
     // standard library errors
     E_FILE_NOT_FOUND,

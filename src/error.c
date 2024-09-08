@@ -57,6 +57,7 @@ static const char* ERROR_MESSAGES[] = {
     "Math domain error",
     "Not a function",
     "Wrong number of arguments in function call",
+    "Expected STRING type",
 
     "File not found",
     "File already exists",

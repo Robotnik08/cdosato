@@ -48,9 +48,8 @@ Value io_system (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
+    if (arg.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_EXPECTED_STRING_TYPE);
     }
 
     int result = system(arg.as.stringValue);
