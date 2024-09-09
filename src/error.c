@@ -58,6 +58,7 @@ static const char* ERROR_MESSAGES[] = {
     "Not a function",
     "Wrong number of arguments in function call",
     "Expected STRING type",
+    "Expected LONG type",
 
     "File not found",
     "File already exists",

@@ -298,7 +298,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             int j = start;
             for (int i = start; i < end; i++) {
                 if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
-                    write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_FUNCTION_DEFINITION_ARGUMENT, file_name));
+                    write_NodeList(&root.body, parse(source, length, j, i, tokens, NODE_FUNCTION_DEFINITION_ARGUMENT, file_name));
                     j = i + 1;
                 }
             }
@@ -322,6 +322,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
             write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
             if (i + 1 != end) {
+                printNode(root, 0);
                 PRINT_ERROR(i + 1, E_UNEXPECTED_TOKEN);
             }
             break;

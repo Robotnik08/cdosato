@@ -69,6 +69,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"STRINGTOINT", string_atoi},
         {"STRINGTODOUBLE", string_atod},
         {"COUNT", string_count},
+
+        {"SORT", array_sort}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

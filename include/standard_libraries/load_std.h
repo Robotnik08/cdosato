@@ -14,6 +14,7 @@
 #include "std_time.h"
 #include "std_math.h"
 #include "std_string.h"
+#include "std_array.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
 

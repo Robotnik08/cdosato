@@ -98,7 +98,7 @@ typedef enum {
 
 typedef enum {
     D_NULL = -1,
-    TYPE_EXPECTION = -2,
+    TYPE_EXCEPTION = -2,
     TYPE_HLT = -3,
 
     TYPE_INT = 0,
@@ -147,7 +147,7 @@ typedef struct {
 } Value;
 
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false }
-#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXPECTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
+#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
 
 extern void destroyValue(Value* value);

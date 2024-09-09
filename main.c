@@ -117,6 +117,7 @@ int main (int argc, char** argv) {
 
     int exit_code = 0;
 
+    write_StackFrames(&vm.stack_frames, 0);
     if (!debug) {
         exit_code = runVirtualMachine(&vm, debug);
     } else {

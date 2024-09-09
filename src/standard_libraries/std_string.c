@@ -1,4 +1,4 @@
-#include "../../include/standard_libraries/std_random.h"
+#include "../../include/standard_libraries/std_string.h"
 
 Value string_split(ValueArray args, bool debug) {
     if (args.count != 2) {

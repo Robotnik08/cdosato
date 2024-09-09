@@ -30,7 +30,7 @@ Value io_say (ValueArray args, bool debug) {
 
 Value io_sayln (ValueArray args, bool debug) {
     Value say_result = io_say(args, debug);
-    if (say_result.type == TYPE_EXPECTION) {
+    if (say_result.type == TYPE_EXCEPTION) {
         return say_result;
     }
     printf("\n"); // sayln adds a newline

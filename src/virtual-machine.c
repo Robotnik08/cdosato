@@ -6,6 +6,8 @@
 #include "../include/memory.h"
 #include "../include/dynamic_library_loader.h"
 
+VirtualMachine* main_vm = NULL;
+
 DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
 
 void destroy_Function(Function* func) {
@@ -91,7 +93,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
     char* ip_stack[RECURSION_LIMIT];
     CodeInstance* active_stack[RECURSION_LIMIT];
     size_t ip_stack_count = 0;
-    PUSH_STACK(0); // first local frame
 
     // set global variable 0 to zero (underscore)
     Value zero = (Value){ TYPE_LONG, .as.longValue = 0, .defined = false, .is_variable_type = true };
@@ -217,8 +218,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     for (int i = 0; i < arity; i++) {
                         pushValue(&args, POP_VALUE());
                     }
+                    main_vm = vm;
+                    // store old ip
+                    uint8_t* old_ip = vm->ip;
                     Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
-                    if (return_val.type == TYPE_EXPECTION) {
+                    vm->instance = active_instance;
+                    vm->ip = old_ip;
+                    if (return_val.type == TYPE_EXCEPTION) {
                         PRINT_ERROR(return_val.as.longValue);
                     }
                     if (return_val.type == TYPE_HLT) {
@@ -226,7 +232,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         return return_val.as.longValue;
                     }
                     pushValue(&vm->stack, return_val);
-
                     break;
                 }
 
@@ -262,6 +267,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 size_t frame = POP_STACK();
 
                 // pop ip
+                if (ip_stack_count == 0) {
+                    halt = true;
+                    break;
+                }
+
                 vm->ip = ip_stack[--ip_stack_count];
                 active_instance = active_stack[ip_stack_count];
 
@@ -840,6 +850,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 int pop_amount = NEXT_BYTE();
                 for (int i = 0; i < pop_amount; i++) {
                     destroyValue(&POP_VALUE());
+                }
+
+                if (ip_stack_count == 0) {
+                    pushValue(&vm->stack, return_value);
+                    halt = true;
+                    break;
                 }
 
                 // pop frame
@@ -1650,9 +1666,45 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
         }
-
     }
     return 0;
 }
 
 #undef PRINT_ERROR
+
+Value callExternalFunction(size_t index, ValueArray args, bool debug) {
+    Function function = main_vm->functions.funcs[index];
+
+    if (function.is_compiled) {
+        Value return_val = ((DosatoFunction)function.func_ptr)(args, debug);
+        return return_val;
+    } else {
+        if (args.count != function.arity) {
+            return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+        }
+        // cast arguments
+        for (int i = 0; i < args.count; i++) {
+            ErrorType code = castValue(&args.values[i], function.argt[i]);
+            if (code != E_NULL) {
+                return BUILD_EXCEPTION(code);
+            }
+        }
+        // call function
+
+        CodeInstance* old = main_vm->instance;
+
+        main_vm->instance = function.instance;
+
+        write_StackFrames(&main_vm->stack_frames, main_vm->stack.count);
+        // push arguments
+        for (int i = 0; i < args.count; i++) {
+            pushValue(&main_vm->stack, args.values[i]);
+        }
+
+        runVirtualMachine(main_vm, debug);
+
+        main_vm->instance = old;
+
+        return main_vm->stack.values[--main_vm->stack.count];
+    }
+}
