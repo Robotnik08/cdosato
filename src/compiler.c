@@ -427,6 +427,29 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             writeInstruction(ci, node.start, OP_TYPE_CAST, ast->tokens.tokens[node.body.nodes[0].start].carry);
             break;
         }
+
+        case NODE_TERNARY_EXPRESSION: {
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL);
+            writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0));
+            int jump_index = ci->count - getOffset(OP_JUMP_IF_FALSE);
+
+            compileNode(vm, ci, node.body.nodes[1], ast, scope);
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_index_end = ci->count - getOffset(OP_JUMP);
+
+            // set jump false location
+            ci->code[jump_index + 1] = ci->count & 0xFF;
+            ci->code[jump_index + 2] = ci->count >> 8;
+
+            compileNode(vm, ci, node.body.nodes[2], ast, scope);
+            
+            // set the final jump location
+            ci->code[jump_index_end + 1] = ci->count & 0xFF;
+            ci->code[jump_index_end + 2] = ci->count >> 8;
+            
+            break;
+        }
         
         case NODE_STRING_LITERAL:
         case NODE_NUMBER_LITERAL: {
