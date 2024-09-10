@@ -50,9 +50,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     writeByteCode(ci, OP_POP, 0);
                     popScopeData(scope);
                 }
-                if (scope->depth == 0) {
-                    freeScopeData(scope);
-                }
             }
 
             break;
@@ -567,10 +564,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
 
             bool is_local = scope != NULL;
+            printf("Scope: %p\n", scope);
 
             if (is_local) {
                 pushScopeData(scope, -1);
                 pushScopeData(scope, -1);
+                printf("Scope locals count: %d\n", scope->locals_count);
             }
 
             writeInstruction(ci, node.start, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
@@ -592,7 +591,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
 
             // if global scope, the 2 locals must be added to the scope
-            if (scope == NULL) {
+            if (!is_local) {
                 ScopeData new_scope;
                 initScopeData(&new_scope);
                 scope = &new_scope;
@@ -617,6 +616,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             if (is_local) {
                 scope->locals_count -= 2;
+                printf("Scope locals after removing count: %d\n", scope->locals_count);
             }
 
             // pop the loop location data

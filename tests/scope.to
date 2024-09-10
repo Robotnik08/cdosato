@@ -6,8 +6,8 @@ DO {
     DO {
         MAKE INT c = 3;
         DO SAYLN (a + b + c);
-    }
+    };
     MAKE INT a = 4;
     DO SAYLN (a + b);
-}
+};
 DO SAYLN (a);

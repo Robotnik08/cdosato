@@ -147,6 +147,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 if (endofblock == -1) {
                     PRINT_ERROR(start, E_MISSING_CLOSING_PARENTHESIS);
                 }
+                if (endofblock + 1 != end) {
+                    PRINT_ERROR(endofblock + 1, E_UNEXPECTED_TOKEN);
+                }
                 write_NodeList(&root.body, parse(source, length, start + 1, endofblock, tokens, NODE_BLOCK, file_name));
             } else if (tokens.tokens[start].type == TOKEN_IDENTIFIER) {
                 write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_FUNCTION_CALL, file_name));
