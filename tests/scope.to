@@ -2,12 +2,12 @@ MAKE INT a = 1;
 
 DO {
     MAKE INT b = 2;
-    DO SAY (a + b);
+    DO SAYLN (a + b);
     DO {
         MAKE INT c = 3;
-        DO SAY (a + b + c);
+        DO SAYLN (a + b + c);
     }
     MAKE INT a = 4;
-    DO SAY (a + b);
+    DO SAYLN (a + b);
 }
-DO SAY (a);
+DO SAYLN (a);

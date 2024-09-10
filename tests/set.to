@@ -6,14 +6,14 @@ SET integer = 1;
 SET str = "Hello, World";
 SET arr = [1, 2, 3, 4, 5];
 
-DO SAY (integer);
-DO SAY (str);
-DO SAY (arr);
+DO SAYLN (integer);
+DO SAYLN (str);
+DO SAYLN (arr);
 
 SET integer += 1;
 SET str += "!";
 SET arr += [6, 7, 8, 9, 10];
 
-DO SAY (integer);
-DO SAY (str);
-DO SAY (arr);
+DO SAYLN (integer);
+DO SAYLN (str);
+DO SAYLN (arr);

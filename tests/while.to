@@ -2,7 +2,7 @@ MAKE INT i = 0;
 DO {
     SET i++;
 } WHILE (i < 10);
-DO SAY (i); // 10
+DO SAYLN (i); // 10
 
 MAKE INT j = 0;
 DO {
@@ -13,7 +13,7 @@ DO {
     SET j++;
 } WHILE (j < 10);
 
-DO SAY (j); // 5
+DO SAYLN (j); // 5
 
 MAKE INT l = 0;
 DO {
@@ -21,6 +21,6 @@ DO {
     DO {
         MAKE INT m = 5;
         CONTINUE WHEN (l % 2 != 0);
-        DO SAY (l);
+        DO SAYLN (l);
     };
 } WHILE (l < 10);

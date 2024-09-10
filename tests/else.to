@@ -1,1 +1,1 @@
-DO SAY ("not pass") WHEN (0) ELSE SAY ("pass");
+DO SAYLN ("not pass") WHEN (0) ELSE SAYLN ("pass");
