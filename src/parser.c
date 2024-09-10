@@ -549,10 +549,13 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         }
 
                         if (2 >= highest && all_type) {
+                            if (is_unary) {
+                                continue;
+                            }
                             is_unary = false;
                             is_turnary = false;
                             highest = 2;
-                            highest_index = startofblock;
+                            highest_index = type_cast ? highest_index : startofblock;
                             func_call = false;
                             type_cast = true;
                         }
@@ -564,7 +567,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     int precedence = precedence_values[tokens.tokens[i].carry];
 
                     bool temp_unary = false;
-                    if (i == new_start || tokens.tokens[i - 1].type == TOKEN_OPERATOR || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN) {
+                    if (i == new_start || tokens.tokens[i - 1].type == TOKEN_OPERATOR || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN || (tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_CLOSED && tokens.tokens[i - 2].type == TOKEN_VAR_TYPE && tokens.tokens[i - 3].type == TOKEN_PARENTHESIS_OPEN)) {
                         if (tokens.tokens[i].type == TOKEN_OPERATOR && isUnaryOperator(tokens.tokens[i].carry)) {
                             precedence = 2; // unary operator precedence
                             temp_unary = true;
@@ -603,6 +606,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     }
 
                     if (precedence >= highest) {
+                        if (type_cast) {
+                            continue; // type cast has the highest precedence
+                        }
                         highest = precedence;
                         highest_index = is_unary && temp_unary ? highest_index : op_loc; // when it's a unary operator, the highest index is the previous one
                         is_unary = temp_unary;
