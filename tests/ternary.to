@@ -1,0 +1,3 @@
+MAKE STRING username = "Robotnik";
+MAKE STRING password = "123";
+DO SAY (username == "Robotnik" ? password == "123" ? "Pass" : "Invalid password" : "Invalid username");
