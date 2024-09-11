@@ -106,6 +106,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 DOSATO_ADD_TOKEN(list, TOKEN_STRING, full_code + start, end - start, id);
                 start = end + 1;
                 quotationtype = '\0';
+                free(lit);
             }
         }
 
@@ -326,6 +327,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     numberCount++;
                 }
                 DOSATO_ADD_TOKEN(list, TOKEN_NUMBER, full_code + start, end - start, id);
+                free(lit);
             }
             i = end;
         }
@@ -507,7 +509,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
 
-            write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val });
+            write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
         }
     }
     for (int i = 0; i < numberCount; i++) {

@@ -38,7 +38,7 @@ Value io_datetime (ValueArray args, bool debug) {
     char* buffer = malloc(80);
     strftime(buffer, 80, format, tm_info);
 
-    return (Value){ TYPE_STRING, .as.stringValue = buffer };
+    return (Value){ TYPE_STRING, .as.stringValue = buffer, .defined = false };
 }
 
 Value io_clock (ValueArray args, bool debug) {

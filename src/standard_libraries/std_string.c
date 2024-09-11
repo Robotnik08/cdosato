@@ -35,7 +35,7 @@ Value string_split(ValueArray args, bool debug) {
     destroyValue(&arg1);
     destroyValue(&arg2);
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = result };
+    return (Value){ TYPE_ARRAY, .as.objectValue = result, .defined = false };
 }
 
 Value string_lower(ValueArray args, bool debug) {
@@ -129,7 +129,7 @@ Value string_substr(ValueArray args, bool debug) {
 
     destroyValue(&arg1);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result };
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
 Value string_indexof(ValueArray args, bool debug) {
@@ -307,7 +307,7 @@ Value string_replace(ValueArray args, bool debug) {
     destroyValue(&arg2);
     destroyValue(&arg3);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result };
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
 Value string_trim(ValueArray args, bool debug) {
@@ -341,7 +341,7 @@ Value string_trim(ValueArray args, bool debug) {
 
     destroyValue(&arg);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result };
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
 Value string_reverse(ValueArray args, bool debug) {
@@ -367,7 +367,7 @@ Value string_reverse(ValueArray args, bool debug) {
 
     destroyValue(&arg);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result };
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
 Value string_contains(ValueArray args, bool debug) {
@@ -434,7 +434,7 @@ Value string_remove(ValueArray args, bool debug) {
     destroyValue(&arg1);
     destroyValue(&arg2);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result };
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
 Value string_insert(ValueArray args, bool debug) {
@@ -477,7 +477,7 @@ Value string_insert(ValueArray args, bool debug) {
     destroyValue(&arg1);
     destroyValue(&arg3);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result };
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
 Value string_atoi(ValueArray args, bool debug) {

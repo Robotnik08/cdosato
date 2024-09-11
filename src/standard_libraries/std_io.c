@@ -81,7 +81,7 @@ Value io_listen (ValueArray args, bool debug) {
         input[size] = '\0';
     }
 
-    return (Value){ TYPE_STRING, .as.stringValue = input };
+    return (Value){ TYPE_STRING, .as.stringValue = input, .defined = false };
 }
 
 
@@ -115,7 +115,7 @@ Value io_read_file (ValueArray args, bool debug) {
 
     destroyValue(&arg);
 
-    return (Value){ TYPE_STRING, .as.stringValue = buffer };
+    return (Value){ TYPE_STRING, .as.stringValue = buffer, .defined = false };
 }
 
 Value io_write_file (ValueArray args, bool debug) {

@@ -91,8 +91,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         // if not, add it
         if (name_index == -1) {
             name_index = vm->mappings.count;
-            char* name = strdup(func.name);
-            write_NameMap(&vm->mappings, name);
+            addName(&vm->mappings, func.name);
         }
         func.name_index = name_index;
 

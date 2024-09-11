@@ -46,7 +46,7 @@ Value multiply(ValueArray args, bool debug) {
     }
 
     double result = args.values[0].as.doubleValue * args.values[1].as.doubleValue;
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
+    return (Value){ TYPE_DOUBLE, .as.doubleValue = result, 0 };
 }
 
 int global = 0;
@@ -55,5 +55,5 @@ Value count (ValueArray args, bool debug) {
     if (args.count != 0) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
-    return (Value){ TYPE_LONG, .as.longValue = global++ };
+    return (Value){ TYPE_LONG, .as.longValue = global++, 0 };
 }

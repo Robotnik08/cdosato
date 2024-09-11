@@ -64,9 +64,7 @@ Value hardCopyValue(Value value) {
             break;
         }
         case TYPE_STRING: {
-            char* newString = malloc(strlen(value.as.stringValue) + 1);
-            strcpy(newString, value.as.stringValue);
-            value.as.stringValue = newString;
+            value.as.stringValue = strdup(value.as.stringValue);
             break;
         }
         default: {
@@ -467,6 +465,7 @@ char* valueToString (Value value, bool extensive) {
                 if (i < object->count - 1) {
                     strcat(string, ", ");
                 }
+                free(valueString);
             }
             string = realloc(string, strlen(string) + 2);
             strcat(string, "}");
@@ -484,6 +483,7 @@ char* valueToString (Value value, bool extensive) {
                 if (i < array->count - 1) {
                     strcat(string, ", ");
                 }
+                free(valueString);
             }
             string = realloc(string, strlen(string) + 2);
             strcat(string, "]");

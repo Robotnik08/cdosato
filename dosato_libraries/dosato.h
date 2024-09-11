@@ -146,7 +146,7 @@ typedef struct {
     } as;
 } Value;
 
-#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false }
+#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, 0 }
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
 

@@ -15,6 +15,8 @@ void destroy_Function(Function* func) {
         free(func->name);
         free(func->argv);
         free(func->argt);
+        freeCodeInstance(func->instance);
+        free(func->instance);
     }
 }
 
@@ -286,9 +288,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value constant = vm->constants.values[index];
                 if (constant.type == TYPE_STRING) {
                     // copy the string so the original pointer stays intact
-                    char* new_string = malloc(strlen(constant.as.stringValue) + 1);
-                    strcpy(new_string, constant.as.stringValue);
-                    constant.as.stringValue = new_string;
+                    char* copy = malloc(strlen(constant.as.stringValue) + 1);
+                    strcpy(copy, constant.as.stringValue);
+                    constant.as.stringValue = copy;
                 }
                 pushValue(&vm->stack, constant);
                 break;
@@ -309,6 +311,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_LOAD_UNDERSCORE: {
                 // underscore is global variable 0
                 Value underscore = vm->globals.values[0];
+                underscore = hardCopyValue(underscore);
                 pushValue(&vm->stack, underscore);
                 break;
             }
@@ -454,23 +457,25 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value value = POP_VALUE();
                 
-                value = hardCopyValue(value);
+                Value copy = hardCopyValue(value);
 
                 if (!vm->stack.values[index].is_variable_type && vm->stack.values[index].defined) {
                     DataType type = vm->stack.values[index].type;
-                    ErrorType castRes = castValue(&value, type);
+                    ErrorType castRes = castValue(&copy, type);
                     if (castRes != E_NULL) {
                         PRINT_ERROR(castRes);
                     }
                 } else if (vm->stack.values[index].defined) {
-                    value.is_variable_type = true;
+                    copy.is_variable_type = true;
                 }
 
                 // destroy old value
                 destroyValue(&vm->stack.values[index]);
 
-                vm->stack.values[index] = value; // store to local
+                vm->stack.values[index] = copy; // store to local
                 markDefined(&vm->stack.values[index]);
+
+                DESTROYIFLITERAL(value);
                 break;
             }
 
@@ -528,24 +533,26 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                value = hardCopyValue(value);
+                Value copy = hardCopyValue(value);
                 
                 if (!vm->globals.values[index].is_variable_type) {
                     DataType type = vm->globals.values[index].type;
-                    ErrorType castRes = castValue(&value, type);
+                    ErrorType castRes = castValue(&copy, type);
                     if (castRes != E_NULL) {
                         PRINT_ERROR(castRes);
                     }
                 } else {
-                    value.is_variable_type = true;
+                    copy.is_variable_type = true;
                 }
                 
 
                 // destroy old value
                 destroyValue(&vm->globals.values[index]);
 
-                vm->globals.values[index] = value;
+                vm->globals.values[index] = copy;
                 markDefined(&vm->globals.values[index]);
+
+                DESTROYIFLITERAL(value);
                 break;
             }
 
@@ -556,10 +563,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
 
-                value = hardCopyValue(value);
+                Value copy = hardCopyValue(value);
 
-                vm->globals.values[index] = value;
+                vm->globals.values[index] = copy;
                 markDefined(&vm->globals.values[index]);
+
+                DESTROYIFLITERAL(value);
                 break;
             }
 
@@ -639,7 +648,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
             case OP_BUILD_LIST: {
                 int count = NEXT_SHORT();
-                Value list = (Value){ TYPE_ARRAY, .as.objectValue = malloc(sizeof(ValueArray)) };
+                Value list = (Value){ TYPE_ARRAY, .as.objectValue = malloc(sizeof(ValueArray)), .defined = false };
                 init_ValueArray((ValueArray*)list.as.objectValue);
                 for (int i = 0; i < count; i++) {
                     Value value = POP_VALUE();
@@ -651,7 +660,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
             case OP_BUILD_OBJECT: {
                 int count = NEXT_SHORT();
-                Value object = (Value){ TYPE_OBJECT, .as.objectValue = malloc(sizeof(ValueObject)) };
+                Value object = (Value){ TYPE_OBJECT, .as.objectValue = malloc(sizeof(ValueObject)), .defined = false };
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 init_ValueObject(obj);
@@ -884,7 +893,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     strcat(new_string, b_str);
                     free(a_str);
                     free(b_str);
-                    Value result = (Value){ TYPE_STRING, .as.stringValue = new_string };
+                    Value result = (Value){ TYPE_STRING, .as.stringValue = new_string, .defined = false };
                     pushValue(&vm->stack, result);
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
@@ -916,7 +925,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         Value val = hardCopyValue(b_array->values[i]);
                         write_ValueArray(new_array, val);
                     }
-                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array };
+                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
                     pushValue(&vm->stack, result);
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
@@ -937,7 +946,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         Value val = hardCopyValue(b_obj->values[i]);
                         write_ValueObject(new_obj, b_obj->keys[i], val);
                     }
-                    Value result = (Value){ TYPE_OBJECT, .as.objectValue = new_obj };
+                    Value result = (Value){ TYPE_OBJECT, .as.objectValue = new_obj, .defined = false };
                     pushValue(&vm->stack, result);
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
@@ -998,7 +1007,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         Value val = hardCopyValue(a_array->values[i]);
                         write_ValueArray(new_array, val);
                     }
-                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array };
+                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
                     pushValue(&vm->stack, result);
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
@@ -1067,7 +1076,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                             write_ValueArray(new_array, val);
                         }
                     }
-                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array };
+                    Value result = (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
                     pushValue(&vm->stack, result);
                     DESTROYIFLITERAL(a);
                     DESTROYIFLITERAL(b);
