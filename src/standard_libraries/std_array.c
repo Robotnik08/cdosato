@@ -54,6 +54,7 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
         write_ValueArray(&args, hardCopyValue(array->values[j]));
         write_ValueArray(&args, hardCopyValue(pivot));
         Value result = callExternalFunction(function, args, false);
+        free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
             return result;
         }
@@ -94,13 +95,14 @@ Value array_sort(ValueArray args, bool debug) {
             return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
         }
         Value res = dosato_quick_sort(((ValueArray*)arg.as.objectValue), 0, ((ValueArray*)arg.as.objectValue)->count - 1, arg2.as.longValue);
+
         if (res.type == TYPE_EXCEPTION || res.type == TYPE_HLT) {
             return res;
         }
-        return arg;
+        return hardCopyValue(arg);
     }
 
     qsort(((ValueArray*)arg.as.objectValue)->values, ((ValueArray*)arg.as.objectValue)->count, sizeof(Value), compareValues);
 
-    return arg;
+    return hardCopyValue(arg);
 }

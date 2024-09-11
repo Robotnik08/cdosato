@@ -40,6 +40,9 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
 void free_AST (AST* ast) {
     free_TokenList(&ast->tokens);
     destroyNodeList(&ast->root.body);
+    free(ast->name);
+    ast->name = NULL;
+    free(ast->source);
     ast->source = NULL;
 }
 

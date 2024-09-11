@@ -80,6 +80,7 @@ typedef enum {
     E_NOT_A_FUNCTION,
     E_WRONG_NUMBER_OF_ARGUMENTS,
     E_EXPECTED_STRING_TYPE,
+    E_EXPECTED_LONG,
 
     // standard library errors
     E_FILE_NOT_FOUND,
@@ -118,7 +119,7 @@ typedef enum {
     TYPE_UBYTE,
     TYPE_OBJECT,
     TYPE_VAR,
-    TYPE_FUNCTION,
+    TYPE_FUNCTION
 } DataType;
 
 #define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE)

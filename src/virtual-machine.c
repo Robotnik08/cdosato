@@ -11,11 +11,11 @@ VirtualMachine* main_vm = NULL;
 DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
 
 void destroy_Function(Function* func) {
+    free(func->name);
     if (!func->is_compiled) {
-        free(func->name);
         free(func->argv);
         free(func->argt);
-        freeCodeInstance(func->instance);
+        freeCodeInstanceWeak(func->instance);
         free(func->instance);
     }
 }
@@ -55,6 +55,7 @@ void initVirtualMachine(VirtualMachine* vm) {
 
 void freeVirtualMachine(VirtualMachine* vm) {
     freeCodeInstance(vm->instance);
+    free(vm->instance);
     destroyValueArray(&vm->stack);
     destroyValueArray(&vm->constants);
     destroyValueArray(&vm->globals);
@@ -63,8 +64,7 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free_NameMap(&vm->mappings);
     free_NameMap(&vm->constants_map);
     free_ErrorJumps(&vm->error_jumps);
-    free_CodeInstanceList(&vm->includes);
-    free(vm->instance);
+    destroy_CodeInstanceList(&vm->includes);
 }
 
 void pushValue(ValueArray* array, Value value) {
@@ -224,6 +224,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     // store old ip
                     uint8_t* old_ip = vm->ip;
                     Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
+                    destroyValueArray(&args);
+                    CodeInstance* old_instance = vm->instance;
                     vm->instance = active_instance;
                     vm->ip = old_ip;
                     if (return_val.type == TYPE_EXCEPTION) {
@@ -234,6 +236,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         return return_val.as.longValue;
                     }
                     pushValue(&vm->stack, return_val);
+                    vm->instance = old_instance;
                     break;
                 }
 
@@ -643,6 +646,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     write_ValueObject(obj, key.as.stringValue, value);
                 }
 
+                DESTROYIFLITERAL(key);
+
                 break;
             }
 
@@ -674,6 +679,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                     }
                     write_ValueObject(obj, key.as.stringValue, value);
+                    DESTROYIFLITERAL(key);
                 }
                 pushValue(&vm->stack, object);
                 break;

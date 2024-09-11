@@ -64,7 +64,9 @@ Value hardCopyValue(Value value) {
             break;
         }
         case TYPE_STRING: {
-            value.as.stringValue = strdup(value.as.stringValue);
+            char* new_str = malloc(strlen(value.as.stringValue) + 1);
+            strcpy(new_str, value.as.stringValue);
+            value.as.stringValue = new_str;
             break;
         }
         default: {

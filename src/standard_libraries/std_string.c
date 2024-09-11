@@ -25,15 +25,12 @@ Value string_split(ValueArray args, bool debug) {
     ValueArray* result = malloc(sizeof(ValueArray));
     init_ValueArray(result);
     while (token != NULL) {
-        char* new_token = strdup(token);
+        char* new_token = malloc(strlen(token) + 1);
+        strcpy(new_token, token);
         Value value = { TYPE_STRING, .as.stringValue = new_token };
         write_ValueArray(result, value);
         token = strtok(NULL, delim);
     }
-
-    
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_ARRAY, .as.objectValue = result, .defined = false };
 }
@@ -86,8 +83,6 @@ Value string_length(ValueArray args, bool debug) {
 
     size_t len = strlen(arg.as.stringValue);
 
-    destroyValue(&arg);
-
     return (Value){ TYPE_LONG, .as.longValue = len };
 }
 
@@ -127,8 +122,6 @@ Value string_substr(ValueArray args, bool debug) {
     strncpy(result, str + start, end - start + 1);
     result[end - start + 1] = '\0';
 
-    destroyValue(&arg1);
-
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
@@ -162,9 +155,6 @@ Value string_indexof(ValueArray args, bool debug) {
 
     long long int res = result - str;
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-
     return (Value){ TYPE_LONG, .as.longValue = res };   
 }
 
@@ -197,9 +187,6 @@ Value string_lastindexof(ValueArray args, bool debug) {
     }
 
     long long int res = result - str;
-    
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = res };
 }
@@ -227,9 +214,6 @@ Value string_startswith(ValueArray args, bool debug) {
 
     bool result = strncmp(str, substr, strlen(substr)) == 0;
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
 
@@ -255,9 +239,6 @@ Value string_endswith(ValueArray args, bool debug) {
     char* substr = arg2.as.stringValue;
 
     bool result = strcmp(str + strlen(str) - strlen(substr), substr) == 0;
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
@@ -303,10 +284,6 @@ Value string_replace(ValueArray args, bool debug) {
     }
     result[strlen(result)] = '\0';
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-    destroyValue(&arg3);
-
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
@@ -339,8 +316,6 @@ Value string_trim(ValueArray args, bool debug) {
     }
     result[strlen(result)] = '\0';
 
-    destroyValue(&arg);
-
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
@@ -364,8 +339,6 @@ Value string_reverse(ValueArray args, bool debug) {
         result[i] = str[len - i - 1];
     }
     result[len] = '\0';
-
-    destroyValue(&arg);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -392,9 +365,6 @@ Value string_contains(ValueArray args, bool debug) {
     char* substr = arg2.as.stringValue;
 
     bool result = strstr(str, substr) != NULL;
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
@@ -430,9 +400,6 @@ Value string_remove(ValueArray args, bool debug) {
         }
     }
     result[strlen(result)] = '\0';
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -474,9 +441,6 @@ Value string_insert(ValueArray args, bool debug) {
     strcat(result, substr);
     strcat(result, str + index);
 
-    destroyValue(&arg1);
-    destroyValue(&arg3);
-
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
@@ -495,8 +459,6 @@ Value string_atoi(ValueArray args, bool debug) {
     char* str = arg.as.stringValue;
     long long int result = atoll(str);
 
-    destroyValue(&arg);
-
     return (Value){ TYPE_LONG, .as.longValue = result };
 }
 
@@ -514,8 +476,6 @@ Value string_atod(ValueArray args, bool debug) {
 
     char* str = arg.as.stringValue;
     double result = atof(str);
-
-    destroyValue(&arg);
 
     return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
 }
@@ -548,9 +508,6 @@ Value string_count(ValueArray args, bool debug) {
         count++;
         result++;
     }
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = count };
 }

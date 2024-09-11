@@ -16,7 +16,7 @@ Value io_datetime (ValueArray args, bool debug) {
 
     char* format = "%Y-%m-%d %H:%M:%S";
     if (args.count == 2) {
-        Value arg = GET_ARG(args, 1);
+        Value arg = hardCopyValue(GET_ARG(args, 1));
         int cast_result = castValue(&arg, TYPE_STRING);
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);

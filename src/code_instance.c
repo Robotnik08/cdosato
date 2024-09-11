@@ -31,6 +31,12 @@ void free_LocationList(LocationList* list) {
 
 DOSATO_LIST_FUNC_GEN(CodeInstanceList, CodeInstance, instances)
 
+void destroy_CodeInstanceList(CodeInstanceList* list) {
+    for (size_t i = 0; i < list->count; i++) {
+        freeCodeInstance(&list->instances[i]);
+    }
+    free_CodeInstanceList(list);
+}
 
 
 void initCodeInstance(CodeInstance* instance) {
@@ -73,6 +79,16 @@ void freeCodeInstance(CodeInstance* instance) {
     free_LocationList(&instance->loop_jump_locations);
     instance->capacity = 0;
     free_AST(instance->ast);
+    free(instance->ast);
+}
+
+// weak version of freeCodeInstance, does not free the ast (used by functions that reference the ast, but do not own it)
+void freeCodeInstanceWeak(CodeInstance* instance) {
+    DOSATO_FREE_LIST(uint8_t, instance->code, instance->capacity);
+    DOSATO_FREE_LIST(size_t, instance->token_indices, instance->capacity);
+    instance->count = 0;
+    free_LocationList(&instance->loop_jump_locations);
+    instance->capacity = 0;
 }
 
 int getOffset(OpCode instruction) {

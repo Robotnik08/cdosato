@@ -22,8 +22,6 @@ Value io_say (ValueArray args, bool debug) {
             free(str);
         }
     }
-
-    destroyValueArray(&args);
     
     return (Value){ TYPE_LONG, .as.longValue = char_count };
 }
@@ -53,8 +51,6 @@ Value io_listen (ValueArray args, bool debug) {
             printf("%s", str);
             free(str);
         }
-
-        destroyValue(&arg);
     }
 
     char delimiter = '\n';
@@ -113,8 +109,6 @@ Value io_read_file (ValueArray args, bool debug) {
 
     fclose(file);
 
-    destroyValue(&arg);
-
     return (Value){ TYPE_STRING, .as.stringValue = buffer, .defined = false };
 }
 
@@ -147,9 +141,6 @@ Value io_write_file (ValueArray args, bool debug) {
 
     fwrite(arg2.as.stringValue, sizeof(char), strlen(arg2.as.stringValue), file);
     fclose(file);
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return UNDEFINED_VALUE;
 }
@@ -184,9 +175,6 @@ Value io_append_file (ValueArray args, bool debug) {
     fwrite(arg2.as.stringValue, sizeof(char), strlen(arg2.as.stringValue), file);
     fclose(file);
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-
     return UNDEFINED_VALUE;
 }
 
@@ -210,7 +198,6 @@ Value io_delete_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
     }
 
-    destroyValue(&arg);
 
     return UNDEFINED_VALUE;
 }
@@ -233,7 +220,6 @@ Value io_file_exists (ValueArray args, bool debug) {
 
     fclose(file);
 
-    destroyValue(&arg);
 
     return (Value){ TYPE_BOOL, .as.boolValue = true };
 }
@@ -265,8 +251,6 @@ Value io_move_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_ALREADY_EXISTS));
     }
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return UNDEFINED_VALUE;
 }
@@ -317,9 +301,6 @@ Value io_copy_file (ValueArray args, bool debug) {
 
     fclose(file1);
     fclose(file2);
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return UNDEFINED_VALUE;
 }

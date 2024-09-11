@@ -82,13 +82,15 @@ int main (int argc, char** argv) {
     initVirtualMachine(&vm);
 
 
-    AST main_ast;
-    init_AST(&main_ast);
-    load_AST(&main_ast, source, length, argv[1], debug, &vm);
+    AST* main_ast = malloc(sizeof(AST));
+    init_AST(main_ast);
+    char* name = malloc(strlen(argv[1]) + 1);
+    strcpy(name, argv[1]);
+    load_AST(main_ast, source, length, name, debug, &vm);
 
     if (debug & DEBUG_PARSE) {
         printf("==== AST: ====\n");
-        printNode(main_ast.root, 0);
+        printNode(main_ast->root, 0);
     } 
 
     // initialize the standard library
@@ -99,7 +101,7 @@ int main (int argc, char** argv) {
         write_ValueArray(&vm.globals, UNDEFINED_VALUE);
     }
 
-    compile(&vm, &main_ast);
+    compile(&vm, main_ast);
 
 
     if (debug & DEBUG_COMPILE) {
@@ -141,10 +143,6 @@ int main (int argc, char** argv) {
     }
 
     freeVirtualMachine(&vm);
-
-    free_AST(&main_ast);
-
-    free(source);
 
     if (debug) printf("Succesfull cleanup\n");
     return exit_code;

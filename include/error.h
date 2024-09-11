@@ -72,7 +72,6 @@ typedef enum {
     E_AMOUNT
 } ErrorType;
 
-// extern const char* ERROR_MESSAGES[];
 
 void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type);
 

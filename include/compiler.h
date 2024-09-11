@@ -12,7 +12,6 @@ typedef struct {
     size_t* locals_lookup;
     size_t locals_count;
     size_t locals_capacity;
-    int depth;
     DataType return_type;
 } ScopeData;
 

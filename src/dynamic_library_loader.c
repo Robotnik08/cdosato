@@ -24,6 +24,7 @@ void init_DynamicLibrary(DynamicLibrary* lib) {
 
 void free_DynamicLibrary(DynamicLibrary* lib) {
     free_DosatoFunctionMapList(&lib->functions);
+    free(lib->name);
     lib->name = NULL;
     lib->handle = NULL;
     lib->init = NULL;
@@ -32,7 +33,8 @@ void free_DynamicLibrary(DynamicLibrary* lib) {
 DynamicLibrary loadLib (const char* path) {
     DynamicLibrary lib;
     init_DynamicLibrary(&lib);
-    lib.name = strdup(path);
+    lib.name = malloc(strlen(path) + 1);
+    strcpy(lib.name, path);
 
     #ifdef _WIN32
     lib.handle = LoadLibraryA(path);

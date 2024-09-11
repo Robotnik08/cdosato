@@ -70,13 +70,85 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"STRINGTODOUBLE", string_atod},
         {"COUNT", string_count},
 
-        {"SORT", array_sort}
+        {"SORT", array_sort},
+
+        // no caps functions below (refrence the same functions)
+        {"say", io_say},
+        {"sayln", io_sayln},
+        {"listen", io_listen},
+        {"read", io_read_file},
+        {"write", io_write_file},
+        {"append", io_append_file},
+        {"delete", io_delete_file},
+        {"exists", io_file_exists},
+        {"move", io_move_file},
+        {"copy", io_copy_file},
+
+        {"clear", io_clear},
+        {"end", io_end},
+        {"pause", io_pause},
+        {"system", io_system},
+
+        {"srandom", io_seed_random},
+        {"random", io_random_double},
+        {"randomint", io_random_int},
+        {"randomrange", io_random_range},
+        {"randombool", io_random_bool},
+
+        {"time", io_time},
+        {"sleep", io_sleep},
+        {"datetime", io_datetime},
+        {"clock", io_clock},
+
+        {"abs", math_abs},
+        {"round", math_round},
+        {"floor", math_floor},
+        {"ceil", math_ceil},
+        {"pow", math_pow},
+        {"sqrt", math_sqrt},
+        {"min", math_min},
+        {"max", math_max},
+        {"log", math_log},
+        {"log10", math_log10},
+        {"log2", math_log2},
+        {"exp", math_exp},
+        {"sin", math_sin},
+        {"cos", math_cos},
+        {"tan", math_tan},
+        {"asin", math_asin},
+        {"acos", math_acos},
+        {"atan", math_atan},
+        {"atan2", math_atan2},
+        {"clamp", math_clamp},
+
+        {"split", string_split},
+        {"lower", string_lower},
+        {"upper", string_upper},
+        {"length", string_length},
+        {"substr", string_substr},
+        {"indexof", string_indexof},
+        {"lastindexof", string_lastindexof},
+        {"startswith", string_startswith},
+        {"endswith", string_endswith},
+        {"replace", string_replace},
+        {"trim", string_trim},
+        {"reverse", string_reverse},
+        {"contains", string_contains},
+        {"remove", string_remove},
+        {"insert", string_insert},
+        {"stringtoint", string_atoi},
+        {"stringtodouble", string_atod},
+        {"count", string_count},
+
+        {"sort", array_sort}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {
         Function func;
         init_Function(&func);
-        func.name = functions[i].name;
+        char* name = malloc(strlen(functions[i].name) + 1);
+        strcpy(name, functions[i].name);
+        func.name = name;
         func.func_ptr = functions[i].function;
         func.is_compiled = true;
 

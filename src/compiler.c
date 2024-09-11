@@ -26,6 +26,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
     if (node.type == NODE_TEMP_SUBSCRIPT_EXPRESSION) {
         type = NODE_EXPRESSION;
     }
+    bool created_scope = false;
 
     switch (type) {
         case NODE_BLOCK: {
@@ -33,6 +34,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 ScopeData* new_scope = malloc(sizeof(ScopeData));
                 initScopeData(new_scope);
                 scope = new_scope;
+                created_scope = true;
             }
             // fall through
         }
@@ -49,6 +51,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 for (int i = 0; i < count; i++) {
                     writeByteCode(ci, OP_POP, 0);
                     popScopeData(scope);
+                }
+                if (created_scope) {
+                    freeScopeData(scope);
+                    free(scope);
                 }
             }
 
@@ -230,7 +236,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* path = strdup(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue);
+            char* path = malloc(strlen(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue) + 1);
+            strcpy(path, vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue);
             
             DynamicLibrary lib = loadLib(path);
             
@@ -239,7 +246,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 DosatoFunctionMap func = lib.functions.functions[i];
                 Function new_func;
                 init_Function(&new_func);
-                new_func.name = strdup(func.name);
+                new_func.name = malloc(strlen(func.name) + 1);
+                strcpy(new_func.name, func.name);
 
                 // check if name is in name map
                 size_t name_index = -1;
@@ -261,6 +269,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 write_FunctionList(&vm->functions, new_func);
             }
+
+            free_DynamicLibrary(&lib);
+
+            free(path);
 
             break;
         }
@@ -564,12 +576,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
 
             bool is_local = scope != NULL;
-            printf("Scope: %p\n", scope);
 
             if (is_local) {
                 pushScopeData(scope, -1);
                 pushScopeData(scope, -1);
-                printf("Scope locals count: %d\n", scope->locals_count);
             }
 
             writeInstruction(ci, node.start, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
@@ -616,7 +626,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             if (is_local) {
                 scope->locals_count -= 2;
-                printf("Scope locals after removing count: %d\n", scope->locals_count);
             }
 
             // pop the loop location data
