@@ -60,12 +60,18 @@ typedef enum {
     E_MATH_DOMAIN_ERROR,
     E_NOT_A_FUNCTION,
     E_WRONG_NUMBER_OF_ARGUMENTS,
+    E_EXPECTED_STRING_TYPE,
+    E_EXPECTED_LONG,
+
+    // standard library errors
+    E_FILE_NOT_FOUND,
+    E_FILE_ALREADY_EXISTS,
+    E_FILE_PERMISSION_DENIED,
 
     E_UNKNOWN,
     E_AMOUNT
 } ErrorType;
 
-// extern const char* ERROR_MESSAGES[];
 
 void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type);
 

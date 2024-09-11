@@ -6,9 +6,9 @@
 
 set start=%time%
 
-for %%f in (tests\*.to) do (
+for %%f in (*.to) do (
     echo Running %%f
-    powershell ./main %%f
+    powershell ../build/dosato %%f
     if errorlevel 1 (
         echo Unit tests failed
         echo At: %%f

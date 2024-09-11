@@ -2,20 +2,20 @@ MAKE OBJECT obj = {};
 
 SET obj = {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5};
 
-DO SAY (obj);
+DO SAYLN (obj);
 
-DO SAY (obj->"a");
+DO SAYLN (obj->"a");
 
 SET obj->"b" *= 2;
 
-DO SAY (obj);
+DO SAYLN (obj);
 
-DO SAY (obj->"b");
+DO SAYLN (obj->"b");
 
 SET obj += {"f": 6, "g": 7, "h": 8, "i": 9, "j": 10};
 
-DO SAY (obj);
+DO SAYLN (obj);
 
 SET obj -= "h";
 
-DO SAY (obj);
+DO SAYLN (obj);

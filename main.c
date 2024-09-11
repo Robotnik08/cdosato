@@ -4,6 +4,9 @@
 #include "include/ast.h"
 #include "include/debug.h"
 #include "include/compiler.h"
+#include "include/filetools.h"
+
+#include "include/standard_libraries/load_std.h"
 
 int debug = 0b0;
 #define DEBUG 0b1
@@ -79,17 +82,26 @@ int main (int argc, char** argv) {
     initVirtualMachine(&vm);
 
 
-    AST main_ast;
-    init_AST(&main_ast);
-    load_AST(&main_ast, source, length, argv[1], debug, &vm);
+    AST* main_ast = malloc(sizeof(AST));
+    init_AST(main_ast);
+    char* name = malloc(strlen(argv[1]) + 1);
+    strcpy(name, argv[1]);
+    load_AST(main_ast, source, length, name, debug, &vm);
 
     if (debug & DEBUG_PARSE) {
         printf("==== AST: ====\n");
-        printNode(main_ast.root, 0);
+        printNode(main_ast->root, 0);
     } 
 
+    // initialize the standard library
+    loadStandardLibrary(&vm);
+    
+    init_ValueArray(&vm.globals);
+    for (int i = 0; i < vm.mappings.count; i++) {
+        write_ValueArray(&vm.globals, UNDEFINED_VALUE);
+    }
 
-    compile(&vm, &main_ast);
+    compile(&vm, main_ast);
 
 
     if (debug & DEBUG_COMPILE) {
@@ -99,17 +111,22 @@ int main (int argc, char** argv) {
         }
 
         for (int i = 0; i < vm.functions.count; i++) {
+            if (vm.functions.funcs[i].is_compiled) continue;
             printf("\n");
             disassembleCode(vm.functions.funcs[i].instance, vm.functions.funcs[i].name);
         }
-    } 
+    }
+
+    int exit_code = 0;
+
+    write_StackFrames(&vm.stack_frames, 0);
 
     if (!debug) {
-        runVirtualMachine(&vm, debug);
+        exit_code = runVirtualMachine(&vm, debug);
     } else {
         // time it
         clock_t start = clock();
-        runVirtualMachine(&vm, debug);
+        exit_code = runVirtualMachine(&vm, debug);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);
@@ -127,10 +144,6 @@ int main (int argc, char** argv) {
 
     freeVirtualMachine(&vm);
 
-    free_AST(&main_ast);
-
-    free(source);
-
     if (debug) printf("Succesfull cleanup\n");
-    return 0;
+    return exit_code;
 }

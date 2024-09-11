@@ -22,7 +22,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expected Curly Bracket '{}'",
     "Expected Square Bracket '[]'",
     "Expression can not be empty",
-    "Operator cannot be used as unary operator (+, -, ~, !, !-, ^/)",
+    "Operator cannot be used as unary operator (-, ~, !, !-, ^/)",
     "Incomplete Ternary Operator, expected ':'",
     "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, ->, <<, >>, **, ^/, <|, |>, #)",
     "Expected Hash Operator (#)",
@@ -43,7 +43,7 @@ static const char* ERROR_MESSAGES[] = {
     "Variable already defined",
     "Variable is not an array",
     "Variable is not an object",
-    "Array index is out of bounds",
+    "Index is out of bounds",
     "Invalid key type, expected STRING",
     "Key is already defined",
     "Key is not defined",
@@ -57,6 +57,12 @@ static const char* ERROR_MESSAGES[] = {
     "Math domain error",
     "Not a function",
     "Wrong number of arguments in function call",
+    "Expected STRING type",
+    "Expected LONG type",
+
+    "File not found",
+    "File already exists",
+    "Permission denied",
 
     "Unknown Error",
     "Error Amount (report this)"

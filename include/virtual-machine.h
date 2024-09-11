@@ -45,6 +45,8 @@ typedef struct {
     CodeInstanceList includes;
 } VirtualMachine;
 
+extern VirtualMachine* main_vm;
+
 #include "ast.h"
 
 void initVirtualMachine(VirtualMachine* vm);
@@ -63,9 +65,11 @@ void destroy_FunctionList(FunctionList* list);
 
 void init_Function(Function* func);
 
+Value callExternalFunction(size_t index, ValueArray args, bool debug);
+
 
 #define NEXT_BYTE() (*vm->ip++)
-#define NEXT_SHORT() (*vm->ip++) | (*vm->ip++ << 8)
+#define NEXT_SHORT() ((*vm->ip++) | (*vm->ip++ << 8))
 #define POP_VALUE() (vm->stack.values[--vm->stack.count])
 #define PEEK_VALUE() (vm->stack.values[vm->stack.count - 1])
 #define PEEK_VALUE_TWO() (vm->stack.values[vm->stack.count - 2])

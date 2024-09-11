@@ -1,0 +1,9 @@
+DEFINE LONG compare (LONG a, LONG b) {
+    RETURN b - a;
+};
+
+MAKE ARRAY unsorted = [23,23,432,5566,54642,4,3,654,67456,4.3,5,6.656,345,-35663,-0.456,0.011];
+
+
+// DO SAYLN ("Sorted: " + SORT(unsorted));
+DO SAYLN ("Reverse sorted: ", SORT(unsorted, compare));

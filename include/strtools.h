@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#define IS_SPACE(c) (c == ' ' || c == '\n' || c == '\t' || c == '\0')
+
 /**
  * @brief Check if a character is numeric
  * @param c The character to check

@@ -5,7 +5,10 @@
 
 typedef enum {
     D_NULL = -1,
-    TYPE_INT,
+    TYPE_EXCEPTION = -2,
+    TYPE_HLT = -3,
+
+    TYPE_INT = 0,
     TYPE_BOOL,
     TYPE_STRING,
     TYPE_FLOAT,
@@ -51,7 +54,9 @@ typedef struct {
     } as;
 } Value;
 
-#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false }
+#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, 0 }
+#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
+#define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
 
 void destroyValue(Value* value);
 void printValue(Value value, bool extensive);

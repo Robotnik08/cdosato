@@ -1,5 +1,8 @@
-build
 test.*
+*.o
 *.exe
+*.dll
 .vscode
 DS_Store
+temp
+!test_library.dll

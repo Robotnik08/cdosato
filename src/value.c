@@ -4,6 +4,8 @@
 #include "../include/value.h"
 
 DOSATO_LIST_FUNC_GEN(ValueArray, Value, values)
+DOSATO_LIST_FUNC_GEN(StackFrames, size_t, stack)
+DOSATO_LIST_FUNC_GEN(ErrorJumps, ErrorJump, jumps)
 
 void destroyValueArray(ValueArray* array) {
     for (size_t i = 0; i < array->count; i++) {
@@ -13,6 +15,7 @@ void destroyValueArray(ValueArray* array) {
 }
 
 void destroyValue(Value* value) {
+    
     if (value->type == TYPE_ARRAY) {
         ValueArray* array = value->as.objectValue;
         destroyValueArray(array);
@@ -61,9 +64,9 @@ Value hardCopyValue(Value value) {
             break;
         }
         case TYPE_STRING: {
-            char* newString = malloc(strlen(value.as.stringValue) + 1);
-            strcpy(newString, value.as.stringValue);
-            value.as.stringValue = newString;
+            char* new_str = malloc(strlen(value.as.stringValue) + 1);
+            strcpy(new_str, value.as.stringValue);
+            value.as.stringValue = new_str;
             break;
         }
         default: {
@@ -464,6 +467,7 @@ char* valueToString (Value value, bool extensive) {
                 if (i < object->count - 1) {
                     strcat(string, ", ");
                 }
+                free(valueString);
             }
             string = realloc(string, strlen(string) + 2);
             strcat(string, "}");
@@ -481,6 +485,7 @@ char* valueToString (Value value, bool extensive) {
                 if (i < array->count - 1) {
                     strcat(string, ", ");
                 }
+                free(valueString);
             }
             string = realloc(string, strlen(string) + 2);
             strcat(string, "]");
@@ -604,8 +609,6 @@ void markDefined(Value* value) {
     }
 }
 
-DOSATO_LIST_FUNC_GEN(StackFrames, size_t, stack)
-DOSATO_LIST_FUNC_GEN(ErrorJumps, ErrorJump, jumps)
 
 void init_NameMap(NameMap* map) {
     map->names = NULL;

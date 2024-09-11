@@ -132,13 +132,13 @@ void free_LocationList(LocationList* list);
 void init_CodeInstanceList(CodeInstanceList* list);
 void write_CodeInstanceList(CodeInstanceList* list, CodeInstance instance);
 void free_CodeInstanceList(CodeInstanceList* list);
+void destroy_CodeInstanceList(CodeInstanceList* list);
 
 void initCodeInstance(CodeInstance* instance);
 void writeByteCode(CodeInstance* instance, uint8_t byte, size_t token_index);
-void writeByteCodeAt(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index);
-void insertByteCode(CodeInstance* instance, uint8_t byte, size_t token_index, size_t index);
 void writeInstruction(CodeInstance* instance, size_t token_index, OpCode instruction, ...);
 void freeCodeInstance(CodeInstance* instance);
+void freeCodeInstanceWeak(CodeInstance* instance);
 
 int getOffset(OpCode instruction);
 

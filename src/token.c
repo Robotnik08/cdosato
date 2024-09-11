@@ -71,7 +71,7 @@ int isAssignmentOperator (OperatorType operator) {
     }
 }
 
-int checkIfOnly (TokenList list, TokenType type, int start, int end) {
+int checkIfOnly (TokenList list, LexTokenType type, int start, int end) {
     Token* tokens = list.tokens;
     if (end - start < 2) {
         return false;
