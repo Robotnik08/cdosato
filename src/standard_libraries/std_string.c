@@ -5,8 +5,8 @@ Value string_split(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -32,6 +32,9 @@ Value string_split(ValueArray args, bool debug) {
         token = strtok(NULL, delim);
     }
 
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+
     return (Value){ TYPE_ARRAY, .as.objectValue = result, .defined = false };
 }
 
@@ -40,7 +43,7 @@ Value string_lower(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -57,7 +60,7 @@ Value string_upper(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -74,7 +77,7 @@ Value string_length(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -82,6 +85,8 @@ Value string_length(ValueArray args, bool debug) {
     }
 
     size_t len = strlen(arg.as.stringValue);
+
+    destroyValue(&arg);
 
     return (Value){ TYPE_LONG, .as.longValue = len };
 }
@@ -91,9 +96,9 @@ Value string_substr(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
-    Value arg3 = GET_ARG(args, 2);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg3 = GET_ARG_COPY(args, 2);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -122,6 +127,10 @@ Value string_substr(ValueArray args, bool debug) {
     strncpy(result, str + start, end - start + 1);
     result[end - start + 1] = '\0';
 
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+    destroyValue(&arg3);
+
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
@@ -130,8 +139,8 @@ Value string_indexof(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -154,6 +163,9 @@ Value string_indexof(ValueArray args, bool debug) {
     }
 
     long long int res = result - str;
+
+    destroyValue(&arg1);
+    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = res };   
 }
@@ -163,8 +175,8 @@ Value string_lastindexof(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -179,14 +191,15 @@ Value string_lastindexof(ValueArray args, bool debug) {
     char* str = arg1.as.stringValue;
     char* substr = arg2.as.stringValue;
 
-    char* result = strstr(str, substr);
-
-
-    if (result == NULL) {
-        return (Value){ TYPE_LONG, .as.longValue = -1 };
+    long long int res = -1;
+    for (size_t i = 0; i < strlen(str); i++) {
+        if (strncmp(str + i, substr, strlen(substr)) == 0) {
+            res = i;
+        }
     }
 
-    long long int res = result - str;
+    destroyValue(&arg1);
+    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = res };
 }
@@ -196,8 +209,8 @@ Value string_startswith(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -214,6 +227,9 @@ Value string_startswith(ValueArray args, bool debug) {
 
     bool result = strncmp(str, substr, strlen(substr)) == 0;
 
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
 
@@ -222,8 +238,8 @@ Value string_endswith(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -240,6 +256,9 @@ Value string_endswith(ValueArray args, bool debug) {
 
     bool result = strcmp(str + strlen(str) - strlen(substr), substr) == 0;
 
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
 
@@ -248,9 +267,9 @@ Value string_replace(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
-    Value arg3 = GET_ARG(args, 2);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg3 = GET_ARG_COPY(args, 2);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -271,18 +290,34 @@ Value string_replace(ValueArray args, bool debug) {
     char* substr = arg2.as.stringValue;
     char* replacement = arg3.as.stringValue;
 
+
     char* result = malloc(1);
-    for (size_t i = 0; i < strlen(str); i++) {
-        if (strncmp(str + i, substr, strlen(substr)) == 0) {
+    result[0] = '\0';
+    for (size_t i = 0; i < __max(strlen(str), strlen(result)); i++) {
+        bool match = true;
+        for (size_t j = 0; j < strlen(substr); j++) {
+            if (str[i + j] != substr[j]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
             result = realloc(result, strlen(result) + strlen(replacement) + 1);
             strcat(result, replacement);
+            result[strlen(result)] = '\0';
             i += strlen(substr) - 1;
         } else {
             result = realloc(result, strlen(result) + 2);
-            strncat(result, str + i, 1);
+            size_t len = strlen(result);
+            result[len] = str[i];
+            result[len + 1] = '\0';
         }
     }
     result[strlen(result)] = '\0';
+
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+    destroyValue(&arg3);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -292,7 +327,7 @@ Value string_trim(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -301,7 +336,6 @@ Value string_trim(ValueArray args, bool debug) {
 
     char* str = arg.as.stringValue;
 
-    char* result = malloc(1);
     size_t start = 0;
     size_t end = strlen(str) - 1;
     while (IS_SPACE(str[start])) {
@@ -310,11 +344,11 @@ Value string_trim(ValueArray args, bool debug) {
     while (IS_SPACE(str[end])) {
         end--;
     }
-    for (size_t i = start; i <= end; i++) {
-        result = realloc(result, strlen(result) + 2);
-        strncat(result, str + i, 1);
-    }
+    char* result = malloc(end - start + 2);
+    strncpy(result, str + start, end - start + 1);
     result[strlen(result)] = '\0';
+
+    destroyValue(&arg);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -324,7 +358,7 @@ Value string_reverse(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -340,6 +374,8 @@ Value string_reverse(ValueArray args, bool debug) {
     }
     result[len] = '\0';
 
+    destroyValue(&arg);
+
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
 
@@ -348,8 +384,8 @@ Value string_contains(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -366,6 +402,9 @@ Value string_contains(ValueArray args, bool debug) {
 
     bool result = strstr(str, substr) != NULL;
 
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
 
@@ -374,8 +413,8 @@ Value string_remove(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -391,15 +430,28 @@ Value string_remove(ValueArray args, bool debug) {
     char* substr = arg2.as.stringValue;
 
     char* result = malloc(1);
-    for (size_t i = 0; i < strlen(str); i++) {
-        if (strncmp(str + i, substr, strlen(substr)) == 0) {
+    result[0] = '\0';
+    for (size_t i = 0; i < __max(strlen(str), strlen(result)); i++) {
+        bool match = true;
+        for (size_t j = 0; j < strlen(substr); j++) {
+            if (str[i + j] != substr[j]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
             i += strlen(substr) - 1;
         } else {
             result = realloc(result, strlen(result) + 2);
-            strncat(result, str + i, 1);
+            size_t len = strlen(result);
+            result[len] = str[i];
+            result[len + 1] = '\0';
         }
     }
     result[strlen(result)] = '\0';
+
+    destroyValue(&arg1);
+    destroyValue(&arg2);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -409,9 +461,9 @@ Value string_insert(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
-    Value arg3 = GET_ARG(args, 2);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg3 = GET_ARG_COPY(args, 2);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -437,9 +489,20 @@ Value string_insert(ValueArray args, bool debug) {
     }
 
     char* result = malloc(strlen(str) + strlen(substr) + 1);
-    strncpy(result, str, index);
-    strcat(result, substr);
-    strcat(result, str + index);
+    for (size_t i = 0; i < index; i++) {
+        result[i] = str[i];
+    }
+    for (size_t i = 0; i < strlen(substr); i++) {
+        result[index + i] = substr[i];
+    }
+    for (size_t i = index; i < strlen(str); i++) {
+        result[strlen(substr) + i] = str[i];
+    }
+    result[strlen(str) + strlen(substr)] = '\0';
+
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+    destroyValue(&arg3);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -449,7 +512,7 @@ Value string_atoi(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -459,6 +522,8 @@ Value string_atoi(ValueArray args, bool debug) {
     char* str = arg.as.stringValue;
     long long int result = atoll(str);
 
+    destroyValue(&arg);
+
     return (Value){ TYPE_LONG, .as.longValue = result };
 }
 
@@ -467,7 +532,7 @@ Value string_atod(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
@@ -477,6 +542,8 @@ Value string_atod(ValueArray args, bool debug) {
     char* str = arg.as.stringValue;
     double result = atof(str);
 
+    destroyValue(&arg);
+
     return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
 }
 
@@ -485,8 +552,8 @@ Value string_count(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG(args, 0);
-    Value arg2 = GET_ARG(args, 1);
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -508,6 +575,9 @@ Value string_count(ValueArray args, bool debug) {
         count++;
         result++;
     }
+
+    destroyValue(&arg1);
+    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = count };
 }

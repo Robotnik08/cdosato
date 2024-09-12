@@ -63,6 +63,8 @@ static const char* ERROR_MESSAGES[] = {
     "File not found",
     "File already exists",
     "Permission denied",
+    "Value cannot be zero",
+    "Value cannot be negative",
 
     "Unknown Error",
     "Error Amount (report this)"

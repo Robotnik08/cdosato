@@ -1,0 +1,66 @@
+/// STD_IO
+DO SAY("SAY"); // EXPECT "SAY" (no newline)
+DO SAYLN("SAYLN"); // EXPECT "SAYLN" (newline)
+
+// LISTEN input is not used to avoid blocking the test
+// DO LISTEN ();
+
+DO SAYLN(READ("hello_world.to")); // EXPECT <file content of hello_world.to>
+
+// WRITE and APPEND are not used to avoid modifying the test
+// DO WRITE ("std_lib.to", "WRITE");
+// DO APPEND ("std_lib.to", "APPEND");
+
+// CLEAR is not used to avoid modifying the test
+// DO CLEAR ();
+
+// PAUSE is not used to avoid blocking the test
+// DO PAUSE ();
+
+DO SYSTEM("echo SYSTEM"); // EXPECT "SYSTEM"
+
+// END is not used to avoid stopping the test
+// DO END ();
+
+
+/// STD_MATH
+DO SAYLN(ABS(-1)); // EXPECT 1
+DO SAYLN(CEIL(1.5)); // EXPECT 2
+DO SAYLN(FLOOR(1.5)); // EXPECT 1
+DO SAYLN(ROUND(1.5)); // EXPECT 2
+DO SAYLN(MAX(1, 2)); // EXPECT 2
+DO SAYLN(MIN(1, 2)); // EXPECT 1
+DO SAYLN(POW(2, 3)); // EXPECT 8
+DO SAYLN(SQRT(4)); // EXPECT 2
+DO SAYLN(LOG(10, 100)); // EXPECT 2
+DO SAYLN(LOG10(100)); // EXPECT 2
+DO SAYLN(LOG2(8)); // EXPECT 3
+DO SAYLN(EXP(1)); // EXPECT 2.718282
+DO SAYLN(SIN(1)); // EXPECT 0.841471
+DO SAYLN(COS(1)); // EXPECT 0.540302
+DO SAYLN(TAN(1)); // EXPECT 1.557408
+DO SAYLN(ASIN(1)); // EXPECT 1.570796
+DO SAYLN(ACOS(1)); // EXPECT 0
+DO SAYLN(ATAN(1)); // EXPECT 0.785398
+DO SAYLN(ATAN2(1, 1)); // EXPECT 0.785398
+DO SAYLN(CLAMP(0, 1, 2)); // EXPECT 1
+
+// /// STD_STR
+DO SAYLN(SPLIT("Hello my name is Dosato and I am a test string", " ")); // EXPECT ["Hello", "my", "name", "is", "Dosato", "and", "I", "am", "a", "test", "string"]
+DO SAYLN(LOWER("HeLLo")); // EXPECT "hello"
+DO SAYLN(UPPER("HeLLo")); // EXPECT "HELLO"
+DO SAYLN(STRINGLENGTH("Hello")); // EXPECT 5
+DO SAYLN(SUBSTRING("Hello", 1, 2)); // EXPECT "el"
+DO SAYLN(STRINGINDEXOF("Hello", "e")); // EXPECT 1
+DO SAYLN(STRINGLASTINDEXOF("Hello", "l")); // EXPECT 3
+DO SAYLN(REPLACE("Hello", "l", "r")); // EXPECT "Herro"
+DO SAYLN(TRIM("  Hello  ")); // EXPECT "Hello"
+DO SAYLN(STARTSWITH("Hello", "H")); // EXPECT true
+DO SAYLN(ENDSWITH("Hello", "o")); // EXPECT true
+DO SAYLN(STRINGCONTAINS("Hello", "e")); // EXPECT true
+DO SAYLN(STRINGREVERSE("Hello")); // EXPECT "olleH"
+DO SAYLN(STRINGREMOVE("Hello", "ell")); // EXPECT "Ho"
+DO SAYLN(STRINGINSERT("Hello", 1, "e")); // EXPECT "Heello"
+DO SAYLN(STRINGTOINT("1")); // EXPECT 1
+DO SAYLN(STRINGTODOUBLE("1.5")); // EXPECT 1.5
+DO SAYLN(STRINGCOUNT("Hello", "l")); // EXPECT 2

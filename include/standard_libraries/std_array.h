@@ -13,6 +13,7 @@ Value array_shift(ValueArray args, bool debug);
 Value array_unshift(ValueArray args, bool debug);
 Value array_slice(ValueArray args, bool debug);
 Value array_splice(ValueArray args, bool debug);
+Value array_index_of(ValueArray args, bool debug);
 
 Value array_range(ValueArray args, bool debug);
 Value array_rangef(ValueArray args, bool debug);

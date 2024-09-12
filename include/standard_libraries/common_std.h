@@ -10,5 +10,6 @@
 #include "../virtual-machine.h"
 
 #define GET_ARG(args, index) (args.values[args.count - index - 1])
+#define GET_ARG_COPY(args, index) hardCopyValue(GET_ARG(args, index))
 
 #endif // DOSATO_STD_LIBRARY_COMMON_STD_H

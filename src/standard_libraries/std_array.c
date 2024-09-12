@@ -308,3 +308,97 @@ Value array_index_of (ValueArray args, bool debug) {
 
     return (Value){ TYPE_LONG, .as.longValue = -1 };
 }
+
+Value array_range (ValueArray args, bool debug) {
+    if (args.count < 1 || args.count > 3) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value start = GET_ARG(args, 0);
+    int cast_error = castValue(&start, TYPE_LONG);
+    if (cast_error != E_NULL) {
+        return BUILD_EXCEPTION(cast_error);
+    }
+
+    Value end;
+    if (args.count > 1) {
+        end = GET_ARG(args, 1);
+        cast_error = castValue(&end, TYPE_LONG);
+        if (cast_error != E_NULL) {
+            return BUILD_EXCEPTION(cast_error);
+        }
+    } else {
+        end = (Value){ TYPE_LONG, .as.longValue = start.as.longValue };
+        start = (Value){ TYPE_LONG, .as.longValue = 0 };
+    }
+
+    Value step;
+    if (args.count > 2) {
+        step = GET_ARG(args, 2);
+        cast_error = castValue(&step, TYPE_LONG);
+        if (cast_error != E_NULL) {
+            return BUILD_EXCEPTION(cast_error);
+        }
+    } else {
+        step = (Value){ TYPE_LONG, .as.longValue = 1 };
+    }
+
+    if (step.as.longValue == 0) {
+        return BUILD_EXCEPTION(E_CANNOT_BE_ZERO);
+    }
+
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+    for (int i = start.as.longValue; (step.as.longValue > 0 && i < end.as.longValue) || (step.as.longValue < 0 && i > end.as.longValue); i += step.as.longValue) {
+        write_ValueArray(new_array, (Value){ TYPE_LONG, .as.longValue = i });
+    }
+
+    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+}
+
+Value array_rangef (ValueArray args, bool debug) {
+    if (args.count < 1 || args.count > 3) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value start = GET_ARG(args, 0);
+    int cast_error = castValue(&start, TYPE_DOUBLE);
+    if (cast_error != E_NULL) {
+        return BUILD_EXCEPTION(cast_error);
+    }
+
+    Value end;
+    if (args.count > 1) {
+        end = GET_ARG(args, 1);
+        cast_error = castValue(&end, TYPE_DOUBLE);
+        if (cast_error != E_NULL) {
+            return BUILD_EXCEPTION(cast_error);
+        }
+    } else {
+        end = (Value){ TYPE_DOUBLE, .as.doubleValue = start.as.doubleValue };
+        start = (Value){ TYPE_DOUBLE, .as.doubleValue = 0 };
+    }
+
+    Value step;
+    if (args.count > 2) {
+        step = GET_ARG(args, 2);
+        cast_error = castValue(&step, TYPE_DOUBLE);
+        if (cast_error != E_NULL) {
+            return BUILD_EXCEPTION(cast_error);
+        }
+    } else {
+        step = (Value){ TYPE_DOUBLE, .as.doubleValue = 1 };
+    }
+
+    if (step.as.doubleValue == 0) {
+        return BUILD_EXCEPTION(E_CANNOT_BE_ZERO);
+    }
+
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+    for (double i = start.as.doubleValue; (step.as.doubleValue > 0 && i < end.as.doubleValue) || (step.as.doubleValue < 0 && i > end.as.doubleValue); i += step.as.doubleValue) {
+        write_ValueArray(new_array, (Value){ TYPE_DOUBLE, .as.doubleValue = i });
+    }
+
+    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+}
