@@ -1,7 +1,7 @@
 IMPORT "test_library.dll";
 
 // run the function from the library
-DO sayHello("Robotnikw");
+DO sayHello("Robotnik");
 
 // run the function from the library and return the result
 DO SAYLN(multiply(10, 20));
