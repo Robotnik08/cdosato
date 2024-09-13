@@ -1,15 +1,68 @@
-# CDosato
+# CDosato version 0.3.0
 
-CDosato is a work in progress bytecode interpreter for the [DOSATO language](https://github.com/Robotnik08/Dosato)<br>
-The first version I made was a simple tree walker, but I wanted to make it faster and more efficient, so I decided to make a bytecode interpreter.
+CDosato is the official implementation of the DOSATO programming language.<br>
 
-## How to use
+## Table of Contents
 
-To use the interpreter, you need to compile the source code and run the executable
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+
+## Introduction
+
+Dosato is a general purpose interpreted programming language that is designed to be simple and easy to use. It is a dynamically typed language that supports static typing as well.<br>
+The language is pretty simple and easy to learn. It is designed to be beginner friendly and is a great language to start with if you are new to programming.<br>
+
+
+## Installation
+
+In the root directory of the project, run the following command to install the CDosato interpreter:
 
 ```bash
-$ cd src
-$ make
+make
 ```
 
-Theres also going to be new language features that the old implementation didn't have, so consider Cdosato the new standard for the DOSATO language.
+This will create a `dosato` executable in the build directory of the project. You can run the interpreter using the following command:
+
+```bash
+./build/dosato -v
+```
+
+This will display the version of the interpreter.
+
+## Usage
+
+To run a Dosato program, you can use the following command:
+
+```bash
+dosato <path-to-dosato-file>
+```
+
+For example, to run the `hello_world.to` program, you can use the following command:
+
+```bash
+dosato hello_world.to
+```
+
+(You can find the `hello_world.to` program in the tests directory of the project)
+
+## Documentation
+
+A documentation is currently being worked on. It will be available soon.<br>
+
+## Contributing
+
+This language is still in its early stages of development, and I (Robotnik) mainly work on it in my free time as a hobby project. I personally think Dosato has potential, but we are still a long way from reaching that potential. If you would like to contribute to the project, you are more than welcome to do so. You can contribute by fixing bugs, adding new features, improving the documentation, or even just by giving feedback on the language. Any kind of contribution is appreciated.<br>
+I'm not that familiar with the open source community, so I'm not sure how to handle contributions. If you would like to contribute, please reach out. :p
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+Since this language is currently being developed by me alone, you can contact me directly if you have any questions or feedback.
