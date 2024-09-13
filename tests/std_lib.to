@@ -64,6 +64,7 @@ DO SAYLN(STRINGINSERT("Hello", 1, "e")); // EXPECT "Heello"
 DO SAYLN(STRINGTOINT("1")); // EXPECT 1
 DO SAYLN(STRINGTODOUBLE("1.5")); // EXPECT 1.5
 DO SAYLN(STRINGCOUNT("Hello", "l")); // EXPECT 2
+DO SAYLN(JOIN(["Hello", "World"], " ")); // EXPECT "Hello World"
 
 /// STD_ARRAY
 MAKE ARRAY a = [1, 2, 3];

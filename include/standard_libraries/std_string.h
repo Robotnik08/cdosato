@@ -22,6 +22,7 @@ Value string_insert(ValueArray args, bool debug);
 Value string_atoi(ValueArray args, bool debug);
 Value string_atod(ValueArray args, bool debug);
 Value string_count(ValueArray args, bool debug);
+Value string_join(ValueArray args, bool debug);
 
 
 #endif // STD_STRING_H

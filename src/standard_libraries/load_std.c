@@ -69,6 +69,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"STRINGTOINT", string_atoi},
         {"STRINGTODOUBLE", string_atod},
         {"STRINGCOUNT", string_count},
+        {"JOIN", string_join},
 
         {"SORT", array_sort},
         {"PUSH", array_push},
@@ -148,6 +149,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"stringtoint", string_atoi},
         {"stringtodouble", string_atod},
         {"stringcount", string_count},
+        {"join", string_join},
 
         {"sort", array_sort},
         {"push", array_push},

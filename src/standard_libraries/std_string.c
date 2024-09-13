@@ -581,3 +581,43 @@ Value string_count(ValueArray args, bool debug) {
 
     return (Value){ TYPE_LONG, .as.longValue = count };
 }
+
+Value string_join(ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG_COPY(args, 0);
+    Value arg2 = GET_ARG_COPY(args, 1);
+
+    if (arg1.type != TYPE_ARRAY) {
+        destroyValue(&arg1);
+        destroyValue(&arg2);
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    int cast_result = castValue(&arg2, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    ValueArray* arr = (ValueArray*)arg1.as.objectValue;
+    char* delim = arg2.as.stringValue;
+
+    char* result = malloc(1);
+    result[0] = '\0';
+    for (int i = 0; i < arr->count; i++) {
+        char* str = valueToString(arr->values[i], false);
+        result = realloc(result, strlen(result) + strlen(str) + strlen(delim) + 1);
+        strcat(result, str);
+        if (i != arr->count - 1) {
+            strcat(result, delim);
+        }
+        free(str);
+    }
+
+    destroyValue(&arg1);
+    destroyValue(&arg2);
+
+    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+}
