@@ -12,6 +12,7 @@ Value io_seed_random (ValueArray args, bool debug) {
     }
 
     srand(arg.as.uintValue);
+    rand(); // Discard the first random number
 
     return UNDEFINED_VALUE;
 }
@@ -21,7 +22,7 @@ Value io_random_double (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    double result = (double)rand() / RAND_MAX;
+    double result = (double)rand() / (double)RAND_MAX;
     return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
 }
 
