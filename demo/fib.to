@@ -1,0 +1,11 @@
+// Simple recursive Fibonacci function
+define long fib (long n) {
+    return n when (n <= 1);
+    return fib(n - 1) + fib(n - 2);
+};
+
+do sayln(fib(0));
+do sayln(fib(3));
+do sayln(fib(5));
+do sayln(fib(10));
+do sayln(fib(15));
