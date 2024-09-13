@@ -344,7 +344,6 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 PRINT_ERROR(i, E_EXPECTED_BRACKET_ROUND);
             }
             if (i == start) {
-                break;
                 PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
             }
             write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION, file_name));
@@ -550,6 +549,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                                 break;
                             }
                         }
+                        all_type = all_type && startofblock + 1 != i - 1;
 
                         if (2 >= highest && all_type) {
                             if (is_unary) {
