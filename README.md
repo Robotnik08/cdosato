@@ -56,7 +56,7 @@ A documentation is currently being worked on. It will be available soon.<br>
 
 ## Contributing
 
-This language is still in its early stages of development, and I (Robotnik) mainly work on it in my free time as a hobby project. I personally think Dosato has potential, but we are still a long way from reaching that potential. If you would like to contribute to the project, you are more than welcome to do so. You can contribute by fixing bugs, adding new features, improving the documentation, or even just by giving feedback on the language. Any kind of contribution is appreciated.<br>
+This language is still in its early stages of development, and I (Sebastiaan Heins) mainly work on it in my free time as a hobby project. I personally think Dosato has potential, but we are still a long way from reaching that potential. If you would like to contribute to the project, you are more than welcome to do so. You can contribute by fixing bugs, adding new features, improving the documentation, or even just by giving feedback on the language. Any kind of contribution is appreciated.<br>
 I'm not that familiar with the open source community, so I'm not sure how to handle contributions. If you would like to contribute, please reach out. :p
 
 ## License
