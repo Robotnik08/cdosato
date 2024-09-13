@@ -64,3 +64,38 @@ DO SAYLN(STRINGINSERT("Hello", 1, "e")); // EXPECT "Heello"
 DO SAYLN(STRINGTOINT("1")); // EXPECT 1
 DO SAYLN(STRINGTODOUBLE("1.5")); // EXPECT 1.5
 DO SAYLN(STRINGCOUNT("Hello", "l")); // EXPECT 2
+
+/// STD_ARRAY
+MAKE ARRAY a = [1, 2, 3];
+
+DO SAYLN(SORT(a)); // EXPECT [1, 2, 3]
+DEFINE LONG compare (LONG a, LONG b) {
+    RETURN b - a;
+};
+DO SAYLN(SORT(a, compare)); // EXPECT [3, 2, 1]
+DO SAYLN(PUSH(a, 4)); // EXPECT [1, 2, 3, 4]
+DO SAYLN(POP(a)); // EXPECT [1, 2]
+DO SAYLN(UNSHIFT(a, 0)); // EXPECT [0, 1, 2, 3]
+DO SAYLN(SHIFT(a)); // EXPECT [2, 3]
+DO SAYLN(SPLICE(a, 1, 1)); // EXPECT [1, 3]
+DO SAYLN(SLICE(a, 1, 2)); // EXPECT [2]
+DO SAYLN(INDEXOF(a, 2)); // EXPECT 1
+DO SAYLN(RANGE(10)); // EXPECT [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+DO SAYLN(RANGE(1, 10)); // EXPECT [1, 2, 3, 4, 5, 6, 7, 8, 9]
+DO SAYLN(RANGE(1, 10, 2)); // EXPECT [1, 3, 5, 7, 9]
+DO SAYLN(RANGE(10, 1, -1)); // EXPECT [10, 9, 8, 7, 6, 5, 4, 3, 2]
+DO SAYLN(RANGEF(0, 10, 0.5)); // EXPECT [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+
+/// STD_RANDOM
+DO SRANDOM(1); // Seed random number generator
+DO SAYLN(RANDOM()); // EXPECT 0.001251
+DO SAYLN(RANDOMINT()); // EXPECT 18467
+DO SAYLN(RANDOMRANGE(1, 10)); // EXPECT 5
+DO SAYLN(RANDOMBOOL()); // EXPECT false
+
+/// STD_TIME
+DO SAYLN(TIME()); // EXPECT current time in seconds
+DO SAYLN(DATETIME()); // EXPECT current date formatted
+
+// we don't SLEEP to avoid blocking the test
+// DO SLEEP(1);

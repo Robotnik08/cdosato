@@ -5,7 +5,7 @@ Value math_abs(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     if (ISFLOATTYPE(arg.type)) {
         int cast_result = castValue(&arg, TYPE_DOUBLE);
         if (cast_result != 0) {
@@ -26,7 +26,7 @@ Value math_round(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -39,7 +39,7 @@ Value math_floor(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -52,7 +52,7 @@ Value math_ceil(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -65,8 +65,8 @@ Value math_pow(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+    Value a = GET_ARG_COPY(args, 0);
+    Value b = GET_ARG_COPY(args, 1);
 
     if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
         int cast_result = castValue(&a, TYPE_DOUBLE);
@@ -100,7 +100,7 @@ Value math_sqrt(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -116,8 +116,8 @@ Value math_min(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+    Value a = GET_ARG_COPY(args, 0);
+    Value b = GET_ARG_COPY(args, 1);
 
     if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
         int cast_result = castValue(&a, TYPE_DOUBLE);
@@ -147,8 +147,8 @@ Value math_max(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+    Value a = GET_ARG_COPY(args, 0);
+    Value b = GET_ARG_COPY(args, 1);
 
     if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
         int cast_result = castValue(&a, TYPE_DOUBLE);
@@ -178,9 +178,9 @@ Value math_clamp(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
-    Value c = GET_ARG(args, 2);
+    Value a = GET_ARG_COPY(args, 0);
+    Value b = GET_ARG_COPY(args, 1);
+    Value c = GET_ARG_COPY(args, 2);
 
     if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type) || ISFLOATTYPE(c.type)) {
         int cast_result = castValue(&a, TYPE_DOUBLE);
@@ -218,8 +218,8 @@ Value math_log(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+    Value a = GET_ARG_COPY(args, 0);
+    Value b = GET_ARG_COPY(args, 1);
 
     if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
         int cast_result = castValue(&a, TYPE_DOUBLE);
@@ -249,7 +249,7 @@ Value math_log10(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -262,7 +262,7 @@ Value math_log2(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -275,7 +275,7 @@ Value math_sin(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -288,7 +288,7 @@ Value math_cos(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -301,7 +301,7 @@ Value math_tan(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -314,7 +314,7 @@ Value math_asin(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -327,7 +327,7 @@ Value math_acos(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -340,7 +340,7 @@ Value math_atan(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -353,8 +353,8 @@ Value math_atan2(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+    Value a = GET_ARG_COPY(args, 0);
+    Value b = GET_ARG_COPY(args, 1);
 
     if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
         int cast_result = castValue(&a, TYPE_DOUBLE);
@@ -384,7 +384,7 @@ Value math_exp(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);

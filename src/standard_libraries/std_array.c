@@ -84,7 +84,7 @@ Value array_sort(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     if (arg.type != TYPE_ARRAY) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
@@ -99,12 +99,12 @@ Value array_sort(ValueArray args, bool debug) {
         if (res.type == TYPE_EXCEPTION || res.type == TYPE_HLT) {
             return res;
         }
-        return hardCopyValue(arg);
+        return arg;
     }
 
     qsort(((ValueArray*)arg.as.objectValue)->values, ((ValueArray*)arg.as.objectValue)->count, sizeof(Value), compareValues);
 
-    return hardCopyValue(arg);
+    return arg;
 }
 
 Value array_push (ValueArray args, bool debug) {
@@ -112,7 +112,7 @@ Value array_push (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     if (arg.type != TYPE_ARRAY) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
@@ -120,7 +120,7 @@ Value array_push (ValueArray args, bool debug) {
     Value value = GET_ARG(args, 1);
     write_ValueArray((ValueArray*)arg.as.objectValue, hardCopyValue(value));
 
-    return hardCopyValue(arg);
+    return arg;
 }
 
 Value array_pop (ValueArray args, bool debug) {
@@ -205,7 +205,7 @@ Value array_slice (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    Value start = GET_ARG(args, 1);
+    Value start = GET_ARG_COPY(args, 1);
     int cast_error = castValue(&start, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -213,7 +213,7 @@ Value array_slice (ValueArray args, bool debug) {
 
     Value end;
     if (args.count == 3) {
-        end = GET_ARG(args, 2);
+        end = GET_ARG_COPY(args, 2);
         cast_error = castValue(&end, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -237,7 +237,7 @@ Value array_slice (ValueArray args, bool debug) {
 }
 
 Value array_splice (ValueArray args, bool debug) {
-    if (args.count < 2 || args.count > 4) {
+    if (args.count < 2 || args.count > 3) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
@@ -246,7 +246,7 @@ Value array_splice (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    Value start = GET_ARG(args, 1);
+    Value start = GET_ARG_COPY(args, 1);
     int cast_error = castValue(&start, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -254,7 +254,7 @@ Value array_splice (ValueArray args, bool debug) {
 
     Value delete_count;
     if (args.count > 2) {
-        delete_count = GET_ARG(args, 2);
+        delete_count = GET_ARG_COPY(args, 2);
         cast_error = castValue(&delete_count, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -275,13 +275,6 @@ Value array_splice (ValueArray args, bool debug) {
     }
     for (int i = start.as.longValue + delete_count.as.longValue; i < obj->count; i++) {
         write_ValueArray(new_array, hardCopyValue(obj->values[i]));
-    }
-
-    if (args.count == 4) {
-        Value value = GET_ARG(args, 3);
-        for (int i = 4; i < args.count; i++) {
-            write_ValueArray(new_array, hardCopyValue(value));
-        }
     }
 
     return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
@@ -314,7 +307,7 @@ Value array_range (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value start = GET_ARG(args, 0);
+    Value start = GET_ARG_COPY(args, 0);
     int cast_error = castValue(&start, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -322,7 +315,7 @@ Value array_range (ValueArray args, bool debug) {
 
     Value end;
     if (args.count > 1) {
-        end = GET_ARG(args, 1);
+        end = GET_ARG_COPY(args, 1);
         cast_error = castValue(&end, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -334,7 +327,7 @@ Value array_range (ValueArray args, bool debug) {
 
     Value step;
     if (args.count > 2) {
-        step = GET_ARG(args, 2);
+        step = GET_ARG_COPY(args, 2);
         cast_error = castValue(&step, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -361,7 +354,7 @@ Value array_rangef (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value start = GET_ARG(args, 0);
+    Value start = GET_ARG_COPY(args, 0);
     int cast_error = castValue(&start, TYPE_DOUBLE);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -369,7 +362,7 @@ Value array_rangef (ValueArray args, bool debug) {
 
     Value end;
     if (args.count > 1) {
-        end = GET_ARG(args, 1);
+        end = GET_ARG_COPY(args, 1);
         cast_error = castValue(&end, TYPE_DOUBLE);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -381,7 +374,7 @@ Value array_rangef (ValueArray args, bool debug) {
 
     Value step;
     if (args.count > 2) {
-        step = GET_ARG(args, 2);
+        step = GET_ARG_COPY(args, 2);
         cast_error = castValue(&step, TYPE_DOUBLE);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);

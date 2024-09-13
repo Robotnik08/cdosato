@@ -120,6 +120,7 @@ Value string_substr(ValueArray args, bool debug) {
     long long int end = arg3.as.longValue;
 
     if (start < 0 || start >= strlen(str) || end < 0 || end >= strlen(str) || start > end) {
+        destroyValue(&arg1);
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
@@ -128,8 +129,6 @@ Value string_substr(ValueArray args, bool debug) {
     result[end - start + 1] = '\0';
 
     destroyValue(&arg1);
-    destroyValue(&arg2);
-    destroyValue(&arg3);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
 }
@@ -485,6 +484,8 @@ Value string_insert(ValueArray args, bool debug) {
     char* substr = arg3.as.stringValue;
 
     if (index < 0 || index >= strlen(str)) {
+        destroyValue(&arg1);
+        destroyValue(&arg3);
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
@@ -501,7 +502,6 @@ Value string_insert(ValueArray args, bool debug) {
     result[strlen(str) + strlen(substr)] = '\0';
 
     destroyValue(&arg1);
-    destroyValue(&arg2);
     destroyValue(&arg3);
 
     return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };

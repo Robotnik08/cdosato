@@ -15,18 +15,22 @@ Value io_datetime (ValueArray args, bool debug) {
     }
 
     char* format = "%Y-%m-%d %H:%M:%S";
+    bool allocated = false;
     if (args.count == 2) {
-        Value arg = hardCopyValue(GET_ARG(args, 1));
+        Value arg = GET_ARG_COPY(args, 1);
         int cast_result = castValue(&arg, TYPE_STRING);
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        format = arg.as.stringValue;
+        format = malloc(strlen(arg.as.stringValue) + 1);
+        strcpy(format, arg.as.stringValue);
+        destroyValue(&arg);
+        allocated = true;
     }
 
     time_t t = time(NULL);
     if (args.count >= 1) {
-        Value arg = GET_ARG(args, 0);
+        Value arg = GET_ARG_COPY(args, 0);
         int cast_result = castValue(&arg, TYPE_LONG);
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
@@ -37,6 +41,8 @@ Value io_datetime (ValueArray args, bool debug) {
     struct tm* tm_info = localtime(&t);
     char* buffer = malloc(80);
     strftime(buffer, 80, format, tm_info);
+
+    if (allocated) free(format);
 
     return (Value){ TYPE_STRING, .as.stringValue = buffer, .defined = false };
 }
@@ -54,7 +60,7 @@ Value io_sleep (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG(args, 0);
+    Value arg = GET_ARG_COPY(args, 0);
     int cast_result = castValue(&arg, TYPE_DOUBLE);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
