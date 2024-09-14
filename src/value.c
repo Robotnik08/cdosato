@@ -447,6 +447,43 @@ ErrorType incValue (Value* value, int amount) {
     return 0;
 }
 
+Value buildArray(size_t count, ...) {
+    ValueArray* array = malloc(sizeof(ValueArray));
+    init_ValueArray(array);
+
+    va_list args;
+    va_start(args, count);
+
+    for (size_t i = 0; i < count; i++) {
+        Value value = va_arg(args, Value);
+        write_ValueArray(array, value);
+    }
+
+    va_end(args);
+
+    return (Value) { TYPE_ARRAY, .as.objectValue = array, .defined = false };
+}
+
+Value buildObject(size_t count, ...) {
+    ValueObject* object = malloc(sizeof(ValueObject));
+    init_ValueObject(object);
+
+    va_list args;
+    va_start(args, count);
+
+    for (size_t i = 0; i < count; i++) {
+        char* key = va_arg(args, char*);
+        Value value = va_arg(args, Value);
+        write_ValueObject(object, key, value);
+    }
+
+    va_end(args);
+
+    return (Value) { TYPE_OBJECT, .as.objectValue = object, .defined = false };
+}
+
+
+
 char* valueToString (Value value, bool extensive) {
     char* string = malloc(1);
     string[0] = '\0';

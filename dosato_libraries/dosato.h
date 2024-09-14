@@ -1,7 +1,13 @@
 #ifndef __DOSATO_H__
 #define __DOSATO_H__
 
-// This is the main header file for the Dosato library API.
+/**
+ * This is the main header file for the Dosato library API.
+ * Most of the functions and structures are defined here.
+ * For more information on how to use the library, please refer to the documentation.
+ * Some functions do require manual memory management, so be sure to attend to the documentation.
+ */
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -151,14 +157,76 @@ typedef struct {
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
 
+/**
+ * @brief Destroys a value and frees the entire object safely.
+ * The value may not be used after this function is called.
+ */
 extern void destroyValue(Value* value);
+
+/**
+ * @brief Prints the value to the console.
+ * @param value The value to print.
+ * @param extensive If true, prints the value in an extensive format. (e.g. strings are printed with quotes)
+ */
 extern void printValue(Value value, bool extensive);
+
+/**
+ * @brief Returns a hard copy of the value, this means you will have to destroy the value after you are done with it.
+ */
 extern Value hardCopyValue(Value value);
+
+/**
+ * @brief Casts a value to a specific type, if possible. The value will be destroyed and replaced with the new value, so make sure you have a copy of the value if you need it.
+ * @param value The value to cast.
+ * @param type The type to cast to.
+ * @return An error code, 0 if successful. if you get an error code, make sure to handle it accordingly.
+ */
 extern ErrorType castValue(Value* value, DataType type);
+
+/**
+ * @brief Compares two values and returns true if they are equal.
+ * This is based on the same logic as the == operator in the Language.
+ */
 extern bool valueEquals (Value* a, Value* b);
+
+/**
+ * @brief Increments a value by a specific amount.
+ * @param value The value to increment.
+ * @param amount The amount to increment by.
+ * @return An error code, 0 if successful. if you get an error code, make sure to handle it accordingly.
+ */
 extern ErrorType incValue (Value* value, int amount);
 
+/**
+ * @brief Builds an array value from a list of values.
+ * @param count The number of values to include in the array.
+ * @param ... The values to include in the array, must be of type 'Value'.
+ * @return The built array value.
+ */
+extern Value buildArray(size_t count, ...);
+
+/**
+ * @brief Builds an object value from a list of key-value pairs.
+ * @param count The number of key-value pairs to include in the object.
+ * @param ... The key-value pairs to include in the object, must be of type 'char*' and 'Value'. Make sure to include the key first, then the value. Take note that the key is copied internally, so you are still the owner of the key.
+ * @return The built object value.
+ */
+extern Value buildObject(size_t count, ...);
+
+/**
+ * @brief Converts a value to a string.
+ * @param value The value to convert.
+ * @param extensive If true, prints the value in an extensive format. (e.g. strings are printed with quotes)
+ * @return The string representation of the value. Make sure to free the string after you are done with it.
+ */
 extern char* valueToString (Value value, bool extensive);
+
+/**
+ * @brief Converts a DataType to a string.
+ * @param type The DataType to convert.
+ * @return The string representation of the DataType. This is a constant string, so you don't need to free it.
+ */
+extern char* dataTypeToString (DataType type);
 
 typedef struct {
     size_t count;
@@ -181,8 +249,27 @@ extern void destroyValueArray(ValueArray* array);
 extern void init_ValueObject(ValueObject* object);
 extern void write_ValueObject(ValueObject* object, char* key, Value value);
 extern void free_ValueObject(ValueObject* object);
+
+/**
+ * @brief Checks if an object has a key.
+ * @param object The object to check.
+ * @param key The key to check for.
+ */
 extern bool hasKey(ValueObject* object, char* key);
+
+/**
+ * @brief Gets the value at a specific key in an object.
+ * @param object The object to get the value from.
+ * @param key The key to get the value from.
+ * @return The value at the key, or NULL if the key does not exist.
+ */
 extern Value* getValueAtKey(ValueObject* object, char* key);
+
+/**
+ * @brief Removes a key from an object, this does safely destroy the value and the key of the object.
+ * @param object The object to remove the key from.
+ * @param key The key to remove.
+ */
 extern void removeFromKey(ValueObject* object, char* key);
 
 
@@ -208,6 +295,12 @@ extern void write_DosatoFunctionMapList(DosatoFunctionMapList* list, DosatoFunct
 extern void free_DosatoFunctionMapList(DosatoFunctionMapList* list);
 
 /// filetools.h
+
+/**
+ * @brief Gets the amount of characters in a file.
+ * @param file The file to get the size of.
+ * @return The amount of characters in the file, this is accurate based on the fact that on windows, \r\\n is counted as 1 character.
+ */
 extern long long int getFileSize(FILE *file);
 
 

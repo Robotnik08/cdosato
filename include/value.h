@@ -66,6 +66,8 @@ ErrorType castValue(Value* value, DataType type);
 bool valueEquals (Value* a, Value* b);
 ErrorType incValue (Value* value, int amount);
 
+Value buildArray(size_t count, ...);
+Value buildObject(size_t count, ...);
 
 char* valueToString (Value value, bool extensive);
 char* dataTypeToString (DataType type);

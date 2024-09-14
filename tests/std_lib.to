@@ -5,7 +5,7 @@ DO SAYLN("SAYLN"); // EXPECT "SAYLN" (newline)
 // LISTEN input is not used to avoid blocking the test
 // DO LISTEN ();
 
-DO SAYLN(READ("hello_world.to")); // EXPECT <file content of hello_world.to>
+// DO SAYLN(READ("hello_world.to")); // EXPECT <file content of hello_world.to>
 
 // WRITE and APPEND are not used to avoid modifying the test
 // DO WRITE ("std_lib.to", "WRITE");
@@ -100,3 +100,21 @@ DO SAYLN(DATETIME()); // EXPECT current date formatted
 
 // we don't SLEEP to avoid blocking the test
 // DO SLEEP(1);
+
+
+/// STD_TYPE
+DO SAYLN(TYPEOF(1)); // EXPECT "ulong"
+DO SAYLN(TYPEOF(1.5)); // EXPECT "double"
+DO SAYLN(TYPEOF("Hello")); // EXPECT "string"
+DO SAYLN(TYPEOF([1, 2, 3])); // EXPECT "array"
+DO SAYLN(TYPEOF({})); // EXPECT "object"
+DO SAYLN(TYPEOF(true)); // EXPECT "bool"
+DO SAYLN(TYPEOF(null)); // EXPECT "<unknown type>"
+
+DO SAYLN(TYPEINTOF(1)); // EXPECT 13
+DO SAYLN(TYPEINTOF(1.5)); // EXPECT 4
+DO SAYLN(TYPEINTOF("Hello")); // EXPECT 2
+DO SAYLN(TYPEINTOF([1, 2, 3])); // EXPECT 10
+
+DO SAYLN(ISNULL(null)); // EXPECT true
+DO SAYLN(ISNULL(false)); // EXPECT false

@@ -85,9 +85,9 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"RANGE", array_range},
         {"RANGEF", array_rangef},
 
-        {"TYPE", type_typeof},
+        {"TYPEOF", type_typeof},
         {"ISNULL", type_isnull},
-        {"TYPEINT", type_typeof_int},
+        {"TYPEINTOF", type_typeof_int},
 
         // no caps functions below (refrence the same functions)
         {"say", io_say},
@@ -172,9 +172,9 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"range", array_range},
         {"rangef", array_rangef},
 
-        {"type", type_typeof},
+        {"typeof", type_typeof},
         {"isnull", type_isnull},
-        {"typeint", type_typeof_int}
+        {"typeintof", type_typeof_int}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {
