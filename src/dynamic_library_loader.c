@@ -39,7 +39,7 @@ DynamicLibrary loadLib (const char* path) {
     #ifdef _WIN32
     lib.handle = LoadLibraryA(path);
     if (!lib.handle) {
-        printf("Error loading library (or library was not found): %s\n", path);
+        printf("Error loading library (or library was not found) or interpreter is missing dll file: %s\n", path);
         exit(1);
     }
     

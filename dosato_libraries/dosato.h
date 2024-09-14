@@ -25,6 +25,17 @@ extern "C" {
 #include <time.h>
 #include <math.h>
 
+#define GET_ARG(args, index) (args.values[args.count - index - 1])
+#define GET_ARG_COPY(args, index) hardCopyValue(GET_ARG(args, index))
+
+#define CAST_SAFE(value, type) \
+    do { \
+        ErrorType cast_result_##value = castValue(&value, type); \
+        if (cast_result_##value != 0) { \
+            return BUILD_EXCEPTION(cast_result_##value); \
+        } \
+    } while (0)
+
 /// error.h
 /// Error enum.
 
@@ -161,6 +172,8 @@ typedef struct {
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, 0 }
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
+
+#define BUILD_VALUE(type, value) (Value){ type, .as = value, .defined = false, .is_variable_type = false }
 
 /**
  * @brief Destroys a value and frees the entire object safely.
