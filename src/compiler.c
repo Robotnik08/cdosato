@@ -275,7 +275,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 // if not, add it
                 if (name_index == -1) {
                     name_index = vm->mappings.count;
-                    write_NameMap(&vm->mappings, new_func.name);
+                    char* new_name = malloc(strlen(new_func.name) + 1);
+                    strcpy(new_name, new_func.name);
+                    write_NameMap(&vm->mappings, new_name);
                 }
                 new_func.name_index = name_index;
                 

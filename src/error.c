@@ -58,7 +58,7 @@ static const char* ERROR_MESSAGES[] = {
     "Not a function",
     "Wrong number of arguments in function call",
     "Expected STRING type",
-    "Expected LONG type",
+    "Expected number",
 
     "File not found",
     "File already exists",
@@ -66,13 +66,18 @@ static const char* ERROR_MESSAGES[] = {
     "Value cannot be zero",
     "Value cannot be negative",
 
+    // utility errors
+    "Empty error", // this is for libraries to print their own error messages
+
     "Unknown Error",
     "Error Amount (report this)"
 };
 
 void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type) {
-    printf("\nERROR:\n");
-    printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
+    if (type != E_EMPTY_MESSAGE) {
+        printf("\nERROR:\n");
+        printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
+    }
 
     if (pos < strlen(full_code) && pos >= 0) {
         printf("At line %i:%i in <%s>\n", getLine(full_code, pos), getLineCol(full_code, pos), file_name);

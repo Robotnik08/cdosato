@@ -59,17 +59,31 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
             return result;
         }
 
-        if (result.type != TYPE_LONG) {
+        if (!ISINTTYPE(result.type) && !ISFLOATTYPE(result.type)) {
             destroyValue(&result);
-            return BUILD_EXCEPTION(E_EXPECTED_LONG);
+            return BUILD_EXCEPTION(E_EXPECTED_NUMBER);
         }
         
-        if (result.as.longValue < 0) {
-            i++;
-            Value temp = array->values[i];
-            array->values[i] = array->values[j];
-            array->values[j] = temp;
+        if (ISINTTYPE(result.type)) {
+            castValue(&result, TYPE_LONG);
+            if (result.as.longValue < 0) {
+                i++;
+                Value temp = array->values[i];
+                array->values[i] = array->values[j];
+                array->values[j] = temp;
+            }
         }
+
+        if (ISFLOATTYPE(result.type)) {
+            castValue(&result, TYPE_DOUBLE);
+            if (result.as.doubleValue < 0) {
+                i++;
+                Value temp = array->values[i];
+                array->values[i] = array->values[j];
+                array->values[j] = temp;
+            }
+        }
+        
     }
 
     Value temp = array->values[i + 1];

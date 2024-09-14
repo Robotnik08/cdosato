@@ -15,6 +15,10 @@ void init() {
     map3.name = "count";
     map3.function = count;
     write_DosatoFunctionMapList(&functions, map3);
+    DosatoFunctionMap map4;
+    map4.name = "donotcall";
+    map4.function = custom_error;
+    write_DosatoFunctionMapList(&functions, map4);
 }
 
 
@@ -56,4 +60,10 @@ Value count (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
     return (Value){ TYPE_LONG, .as.longValue = global++};
+}
+
+Value custom_error(ValueArray args, bool debug) {
+    printf("ERROR: \n");
+    printf("You are not allowed to call this function silly!\n");
+    return BUILD_EXCEPTION(E_EMPTY_MESSAGE);
 }

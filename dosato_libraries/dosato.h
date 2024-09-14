@@ -86,12 +86,17 @@ typedef enum {
     E_NOT_A_FUNCTION,
     E_WRONG_NUMBER_OF_ARGUMENTS,
     E_EXPECTED_STRING_TYPE,
-    E_EXPECTED_LONG,
+    E_EXPECTED_NUMBER,
 
     // standard library errors
     E_FILE_NOT_FOUND,
     E_FILE_ALREADY_EXISTS,
     E_FILE_PERMISSION_DENIED,
+    E_CANNOT_BE_ZERO,
+    E_CANNOT_BE_NEGATIVE,
+
+    // utility errors
+    E_EMPTY_MESSAGE,
 
     E_UNKNOWN,
     E_AMOUNT
