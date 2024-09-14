@@ -52,7 +52,7 @@ dosato hello_world.to
 
 ## Documentation
 
-A documentation is currently being worked on. It will be available soon.<br>
+The documentation is currently being worked on. It will be available soon.<br>
 
 ## Contributing
 
