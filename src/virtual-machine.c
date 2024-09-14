@@ -365,9 +365,21 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
+                // cast key to string
+                if (key.type != TYPE_STRING) {
+                    ErrorType code = castValue(&key, TYPE_STRING);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                }
+
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
-                    PRINT_ERROR(E_KEY_NOT_FOUND);
+                    // push NULL
+                    pushValue(&vm->stack, UNDEFINED_VALUE);
+                    DESTROYIFLITERAL(object);
+                    DESTROYIFLITERAL(key);
+                    break;
                 }
 
                 Value value = *getValueAtKey(obj, key.as.stringValue);
@@ -432,6 +444,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 if (object.type != TYPE_OBJECT) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
+                }
+
+                // cast key to string
+                if (key.type != TYPE_STRING) {
+                    ErrorType code = castValue(&key, TYPE_STRING);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
                 }
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
@@ -632,6 +652,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
+                // cast key to string
+                if (key.type != TYPE_STRING) {
+                    ErrorType code = castValue(&key, TYPE_STRING);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                }
+
                 markDefined(&value);
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
@@ -673,7 +701,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     Value value = POP_VALUE();
                     Value key = POP_VALUE();
                     if (key.type != TYPE_STRING) {
-                        PRINT_ERROR(E_INVALID_KEY_TYPE);
+                        ErrorType code = castValue(&key, TYPE_STRING);
+                        if (code != E_NULL) {
+                            PRINT_ERROR(code);
+                        }
                     }
                     if (hasKey(obj, key.as.stringValue)) {
                         PRINT_ERROR(E_KEY_ALREADY_DEFINED);
@@ -793,6 +824,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
+                // cast key to string
+                if (key.type != TYPE_STRING) {
+                    ErrorType code = castValue(&key, TYPE_STRING);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                }
+
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 if (!hasKey(obj, key.as.stringValue)) {
                     PRINT_ERROR(E_KEY_NOT_FOUND);
@@ -812,6 +851,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value object = POP_VALUE();
                 if (object.type != TYPE_OBJECT) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
+                }
+
+                // cast key to string
+                if (key.type != TYPE_STRING) {
+                    ErrorType code = castValue(&key, TYPE_STRING);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
                 }
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;

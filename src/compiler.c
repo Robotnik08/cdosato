@@ -127,6 +127,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             DataType type = ast->tokens.tokens[node.body.nodes[0].start].carry;
             char* name = getTokenString(ast->tokens.tokens[node.body.nodes[1].start]);
+            // check if function is already in the function list
+            for (int i = 0; i < vm->functions.count; i++) {
+                if (strcmp(vm->functions.funcs[i].name, name) == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                }
+            }
+
             size_t name_index = ast->tokens.tokens[node.body.nodes[1].start].carry;
             CodeInstance* instance = malloc(sizeof(CodeInstance));
             initCodeInstance(instance);
@@ -244,6 +251,14 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // register functions
             for (int i = 0; i < lib.functions.count; i++) {
                 DosatoFunctionMap func = lib.functions.functions[i];
+
+                // check if function is already in the function list
+                for (int j = 0; j < vm->functions.count; j++) {
+                    if (strcmp(vm->functions.funcs[j].name, func.name) == 0) {
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+                    }
+                }
+
                 Function new_func;
                 init_Function(&new_func);
                 new_func.name = malloc(strlen(func.name) + 1);
