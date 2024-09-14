@@ -15,6 +15,7 @@
 #include "std_math.h"
 #include "std_string.h"
 #include "std_array.h"
+#include "std_type.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
 

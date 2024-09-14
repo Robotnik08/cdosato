@@ -474,6 +474,11 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_NULL_KEYWORD: {
+            writeByteCode(ci, OP_PUSH_NULL, node.start);
+            break;
+        }
+
         case NODE_IDENTIFIER: {
             if (ast->tokens.tokens[node.start].carry == 0) {
                 writeInstruction(ci, node.start, OP_LOAD_UNDERSCORE); // load the underscore variable

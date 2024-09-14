@@ -8,6 +8,7 @@
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR"}
 #define SEPARATORS {';'}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
+#define NULL_KEYWORDS {"NULL"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
                    "**","^/","|>","<|","!-","=>",">>=","<<=","**=","|>=","<|="}
@@ -33,6 +34,7 @@ typedef enum {
     TOKEN_VAR_TYPE,
     TOKEN_SEPARATOR,
     TOKEN_BOOLEAN,
+    TOKEN_NULL_KEYWORD,
     TOKEN_END = -1
 } LexTokenType;
 

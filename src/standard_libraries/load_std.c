@@ -79,8 +79,15 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"SLICE", array_slice},
         {"SPLICE", array_splice},
         {"INDEXOF", array_index_of},
+        {"LASTINDEXOF", array_last_index_of},
+        {"REVERSE", array_reverse},
+        {"FILL", array_fill},
         {"RANGE", array_range},
         {"RANGEF", array_rangef},
+
+        {"TYPE", type_typeof},
+        {"ISNULL", type_isnull},
+        {"TYPEINT", type_typeof_int},
 
         // no caps functions below (refrence the same functions)
         {"say", io_say},
@@ -159,8 +166,15 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"slice", array_slice},
         {"splice", array_splice},
         {"indexof", array_index_of},
+        {"lastindexof", array_last_index_of},
+        {"reverse", array_reverse},
+        {"fill", array_fill},
         {"range", array_range},
         {"rangef", array_rangef},
+
+        {"type", type_typeof},
+        {"isnull", type_isnull},
+        {"typeint", type_typeof_int}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

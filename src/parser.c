@@ -494,6 +494,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     root.type = NODE_STRING_LITERAL;
                 } else if (tokens.tokens[new_start].type == TOKEN_BOOLEAN) {
                     root.type = tokens.tokens[new_start].carry == 0 ? NODE_FALSE : NODE_TRUE;
+                } else if (tokens.tokens[new_start].type == TOKEN_NULL) {
+                    root.type = NODE_NULL_KEYWORD;
                 } else {
                     PRINT_ERROR(new_start, E_UNEXPECTED_TOKEN);
                 }

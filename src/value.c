@@ -592,6 +592,74 @@ char* valueToString (Value value, bool extensive) {
     return string;
 }
 
+char* dataTypeToString (DataType type) {
+    switch (type) {
+        case TYPE_INT: {
+            return "int";
+        }
+        case TYPE_BOOL: {
+            return "bool";
+        }
+        case TYPE_STRING: {
+            return "string";
+        }
+        case TYPE_FLOAT: {
+            return "float";
+        }
+        case TYPE_DOUBLE: {
+            return "double";
+        }
+        case TYPE_CHAR: {
+            return "char";
+        }
+        case TYPE_SHORT: {
+            return "short";
+        }
+        case TYPE_LONG: {
+            return "long";
+        }
+        case TYPE_BYTE: {
+            return "byte";
+        }
+        case TYPE_VOID: {
+            return "void";
+        }
+        case TYPE_ARRAY: {
+            return "array";
+        }
+        case TYPE_UINT: {
+            return "uint";
+        }
+        case TYPE_USHORT: {
+            return "ushort";
+        }
+        case TYPE_ULONG: {
+            return "ulong";
+        }
+        case TYPE_UBYTE: {
+            return "ubyte";
+        }
+        case TYPE_OBJECT: {
+            return "object";
+        }
+        case TYPE_VAR: {
+            return "var";
+        }
+        case TYPE_FUNCTION: {
+            return "function";
+        }
+        case TYPE_EXCEPTION: {
+            return "exception";
+        }
+        case TYPE_HLT: {
+            return "hlt";
+        }
+        default: {
+            return "<unknown type>";
+        }
+    }
+}
+
 void markDefined(Value* value) {
     value->defined = true;
     if (value->type == TYPE_ARRAY) {

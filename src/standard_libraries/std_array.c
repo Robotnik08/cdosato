@@ -302,6 +302,71 @@ Value array_index_of (ValueArray args, bool debug) {
     return (Value){ TYPE_LONG, .as.longValue = -1 };
 }
 
+Value array_last_index_of(ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value value = GET_ARG(args, 1);
+
+    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    for (int i = obj->count - 1; i >= 0; i--) {
+        if (valueEquals(&obj->values[i], &value)) {
+            return (Value){ TYPE_LONG, .as.longValue = i };
+        }
+    }
+
+    return (Value){ TYPE_LONG, .as.longValue = -1 };
+}
+
+Value array_reverse (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+    for (int i = obj->count - 1; i >= 0; i--) {
+        write_ValueArray(new_array, hardCopyValue(obj->values[i]));
+    }
+
+    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+}
+
+Value array_fill (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value value = GET_ARG(args, 0);
+    Value count = GET_ARG_COPY(args, 1);
+
+    int cast_error = castValue(&count, TYPE_LONG);
+    if (cast_error != E_NULL) {
+        return BUILD_EXCEPTION(cast_error);
+    }
+
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+    for (int i = 0; i < count.as.longValue; i++) {
+        write_ValueArray(new_array, hardCopyValue(value));
+    }
+
+    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+}
+
+
 Value array_range (ValueArray args, bool debug) {
     if (args.count < 1 || args.count > 3) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
