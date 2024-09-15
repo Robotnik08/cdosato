@@ -84,6 +84,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"FILL", array_fill},
         {"RANGE", array_range},
         {"RANGEF", array_rangef},
+        {"COUNTER", array_counter},
+        {"SETCOUNTER", array_set_counter},
 
         {"TYPEOF", type_typeof},
         {"ISNULL", type_isnull},
@@ -171,6 +173,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"fill", array_fill},
         {"range", array_range},
         {"rangef", array_rangef},
+        {"counter", array_counter},
+        {"setcounter", array_set_counter},
 
         {"typeof", type_typeof},
         {"isnull", type_isnull},

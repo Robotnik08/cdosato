@@ -474,3 +474,28 @@ Value array_rangef (ValueArray args, bool debug) {
 
     return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
 }
+
+long long int counter = 0;
+
+Value array_counter(ValueArray args, bool debug) {
+    if (args.count != 0) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    return (Value){ TYPE_LONG, .as.longValue = counter++ };
+}
+
+Value array_set_counter(ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG_COPY(args, 0);
+    if (arg.type != TYPE_LONG) {
+        return BUILD_EXCEPTION(E_EXPECTED_NUMBER);
+    }
+
+    counter = arg.as.longValue;
+
+    return UNDEFINED_VALUE;
+}

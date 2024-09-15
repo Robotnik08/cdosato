@@ -604,7 +604,7 @@ char* valueToString (Value value, bool extensive) {
         }
         case TYPE_DOUBLE: {
             string = realloc(string, 32);
-            sprintf(string, "%f", value.as.doubleValue);
+            sprintf(string, "%lf", value.as.doubleValue);
             break;
         }
         case TYPE_BOOL: {

@@ -21,4 +21,7 @@ Value array_fill(ValueArray args, bool debug);
 Value array_range(ValueArray args, bool debug);
 Value array_rangef(ValueArray args, bool debug);
 
+Value array_counter(ValueArray args, bool debug);
+Value array_set_counter(ValueArray args, bool debug);
+
 #endif // STD_ARRAY_H

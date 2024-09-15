@@ -8,5 +8,4 @@ Value type_typeof(ValueArray args, bool debug);
 Value type_isnull(ValueArray args, bool debug);
 Value type_typeof_int(ValueArray args, bool debug);
 
-
 #endif // STD_TYPE_H
