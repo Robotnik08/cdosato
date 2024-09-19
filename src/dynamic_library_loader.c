@@ -85,6 +85,7 @@ DynamicLibrary loadLib (const char* path) {
     }
 
     lib.functions = *functions;
+    
     #endif
 
     return lib;
