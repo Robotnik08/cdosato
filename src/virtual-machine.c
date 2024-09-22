@@ -547,6 +547,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value copy = hardCopyValue(global);
 
                 pushValue(&vm->stack, copy);
+
                 break;
             }
             case OP_STORE: {
@@ -1074,6 +1075,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     removeFromKey(a_obj, key_to_remove);
                     pushValue(&vm->stack, a);
                     DESTROYIFLITERAL(b);
+                } else if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || ISFLOATTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    char* string = a.as.stringValue;
+                    long long int pop_amount = 0;
+                    ErrorType code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    pop_amount = b.as.longValue;
+                    if (pop_amount < 0) {
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+                    if (pop_amount > strlen(string)) {
+                        pop_amount = strlen(string);
+                    }
+                    char* new_string = malloc(strlen(string) - pop_amount + 1);
+                    strncpy(new_string, string, strlen(string) - pop_amount);
+                    Value result = (Value){ TYPE_STRING, .as.stringValue = new_string, .defined = false };
+                    pushValue(&vm->stack, result);
+                    DESTROYIFLITERAL(a);
+                    DESTROYIFLITERAL(b);
+                    break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {

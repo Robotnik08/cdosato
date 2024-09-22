@@ -79,6 +79,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                             write_NodeList(&temp_body, parse(source, length, start, i, tokens, NODE_MASTER_DO_BODY + tokens.tokens[start - 1].carry, file_name));
                             body_parsed = true;
                         }
+                    } else if (ext_type == EXT_IF && tokens.tokens[i].carry == EXT_THEN) {
+                        continue;
                     } else {
                         write_NodeList(&temp_body, parse(source, length, ext_start, i, tokens, NODE_WHEN_BODY + ext_type, file_name));
                         ext_type = tokens.tokens[i].carry;
@@ -94,25 +96,29 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
             // reorganize the body
             
-            // IF, needs THEN to be be right after it, and it will encapsulate that 1 THEN node
+            // Encapsulate all the else bodies in the if body
             NodeList new_temp_body;
             init_NodeList(&new_temp_body);
             for (int i = 0; i < temp_body.count; i++) {
+                int if_index = i;
                 if (temp_body.nodes[i].type == NODE_IF_BODY) {
+                    Node* if_node = &temp_body.nodes[if_index];
                     if (i + 1 < temp_body.count) {
-                        if (temp_body.nodes[i + 1].type == NODE_THEN_BODY) {
-                            write_NodeList(&temp_body.nodes[i].body, temp_body.nodes[i + 1]);
-                            write_NodeList(&new_temp_body, temp_body.nodes[i]);
+                        while (
+                            temp_body.nodes[i + 1].type == NODE_ELSE_BODY || 
+                            (temp_body.nodes[i + 1].type == NODE_ELSE_BODY && temp_body.nodes[i + 2].type == NODE_IF_BODY) || 
+                            (temp_body.nodes[i + 1].type == NODE_IF_BODY && temp_body.nodes[i].type == NODE_ELSE_BODY)
+                        ) {
+                            write_NodeList(&if_node->body, temp_body.nodes[i + 1]);
+                            if_node = &if_node->body.nodes[if_node->body.count - 1];
                             i++;
-                        } else {
-                            PRINT_ERROR(temp_body.nodes[i].start, E_EXPECTED_THEN);
+                            if (i + 1 == temp_body.count) {
+                                break;
+                            }
                         }
-                    } else {
-                        PRINT_ERROR(temp_body.nodes[i].start, E_EXPECTED_THEN);
                     }
-                } else {
-                    write_NodeList(&new_temp_body, temp_body.nodes[i]);
                 }
+                write_NodeList(&new_temp_body, temp_body.nodes[if_index]);
             }
 
             free_NodeList(&temp_body);
@@ -325,7 +331,6 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
             write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
             if (i + 1 != end) {
-                printNode(root, 0);
                 PRINT_ERROR(i + 1, E_UNEXPECTED_TOKEN);
             }
             break;
@@ -381,8 +386,27 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
+        case NODE_IF_BODY: {
+            // expression
+            int then_loc = -1;
+            for (int i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_EXT && tokens.tokens[i].carry == EXT_THEN) {
+                    then_loc = i;
+                    break;
+                }
+            }
+            if (then_loc == -1) {
+                PRINT_ERROR(end - 1, E_EXPECTED_THEN);
+            }
+
+            write_NodeList(&root.body, parse(source, length, start, then_loc, tokens, NODE_EXPRESSION, file_name));
+            write_NodeList(&root.body, parse(source, length, then_loc + 1, end, tokens, NODE_THEN_BODY, file_name));
+            break;
+        }
+
+
         case NODE_WHEN_BODY:
-        case NODE_IF_BODY:
         case NODE_WHILE_BODY: {
             // expression
             write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION, file_name));
@@ -701,8 +725,6 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 PRINT_ERROR(start, E_UNEXPECTED_TOKEN);
             }
             if (tokens.tokens[start].type != TOKEN_OPERATOR) {
-                printNode(root, 0);
-                printTokens(tokens);
                 PRINT_ERROR(start, E_UNEXPECTED_TOKEN);
             }
 

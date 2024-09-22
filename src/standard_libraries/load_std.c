@@ -207,4 +207,68 @@ int loadStandardLibrary(VirtualMachine* vm) {
 
         write_FunctionList(&vm->functions, func);
     }
+
+    return 0;
+}
+
+int loadConstants (VirtualMachine* vm) {
+
+    #define ADD_CONST(name, value) do { \
+        size_t name_index = -1; \
+        for (int j = 0; j < vm->mappings.count; j++) { \
+            if (strcmp(vm->mappings.names[j], name) == 0) { \
+                name_index = j; \
+                break; \
+            } \
+        } \
+        if (name_index == -1) { \
+            name_index = vm->mappings.count; \
+            addName(&vm->mappings, name); \
+            write_ValueArray(&vm->globals, value); \
+        } else { \
+            vm->globals.values[name_index] = value; \
+        } \
+    } while(0)
+
+
+    // add the standard library constants
+
+    Value maxlong = (Value){ TYPE_LONG, .as.longValue = MAXINT64, .defined = true, .is_variable_type = false };
+    Value minlong = (Value){ TYPE_LONG, .as.longValue = MININT64, .defined = true, .is_variable_type = false };
+    Value maxint = (Value){ TYPE_LONG, .as.longValue = MAXINT32, .defined = true, .is_variable_type = false };
+    Value minint = (Value){ TYPE_LONG, .as.longValue = MININT32, .defined = true, .is_variable_type = false };
+    Value maxshort = (Value){ TYPE_LONG, .as.longValue = MAXINT16, .defined = true, .is_variable_type = false };
+    Value minshort = (Value){ TYPE_LONG, .as.longValue = MININT16, .defined = true, .is_variable_type = false };
+    Value maxchar = (Value){ TYPE_LONG, .as.longValue = MAXCHAR, .defined = true, .is_variable_type = false };
+    Value minchar = (Value){ TYPE_LONG, .as.longValue = MINCHAR, .defined = true, .is_variable_type = false };
+    Value pi = (Value){ TYPE_DOUBLE, .as.doubleValue = 3.14159265358979323846, .defined = true, .is_variable_type = false };
+    Value e = (Value){ TYPE_DOUBLE, .as.doubleValue = 2.71828182845904523536, .defined = true, .is_variable_type = false };
+
+    
+    ADD_CONST("MAXLONG", maxlong);
+    ADD_CONST("MINLONG", minlong);
+    ADD_CONST("MAXINT", maxint);
+    ADD_CONST("MININT", minint);
+    ADD_CONST("MAXSHORT", maxshort);
+    ADD_CONST("MINSHORT", minshort);
+    ADD_CONST("MAXCHAR", maxchar);
+    ADD_CONST("MINCHAR", minchar);
+    ADD_CONST("MATH_PI", pi);
+    ADD_CONST("MATH_E", e);
+
+    // add lower case constants
+    ADD_CONST("maxlong", maxlong);
+    ADD_CONST("minlong", minlong);
+    ADD_CONST("maxint", maxint);
+    ADD_CONST("minint", minint);
+    ADD_CONST("maxshort", maxshort);
+    ADD_CONST("minshort", minshort);
+    ADD_CONST("maxchar", maxchar);
+    ADD_CONST("minchar", minchar);
+    ADD_CONST("math_pi", pi);
+    ADD_CONST("math_e", e);
+
+    #undef constMapAdd
+
+    return 0;
 }

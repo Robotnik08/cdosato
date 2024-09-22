@@ -70,7 +70,7 @@ Value hardCopyValue(Value value) {
             break;
         }
         default: {
-            break;
+            return value;
         }
     }
     return value;
