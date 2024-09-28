@@ -497,5 +497,5 @@ Value array_set_counter(ValueArray args, bool debug) {
 
     counter = arg.as.longValue;
 
-    return UNDEFINED_VALUE;
+    return (Value){ TYPE_LONG, .as.longValue = counter };
 }
