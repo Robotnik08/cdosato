@@ -521,7 +521,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_ARRAY_EXPRESSION: {
-            for (int i = node.body.count - 1; i >= 0; i--) {
+            for (int i = 0; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
             }
             writeInstruction(ci, node.start, OP_BUILD_LIST, DOSATO_SPLIT_SHORT(node.body.count)); // cast to the correct type
@@ -529,7 +529,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_OBJECT_EXPRESSION: {
-            for (int i = node.body.count - 1; i >= 0; i--) {
+            for (int i = 0; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
             }
             writeInstruction(ci, node.start, OP_BUILD_OBJECT, DOSATO_SPLIT_SHORT(node.body.count)); // cast to the correct type

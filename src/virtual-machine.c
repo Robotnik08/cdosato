@@ -684,23 +684,23 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 int count = NEXT_SHORT();
                 Value list = (Value){ TYPE_ARRAY, .as.objectValue = malloc(sizeof(ValueArray)), .defined = false };
                 init_ValueArray((ValueArray*)list.as.objectValue);
-                for (int i = 0; i < count; i++) {
-                    Value value = POP_VALUE();
-                    write_ValueArray((ValueArray*)list.as.objectValue, value);
+                for (int i = vm->stack.count - count; i < vm->stack.count; i++) {
+                    write_ValueArray((ValueArray*)list.as.objectValue, vm->stack.values[i]);
                 }
+                vm->stack.count -= count;
                 pushValue(&vm->stack, list);
                 break;
             }
 
             case OP_BUILD_OBJECT: {
-                int count = NEXT_SHORT();
+                int count = NEXT_SHORT() * 2;
                 Value object = (Value){ TYPE_OBJECT, .as.objectValue = malloc(sizeof(ValueObject)), .defined = false };
 
                 ValueObject* obj = (ValueObject*)object.as.objectValue;
                 init_ValueObject(obj);
-                for (int i = 0; i < count; i++) {
-                    Value value = POP_VALUE();
-                    Value key = POP_VALUE();
+                for (int i = vm->stack.count - count; i < vm->stack.count; i++) {
+                    Value key = vm->stack.values[i];
+                    Value value = vm->stack.values[++i];
                     if (key.type != TYPE_STRING) {
                         ErrorType code = castValue(&key, TYPE_STRING);
                         if (code != E_NULL) {
@@ -713,6 +713,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     write_ValueObject(obj, key.as.stringValue, value);
                     DESTROYIFLITERAL(key);
                 }
+
+                vm->stack.count -= count;
+
                 pushValue(&vm->stack, object);
                 break;
             }
