@@ -251,8 +251,8 @@ int loadConstants (VirtualMachine* vm) {
     ADD_CONST("MININT", minint);
     ADD_CONST("MAXSHORT", maxshort);
     ADD_CONST("MINSHORT", minshort);
-    ADD_CONST("MAXCHAR", maxchar);
-    ADD_CONST("MINCHAR", minchar);
+    ADD_CONST("MAXBYTE", maxchar);
+    ADD_CONST("MINBYTE", minchar);
     ADD_CONST("MATH_PI", pi);
     ADD_CONST("MATH_E", e);
 
@@ -263,8 +263,8 @@ int loadConstants (VirtualMachine* vm) {
     ADD_CONST("minint", minint);
     ADD_CONST("maxshort", maxshort);
     ADD_CONST("minshort", minshort);
-    ADD_CONST("maxchar", maxchar);
-    ADD_CONST("minchar", minchar);
+    ADD_CONST("maxbyte", maxchar);
+    ADD_CONST("minbyte", minchar);
     ADD_CONST("math_pi", pi);
     ADD_CONST("math_e", e);
 
