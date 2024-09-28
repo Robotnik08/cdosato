@@ -52,7 +52,8 @@ dosato hello_world.to
 
 ## Documentation
 
-The documentation is currently being worked on. It will be available soon.<br>
+I have build a downloadable documentation for Dosato, you can download it [here](https://github.com/Robotnik08/Dosato-docs).<br>
+This documentation is also available online [here](https://robotnik08.github.io/Dosato-docs/).<br>
 
 ## Contributing
 
