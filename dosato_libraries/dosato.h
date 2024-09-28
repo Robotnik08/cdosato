@@ -173,7 +173,7 @@ typedef struct {
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
 
-#define BUILD_VALUE(type, value) (Value){ type, .as = value, .defined = false, .is_variable_type = false }
+#define BUILD_VALUE(type, valueName, value) (Value){ type, .as.valueName = value, .defined = false, .is_variable_type = false }
 
 /**
  * @brief Destroys a value and frees the entire object safely.
