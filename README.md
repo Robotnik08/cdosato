@@ -1,4 +1,4 @@
-# CDosato version 0.3.0
+# CDosato version 0.3.2
 
 CDosato is the official implementation of the DOSATO programming language.<br>
 

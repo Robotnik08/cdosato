@@ -14,6 +14,6 @@
 #include "error.h"
 #include "filetools.h"
 
-#define DOSATO_VERSION "0.3.1"
+#define DOSATO_VERSION "0.3.2"
 
 #endif // dosato_common_h
