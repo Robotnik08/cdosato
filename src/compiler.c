@@ -363,7 +363,20 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     }
                 }
 
-                compileNode(vm, ci, node.body.nodes[0].body.nodes[2], ast, scope); // the right side of the subscript (the object)
+                if (ast->tokens.tokens[node.body.nodes[0].body.nodes[1].start].carry == OPERATOR_ARROW && node.body.nodes[0].body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[0].body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
+                    // add identifier as a constant string
+                    char* val = getTokenString(ast->tokens.tokens[node.body.nodes[0].body.nodes[2].start]);
+                    int id = -1;
+                    if (hasName(&vm->constants_map, val)) {
+                        id = getName(&vm->constants_map, val);
+                    } else {
+                        id = addName(&vm->constants_map, val);
+                        write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                    }
+                    writeInstruction(ci, node.body.nodes[0].body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
+                } else {
+                    compileNode(vm, ci, node.body.nodes[0].body.nodes[2], ast, scope);
+                }
 
                 OperatorType operator_inner = ast->tokens.tokens[node.body.nodes[0].body.nodes[1].start].carry; // operator for the subscript
 
@@ -430,7 +443,20 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 compileNode(vm, ci, node.body.nodes[0], ast, scope);
             }
 
-            compileNode(vm, ci, node.body.nodes[2], ast, scope);
+            if (ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_ARROW && node.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
+                // add identifier as a constant string
+                char* val = getTokenString(ast->tokens.tokens[node.body.nodes[2].start]);
+                int id = -1;
+                if (hasName(&vm->constants_map, val)) {
+                    id = getName(&vm->constants_map, val);
+                } else {
+                    id = addName(&vm->constants_map, val);
+                    write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                }
+                writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
+            } else {
+                compileNode(vm, ci, node.body.nodes[2], ast, scope);
+            }
 
             int res = writeOperatorInstruction(ci, ast->tokens.tokens[node.body.nodes[1].start].carry, node.body.nodes[1].start);
             if (res == -1) {
