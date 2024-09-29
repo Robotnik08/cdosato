@@ -491,8 +491,9 @@ Value array_set_counter(ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG_COPY(args, 0);
-    if (arg.type != TYPE_LONG) {
-        return BUILD_EXCEPTION(E_EXPECTED_NUMBER);
+    int cast_error = castValue(&arg, TYPE_LONG);
+    if (cast_error != E_NULL) {
+        return BUILD_EXCEPTION(cast_error);
     }
 
     counter = arg.as.longValue;

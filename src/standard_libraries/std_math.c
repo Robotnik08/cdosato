@@ -209,7 +209,8 @@ Value math_clamp(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_LONG, .as.longValue = a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue < c.as.longValue ? b.as.longValue : c.as.longValue };
+        
+        return (Value){ TYPE_LONG, .as.longValue = __max(b.as.longValue, __min(a.as.longValue, c.as.longValue)) };
     }
 }
 
