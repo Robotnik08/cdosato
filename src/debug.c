@@ -241,6 +241,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
+        case OP_JUMP_IF_MATCH:
+            printf("OP_JUMP_IF_MATCH");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+        
         case OP_FOR_ITER:
             printf("OP_FOR_ITER");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);

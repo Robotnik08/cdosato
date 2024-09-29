@@ -59,7 +59,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_IMPORT:
         case NODE_MASTER_RETURN:
         case NODE_MASTER_BREAK:
-        case NODE_MASTER_CONTINUE: {
+        case NODE_MASTER_CONTINUE:
+        case NODE_MASTER_SWITCH: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = EXT_NULL;
             int ext_start = start;
@@ -293,6 +294,122 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
+        case NODE_MASTER_SWITCH_BODY: {
+            // everything before the first '=>' operator is the expression
+            int i = start;
+            for (i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_AS) {
+                    break;
+                }
+            }
+
+            if (i == start) {
+                PRINT_ERROR(i, E_EMPTY_EXPRESSION);
+            }
+
+            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION, file_name));
+
+            // after, must be surrounded by curly brackets
+            if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_CURLY)) {
+                PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_CURLY);
+            }
+
+            // get end of block
+            int j = getEndOfBlock(tokens, i + 1);
+            if (j == -1) {
+                PRINT_ERROR(i + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+            
+            if (j + 1 != end) {
+                PRINT_ERROR(j + 1, E_UNEXPECTED_TOKEN);
+            }
+
+            write_NodeList(&root.body, parse(source, length, i + 2, j, tokens, NODE_SWITCH_BODY, file_name));
+
+            break;
+        }
+
+        case NODE_SWITCH_BODY: {
+            if (start == end) {
+                // no switch cases
+                break;
+            }
+            // split on the '=>' operator
+            int j = start;
+            for (int i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_AS) {
+                    // check if the next token is a block
+                    if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_CURLY)) {
+                        PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_CURLY);
+                    }
+
+                    // get end of block
+                    int k = getEndOfBlock(tokens, i + 1);
+                    if (k == -1) {
+                        PRINT_ERROR(i + 1, E_MISSING_CLOSING_PARENTHESIS);
+                    }
+
+                    write_NodeList(&root.body, parse(source, length, j, k + 1, tokens, NODE_SWITCH_CASE, file_name));
+
+                    j = k + 1;
+                }
+            }
+            break;
+        }
+
+        case NODE_SWITCH_CASE: {
+            // expression is everything before the '=>' operator
+            int i = start;
+            for (i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_AS) {
+                    break;
+                }
+            }
+
+            if (i == start) {
+                PRINT_ERROR(i, E_EMPTY_EXPRESSION);
+            }
+
+            // split on the commas
+            int j = start;
+            for (int k = start; k < i; k++) {
+                SKIP_BLOCK(k);
+                if (tokens.tokens[k].type == TOKEN_OPERATOR && tokens.tokens[k].carry == OPERATOR_COMMA) {
+                    if (j + 1 == k && tokens.tokens[j].type == TOKEN_RESERVED_KEYWORD && tokens.tokens[j].carry == KEYWORD_OTHER) {
+                        write_NodeList(&root.body, parse(source, length, j, k, tokens, NODE_OTHER, file_name));
+                    } else {
+                        write_NodeList(&root.body, parse(source, length, j, k, tokens, NODE_EXPRESSION, file_name));
+                    }
+                    j = k + 1;
+                }
+            }
+
+            if (j + 1 == i && tokens.tokens[j].type == TOKEN_RESERVED_KEYWORD && tokens.tokens[j].carry == KEYWORD_OTHER) {
+                write_NodeList(&root.body, parse(source, length, j, i, tokens, NODE_OTHER, file_name));
+            } else {
+                write_NodeList(&root.body, parse(source, length, j, i, tokens, NODE_EXPRESSION, file_name));
+            }
+            
+
+            // after the '=>' operator, must be a block
+            if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_CURLY)) {
+                PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_CURLY);
+            }
+
+            // get end of block
+            int k = getEndOfBlock(tokens, i + 1);
+
+            if (k == -1) {
+                PRINT_ERROR(i + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+
+            write_NodeList(&root.body, parse(source, length, i + 2, k, tokens, NODE_BLOCK, file_name));
+            break;
+        }
+
 
         case NODE_FUNCTION_DEFINITION_PARAMETERS: {
             if (start == end) {
@@ -514,7 +631,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     root.type = NODE_STRING_LITERAL;
                 } else if (tokens.tokens[new_start].type == TOKEN_BOOLEAN) {
                     root.type = tokens.tokens[new_start].carry == 0 ? NODE_FALSE : NODE_TRUE;
-                } else if (tokens.tokens[new_start].type == TOKEN_NULL) {
+                } else if (tokens.tokens[new_start].type == TOKEN_NULL_KEYWORD) {
                     root.type = NODE_NULL_KEYWORD;
                 } else {
                     PRINT_ERROR(new_start, E_UNEXPECTED_TOKEN);

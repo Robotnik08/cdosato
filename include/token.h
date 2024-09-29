@@ -3,20 +3,20 @@
 
 #include "common.h"
 
-#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE"}
+#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH"}
 #define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "IF"}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR"}
-#define SEPARATORS {';'}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
 #define NULL_KEYWORDS {"NULL"}
+#define RESERVED_KEYWORDS {"OTHER"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
-                   "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|="}
+                   "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";"}
 // operator precedence is borrowed from C
 #define OPERATOR_PRECEDENCE \
                   { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  1,   15,  1,   \
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
-                    2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14}
+                    2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13}
 
 #define BRACKETS {"()", "{}", "[]"}
 
@@ -32,9 +32,9 @@ typedef enum {
     TOKEN_PARENTHESIS_OPEN,
     TOKEN_PARENTHESIS_CLOSED,
     TOKEN_VAR_TYPE,
-    TOKEN_SEPARATOR,
     TOKEN_BOOLEAN,
     TOKEN_NULL_KEYWORD,
+    TOKEN_RESERVED_KEYWORD,
     TOKEN_END = -1
 } LexTokenType;
 
@@ -96,6 +96,7 @@ typedef enum {
     OPERATOR_POWER_ASSIGN,
     OPERATOR_MAX_ASSIGN,
     OPERATOR_MIN_ASSIGN,
+    OPERATOR_SEMICOLON,
 } OperatorType;
 
 typedef enum {
@@ -108,6 +109,7 @@ typedef enum {
     MASTER_RETURN,
     MASTER_BREAK,
     MASTER_CONTINUE,
+    MASTER_SWITCH,
 
     M_NULL = -1
 } MasterKeywordType;
@@ -123,6 +125,10 @@ typedef enum {
 
     EXT_NULL = -1
 } ExtensionKeywordType;
+
+typedef enum {
+    KEYWORD_OTHER,
+} ReservedKeywordType;
 
 typedef struct {
     char* start;

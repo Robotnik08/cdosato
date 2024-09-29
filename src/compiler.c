@@ -72,6 +72,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;      
         }
 
+        case NODE_MASTER_SWITCH:
         case NODE_MASTER_CONTINUE:
         case NODE_MASTER_BREAK:
         case NODE_MASTER_RETURN:
@@ -711,6 +712,85 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->loop_jump_locations.count--;
             break;
         }
+        
+        case NODE_MASTER_SWITCH_BODY: {
+            // compile the condition
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+
+            // for each case, compile a jump instruction
+            Node switch_body = node.body.nodes[1];
+            int default_index = -1;
+            int** jump_locations = malloc(sizeof(int*) * (switch_body.body.count));
+            for (int i = 0; i < switch_body.body.count; i++) {
+                // compile the conditions
+                Node case_node = switch_body.body.nodes[i];
+                jump_locations[i] = malloc(sizeof(int) * (case_node.body.count - 1));
+                for (int j = 0; j < case_node.body.count - 1; j++) {
+                    if (case_node.body.nodes[j].type == NODE_OTHER) {
+                        default_index = default_index == -1 ? i : default_index;
+                        jump_locations[i][j] = -1;
+                    } else {
+                        compileNode(vm, ci, case_node.body.nodes[j], ast, scope);
+                        writeInstruction(ci, case_node.start, OP_JUMP_IF_MATCH, DOSATO_SPLIT_SHORT(0)); // jump to the next case if the condition is false
+                        jump_locations[i][j] = ci->count - getOffset(OP_JUMP_IF_MATCH); // index of the jump instruction
+                    }
+                }
+            }
+
+            int default_jump_index = -1;
+            if (default_index != -1) {
+                // if theres a default case, write a jump instruction for it
+                writeByteCode(ci, OP_POP, node.start);
+                writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+                default_jump_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+            }
+
+            // jump to end of the switch block if no case is matched
+            writeByteCode(ci, OP_POP, node.start);
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_end_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+
+            bool is_local = scope != NULL;
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_end_index, is_local ? scope->locals_count : 0);
+
+            // compile the bodies
+            for (int i = 0; i < switch_body.body.count; i++) {
+                Node case_node = switch_body.body.nodes[i];
+                // upgrade the jump instructions
+                for (int j = 0; j < case_node.body.count - 1; j++) {
+                    if (jump_locations[i][j] != -1) {
+                        ci->code[jump_locations[i][j] + 1] = ci->count & 0xFF;
+                        ci->code[jump_locations[i][j] + 2] = ci->count >> 8;
+                    }
+                }
+
+                // if the case is the default case, update the default jump instruction
+                if (i == default_index) {
+                    ci->code[default_jump_index + 1] = ci->count & 0xFF;
+                    ci->code[default_jump_index + 2] = ci->count >> 8;
+                }
+
+                // last node is the body
+                compileNode(vm, ci, case_node.body.nodes[case_node.body.count - 1], ast, scope);
+            }
+
+            // pop the loop location data
+            ci->loop_jump_locations.count--;
+
+            // manually edit the jump instruction
+            ci->code[jump_end_index + 1] = ci->count & 0xFF;
+            ci->code[jump_end_index + 2] = ci->count >> 8;  
+
+            // free the jump locations
+            for (int i = 0; i < switch_body.body.count - 1; i++) {
+                free(jump_locations[i]);
+            }
+            free(jump_locations);
+
+            break;
+        }
+
         
         case NODE_MASTER_BREAK_BODY:
         case NODE_MASTER_CONTINUE_BODY: {

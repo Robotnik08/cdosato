@@ -236,20 +236,6 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
         }
     }
-
-    REFRESH_LIST()
-
-    // get separator tokens
-    const char separatortokens[] = SEPARATORS;
-    for (int i = 0; i < code_length; i++) {
-        SKIP_TOKEN()
-        for (int j = 0; j < sizeof(separatortokens); j++) {
-            if (full_code[i] == separatortokens[j]) {
-                DOSATO_ADD_TOKEN(list, TOKEN_SEPARATOR, full_code + i, 0, j);
-                break;
-            }
-        }
-    }
     
     REFRESH_LIST()
 
@@ -412,8 +398,36 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             toUpper(next_word);
             if (!strcmp(next_word, nulltokens[j])) {
                 free(next_word);
-                DOSATO_ADD_TOKEN(list, TOKEN_NULL, full_code + i, strlen(nulltokens[j]) - 1, j);
+                DOSATO_ADD_TOKEN(list, TOKEN_NULL_KEYWORD, full_code + i, strlen(nulltokens[j]) - 1, j);
                 i += strlen(nulltokens[j]) - 1;
+                break;
+            } else {
+                free(next_word);
+            }
+        }
+    }
+
+    REFRESH_LIST()
+
+    // get reserved keywords
+    const char* reservedtokens[] = RESERVED_KEYWORDS;
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        for (int j = 0; j < sizeof(reservedtokens)/sizeof(char*); j++) {
+            // check if the previous char is not alphanumeric
+            if (i > 0) {
+                if (isAlphaNumeric(full_code[i-1])) break;
+                // check if the next char is not alphanameric
+                if (i + strlen(reservedtokens[j]) < code_length) {
+                    if (isAlphaNameric(full_code[i + strlen(reservedtokens[j])])) continue; // not a break, since the next type could differ in length
+                }
+            }
+            char* next_word = getWord(full_code, i);
+            toUpper(next_word);
+            if (!strcmp(next_word, reservedtokens[j])) {
+                free(next_word);
+                DOSATO_ADD_TOKEN(list, TOKEN_RESERVED_KEYWORD, full_code + i, strlen(reservedtokens[j]) - 1, j);
+                i += strlen(reservedtokens[j]) - 1;
                 break;
             } else {
                 free(next_word);

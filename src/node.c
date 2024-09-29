@@ -25,6 +25,7 @@ static const char* NODE_NAMES[] = {
     "NODE_MASTER_RETURN",
     "NODE_MASTER_BREAK",
     "NODE_MASTER_CONTINUE",
+    "NODE_MASTER_SWITCH",
 
     "NODE_MASTER_DO_BODY",
     "NODE_MASTER_MAKE_BODY",
@@ -35,7 +36,7 @@ static const char* NODE_NAMES[] = {
     "NODE_MASTER_RETURN_BODY",
     "NODE_MASTER_BREAK_BODY",
     "NODE_MASTER_CONTINUE_BODY",
-
+    "NODE_MASTER_SWITCH_BODY",
 
     "NODE_WHEN_BODY",
     "NODE_WHILE_BODY",
@@ -66,7 +67,10 @@ static const char* NODE_NAMES[] = {
     "NODE_FUNCTION_DEFINITION_ARGUMENT",
     "NODE_ARGUMENTS",
     "NODE_OBJECT_ENTRY",
-    "NODE_TYPE_CAST"
+    "NODE_TYPE_CAST",
+    "NODE_SWITCH_BODY",
+    "NODE_SWITCH_CASE",
+    "NODE_OTHER"
 };
 
 void printNode (Node node, int depth) {
