@@ -1,1 +1,1 @@
-DO SAYLN ("not pass") WHEN (0) ELSE SAYLN ("pass");
+do sayln ("not pass") when (0) else sayln ("pass")

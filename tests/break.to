@@ -1,40 +1,39 @@
-DEFINE INT r () {
-    MAKE INT i = 0;
-    DO {
-        DO {
-            MAKE INT j = 5;
-            BREAK WHEN (i >= j);
-        };
-    } FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i);
-    RETURN i;
-};
+define int r () {
+    make int i = 0
+    do {
+        do {
+            make int j = 5
+            break when (i >= j)
+        }
+    } for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i)
+    return i
+}
 
-DO SAYLN (r()); // 5
+do sayln (r()) // 5
 
-MAKE INT i = 0;
-DO {
-    DO {
-        MAKE INT j = 5;
-        BREAK WHEN (i >= j);
-    };
-} FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i);
-DO SAYLN (i); // 5
+make int i = 0
+do {
+    do {
+        make int j = 5
+        break when (i >= j)
+    }
+} for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i)
+do sayln (i) // 5
 
-MAKE INT j = 0;
-BREAK WHEN (j >= 5) FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j);
-DO SAYLN (j); // 5
-
+make int j = 0
+break when (j >= 5) for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j)
+do sayln (j) // 5
 
 // continue
-SET i = 0;
-DO SAYLN ("");
-DO {
-    DO {
-        CONTINUE WHEN (i % 2 != 0);
-        DO SAYLN (i);
-    };
-} FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i);
+set i = 0
+do sayln ("")
+do {
+    do {
+        continue when (i % 2 != 0)
+        do sayln (i)
+    }
+} for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i)
 
-SET j = 0;
-CONTINUE WHEN (true) FOR ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j);
-DO SAYLN("j: " +  j); // 10
+set j = 0
+continue when (true) for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j)
+do sayln("j: " +  j) // 10

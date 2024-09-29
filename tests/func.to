@@ -1,4 +1,4 @@
-DEFINE INT add (INT a, INT b) {
-    RETURN a + b;
-};
-DO SAYLN (add (1, 2));
+define int add (int a, int b) {
+    return a + b
+}
+do sayln (add (1, 2))

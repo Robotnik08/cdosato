@@ -1,5 +1,5 @@
-MAKE LONG i = 0;
-DO {
-    SET i++;
-} WHILE (i < 100);
-DO SAYLN (i);
+make long i = 0
+do {
+    set i++
+} while (i < 100)
+do sayln (i)

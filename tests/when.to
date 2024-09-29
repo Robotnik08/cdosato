@@ -1,1 +1,1 @@
-DO SAYLN ("pass") WHEN (1);
+do sayln ("pass") when (1)

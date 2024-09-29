@@ -84,16 +84,14 @@ int getEndOfLine (TokenList tokens, int start) {
         if (tokens.tokens[i].type == TOKEN_PARENTHESIS_OPEN) {
             int end = getEndOfBlock(tokens, i);
             if (end == -1) {
-                return -2; // invalid (missing closing parenthesis)
+                return -1; // invalid (missing closing parenthesis)
             }
             i = end;
-        } else if (tokens.tokens[i].type == TOKEN_PARENTHESIS_CLOSED) {
-            return -1; // invalid (missing separator)
-        } else if (tokens.tokens[i].type == TOKEN_SEPARATOR) {
+        } else if (tokens.tokens[i].type == TOKEN_PARENTHESIS_CLOSED || tokens.tokens[i].type == TOKEN_MASTER_KEYWORD) {
             return i;
         }
     }
-    return -1; // invalid (missing separator)
+    return tokens.count;
 }
 
 int getEndOfBlock (TokenList tokens, int start) {

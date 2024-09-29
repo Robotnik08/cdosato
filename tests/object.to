@@ -1,21 +1,22 @@
-MAKE OBJECT obj = {};
+make object obj = {}
 
-SET obj = {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5};
+set obj = {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
 
-DO SAYLN (obj);
+do sayln (obj)
 
-DO SAYLN (obj->"a");
+do sayln (obj->"a")
 
-SET obj->"b" *= 2;
+set obj->"b" *= 2
+set obj->c *= 3
 
-DO SAYLN (obj);
+do sayln (obj)
 
-DO SAYLN (obj->"b");
+do sayln (obj->"b")
 
-SET obj += {"f": 6, "g": 7, "h": 8, "i": 9, "j": 10};
+set obj += {"f": 6, "g": 7, "h": 8, "i": 9, "j": 10}
 
-DO SAYLN (obj);
+do sayln (obj)
 
-SET obj -= "h";
+set obj -= "h"
 
-DO SAYLN (obj);
+do sayln (obj)

@@ -1,1 +1,1 @@
-DO SAYLN ("Hello World");
+do sayln ("Hello World")

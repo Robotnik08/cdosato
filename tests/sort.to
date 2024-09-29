@@ -1,9 +1,8 @@
-DEFINE DOUBLE compare (DOUBLE a, DOUBLE b) {
-    RETURN b - a;
-};
+define double compare (double a, double b) {
+    return b - a
+}
 
-MAKE ARRAY unsorted = [23,23,432,5566,54642,4,3,654,67456,4.3,5,6.656,345,-35663,-0.456,0.011];
+make array unsorted = [23,23,432,5566,54642,4,3,654,67456,4.3,5,6.656,345,-35663,-0.456,0.011]
 
-
-DO SAYLN ("Sorted: " + SORT(unsorted));
-DO SAYLN ("Reverse sorted: ", SORT(unsorted, compare));
+do sayln ("sorted: " + sort(unsorted))
+do sayln ("reverse sorted: ", sort(unsorted, compare))
