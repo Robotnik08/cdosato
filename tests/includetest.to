@@ -1,3 +1,3 @@
-INCLUDE "func.to";
+include "func.to"
 
-DO SAYLN (add (10, 20));
+do sayln (add (10, 20))

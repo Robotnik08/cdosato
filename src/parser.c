@@ -37,18 +37,14 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_PROGRAM: {
             for (int i = start; i < end; i++) {
                 if (tokens.tokens[i].type == TOKEN_MASTER_KEYWORD) {
-                    int endofline = getEndOfLine(tokens, i);
-
+                    int endofline = getEndOfLine(tokens, i + 1);
                     if (endofline == -1) {
-                        PRINT_ERROR(end - 1, E_MISSING_SEPARATOR);
-                    }
-                    if (endofline == -2) {
                         PRINT_ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
                     }
 
                     write_NodeList(&root.body, parse(source, length, i + 1, endofline, tokens, NODE_MASTER_DO + tokens.tokens[i].carry, file_name)); // NODE_MASTER + carry = the correct master node type
-                    i = endofline;
-                } else if (tokens.tokens[i].type != TOKEN_SEPARATOR) {
+                    i = endofline - 1;
+                } else {
                     PRINT_ERROR(i, E_EXPECTED_MASTER);
                 }
             }

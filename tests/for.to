@@ -1,4 +1,4 @@
-MAKE VAR i = 0;
-DO SAYLN (i) FOR (["Hey", 1, true, 2.5, 3.0] => i);
+make var i = 0
+do sayln (i) for (["hey", 1, true, 2.5, 3.0] => i)
 
-DO SAYLN (i) FOR (RANGE(10) => i);
+do sayln (i) for (range(10) => i)

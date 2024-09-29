@@ -1,21 +1,21 @@
-MAKE ARRAY arr = [];
+make array arr = []
 
-SET arr = [1, 2, 3, 4, 5];
+set arr = [1, 2, 3, 4, 5]
 
-DO SAYLN (arr);
+do sayln (arr)
 
-DO SAYLN (arr#0);
+do sayln (arr#0)
 
-SET arr#1 *= 2;
+set arr#1 *= 2
 
-DO SAYLN (arr);
+do sayln (arr)
 
-DO SAYLN (arr#1);
+do sayln (arr#1)
 
-SET arr += [6, 7, 8, 9, 10];
+set arr += [6, 7, 8, 9, 10]
 
-DO SAYLN (arr);
+do sayln (arr)
 
-SET arr -= 8;
+set arr -= 8
 
-DO SAYLN (arr);
+do sayln (arr)

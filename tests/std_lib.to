@@ -1,120 +1,120 @@
-/// STD_IO
-DO SAY("SAY"); // EXPECT "SAY" (no newline)
-DO SAYLN("SAYLN"); // EXPECT "SAYLN" (newline)
+/// std_io
+do say("say") // expect "say" (no newline)
+do sayln("sayln") // expect "sayln" (newline)
 
-// LISTEN input is not used to avoid blocking the test
-// DO LISTEN ();
+// listen input is not used to avoid blocking the test
+// do listen ()
 
-// DO SAYLN(READ("hello_world.to")); // EXPECT <file content of hello_world.to>
+// do sayln(read("hello_world.to")) // expect <file content of hello_world.to>
 
-// WRITE and APPEND are not used to avoid modifying the test
-// DO WRITE ("std_lib.to", "WRITE");
-// DO APPEND ("std_lib.to", "APPEND");
+// write and append are not used to avoid modifying the test
+// do write ("std_lib.to", "write")
+// do append ("std_lib.to", "append")
 
-// CLEAR is not used to avoid modifying the test
-// DO CLEAR ();
+// clear is not used to avoid modifying the test
+// do clear ()
 
-// PAUSE is not used to avoid blocking the test
-// DO PAUSE ();
+// pause is not used to avoid blocking the test
+// do pause ()
 
-DO SYSTEM("echo SYSTEM"); // EXPECT "SYSTEM"
+do system("echo system") // expect "system"
 
-// END is not used to avoid stopping the test
-// DO END ();
-
-
-/// STD_MATH
-DO SAYLN(ABS(-1)); // EXPECT 1
-DO SAYLN(CEIL(1.5)); // EXPECT 2
-DO SAYLN(FLOOR(1.5)); // EXPECT 1
-DO SAYLN(ROUND(1.5)); // EXPECT 2
-DO SAYLN(MAX(1, 2)); // EXPECT 2
-DO SAYLN(MIN(1, 2)); // EXPECT 1
-DO SAYLN(POW(2, 3)); // EXPECT 8
-DO SAYLN(SQRT(4)); // EXPECT 2
-DO SAYLN(LOG(10, 100)); // EXPECT 2
-DO SAYLN(LOG10(100)); // EXPECT 2
-DO SAYLN(LOG2(8)); // EXPECT 3
-DO SAYLN(EXP(1)); // EXPECT 2.718282
-DO SAYLN(SIN(1)); // EXPECT 0.841471
-DO SAYLN(COS(1)); // EXPECT 0.540302
-DO SAYLN(TAN(1)); // EXPECT 1.557408
-DO SAYLN(ASIN(1)); // EXPECT 1.570796
-DO SAYLN(ACOS(1)); // EXPECT 0
-DO SAYLN(ATAN(1)); // EXPECT 0.785398
-DO SAYLN(ATAN2(1, 1)); // EXPECT 0.785398
-DO SAYLN(CLAMP(0, 1, 2)); // EXPECT 1
-
-// /// STD_STR
-DO SAYLN(SPLIT("Hello my name is Dosato and I am a test string", " ")); // EXPECT ["Hello", "my", "name", "is", "Dosato", "and", "I", "am", "a", "test", "string"]
-DO SAYLN(LOWER("HeLLo")); // EXPECT "hello"
-DO SAYLN(UPPER("HeLLo")); // EXPECT "HELLO"
-DO SAYLN(STRINGLENGTH("Hello")); // EXPECT 5
-DO SAYLN(SUBSTRING("Hello", 1, 2)); // EXPECT "el"
-DO SAYLN(STRINGINDEXOF("Hello", "e")); // EXPECT 1
-DO SAYLN(STRINGLASTINDEXOF("Hello", "l")); // EXPECT 3
-DO SAYLN(REPLACE("Hello", "l", "r")); // EXPECT "Herro"
-DO SAYLN(TRIM("  Hello  ")); // EXPECT "Hello"
-DO SAYLN(STARTSWITH("Hello", "H")); // EXPECT true
-DO SAYLN(ENDSWITH("Hello", "o")); // EXPECT true
-DO SAYLN(STRINGCONTAINS("Hello", "e")); // EXPECT true
-DO SAYLN(STRINGREVERSE("Hello")); // EXPECT "olleH"
-DO SAYLN(STRINGREMOVE("Hello", "ell")); // EXPECT "Ho"
-DO SAYLN(STRINGINSERT("Hello", 1, "e")); // EXPECT "Heello"
-DO SAYLN(STRINGTOINT("1")); // EXPECT 1
-DO SAYLN(STRINGTODOUBLE("1.5")); // EXPECT 1.5
-DO SAYLN(STRINGCOUNT("Hello", "l")); // EXPECT 2
-DO SAYLN(JOIN(["Hello", "World"], " ")); // EXPECT "Hello World"
-
-/// STD_ARRAY
-MAKE ARRAY a = [1, 2, 3];
-
-DO SAYLN(SORT(a)); // EXPECT [1, 2, 3]
-DEFINE LONG compare (LONG a, LONG b) {
-    RETURN b - a;
-};
-DO SAYLN(SORT(a, compare)); // EXPECT [3, 2, 1]
-DO SAYLN(PUSH(a, 4)); // EXPECT [1, 2, 3, 4]
-DO SAYLN(POP(a)); // EXPECT [1, 2]
-DO SAYLN(UNSHIFT(a, 0)); // EXPECT [0, 1, 2, 3]
-DO SAYLN(SHIFT(a)); // EXPECT [2, 3]
-DO SAYLN(SPLICE(a, 1, 1)); // EXPECT [1, 3]
-DO SAYLN(SLICE(a, 1, 2)); // EXPECT [2]
-DO SAYLN(INDEXOF(a, 2)); // EXPECT 1
-DO SAYLN(RANGE(10)); // EXPECT [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-DO SAYLN(RANGE(1, 10)); // EXPECT [1, 2, 3, 4, 5, 6, 7, 8, 9]
-DO SAYLN(RANGE(1, 10, 2)); // EXPECT [1, 3, 5, 7, 9]
-DO SAYLN(RANGE(10, 1, -1)); // EXPECT [10, 9, 8, 7, 6, 5, 4, 3, 2]
-DO SAYLN(RANGEF(0, 10, 0.5)); // EXPECT [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
-
-/// STD_RANDOM
-DO SRANDOM(1); // Seed random number generator
-DO SAYLN(RANDOM()); // EXPECT 0.001251
-DO SAYLN(RANDOMINT()); // EXPECT 18467
-DO SAYLN(RANDOMRANGE(1, 10)); // EXPECT 5
-DO SAYLN(RANDOMBOOL()); // EXPECT false
-
-/// STD_TIME
-DO SAYLN(TIME()); // EXPECT current time in seconds
-DO SAYLN(DATETIME()); // EXPECT current date formatted
-
-// we don't SLEEP to avoid blocking the test
-// DO SLEEP(1);
+// end is not used to avoid stopping the test
+// do end ()
 
 
-/// STD_TYPE
-DO SAYLN(TYPEOF(1)); // EXPECT "ulong"
-DO SAYLN(TYPEOF(1.5)); // EXPECT "double"
-DO SAYLN(TYPEOF("Hello")); // EXPECT "string"
-DO SAYLN(TYPEOF([1, 2, 3])); // EXPECT "array"
-DO SAYLN(TYPEOF({})); // EXPECT "object"
-DO SAYLN(TYPEOF(true)); // EXPECT "bool"
-DO SAYLN(TYPEOF(null)); // EXPECT "<unknown type>"
+/// std_math
+do sayln(abs(-1)) // expect 1
+do sayln(ceil(1.5)) // expect 2
+do sayln(floor(1.5)) // expect 1
+do sayln(round(1.5)) // expect 2
+do sayln(max(1, 2)) // expect 2
+do sayln(min(1, 2)) // expect 1
+do sayln(pow(2, 3)) // expect 8
+do sayln(sqrt(4)) // expect 2
+do sayln(log(10, 100)) // expect 2
+do sayln(log10(100)) // expect 2
+do sayln(log2(8)) // expect 3
+do sayln(exp(1)) // expect 2.718282
+do sayln(sin(1)) // expect 0.841471
+do sayln(cos(1)) // expect 0.540302
+do sayln(tan(1)) // expect 1.557408
+do sayln(asin(1)) // expect 1.570796
+do sayln(acos(1)) // expect 0
+do sayln(atan(1)) // expect 0.785398
+do sayln(atan2(1, 1)) // expect 0.785398
+do sayln(clamp(0, 1, 2)) // expect 1
 
-DO SAYLN(TYPEINTOF(1)); // EXPECT 13
-DO SAYLN(TYPEINTOF(1.5)); // EXPECT 4
-DO SAYLN(TYPEINTOF("Hello")); // EXPECT 2
-DO SAYLN(TYPEINTOF([1, 2, 3])); // EXPECT 10
+// /// std_str
+do sayln(split("hello my name is dosato and i am a test string", " ")) // expect ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"]
+do sayln(lower("hello")) // expect "hello"
+do sayln(upper("hello")) // expect "hello"
+do sayln(stringlength("hello")) // expect 5
+do sayln(substring("hello", 1, 2)) // expect "el"
+do sayln(stringindexof("hello", "e")) // expect 1
+do sayln(stringlastindexof("hello", "l")) // expect 3
+do sayln(replace("hello", "l", "r")) // expect "herro"
+do sayln(trim("  hello  ")) // expect "hello"
+do sayln(startswith("hello", "h")) // expect true
+do sayln(endswith("hello", "o")) // expect true
+do sayln(stringcontains("hello", "e")) // expect true
+do sayln(stringreverse("hello")) // expect "olleh"
+do sayln(stringremove("hello", "ell")) // expect "ho"
+do sayln(stringinsert("hello", 1, "e")) // expect "heello"
+do sayln(stringtoint("1")) // expect 1
+do sayln(stringtodouble("1.5")) // expect 1.5
+do sayln(stringcount("hello", "l")) // expect 2
+do sayln(join(["hello", "world"], " ")) // expect "hello world"
 
-DO SAYLN(ISNULL(null)); // EXPECT true
-DO SAYLN(ISNULL(false)); // EXPECT false
+/// std_array
+make array a = [1, 2, 3]
+
+do sayln(sort(a)) // expect [1, 2, 3]
+define long compare (long a, long b) {
+    return b - a
+}
+do sayln(sort(a, compare)) // expect [3, 2, 1]
+do sayln(push(a, 4)) // expect [1, 2, 3, 4]
+do sayln(pop(a)) // expect [1, 2]
+do sayln(unshift(a, 0)) // expect [0, 1, 2, 3]
+do sayln(shift(a)) // expect [2, 3]
+do sayln(splice(a, 1, 1)) // expect [1, 3]
+do sayln(slice(a, 1, 2)) // expect [2]
+do sayln(indexof(a, 2)) // expect 1
+do sayln(range(10)) // expect [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+do sayln(range(1, 10)) // expect [1, 2, 3, 4, 5, 6, 7, 8, 9]
+do sayln(range(1, 10, 2)) // expect [1, 3, 5, 7, 9]
+do sayln(range(10, 1, -1)) // expect [10, 9, 8, 7, 6, 5, 4, 3, 2]
+do sayln(rangef(0, 10, 0.5)) // expect [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+
+/// std_random
+do srandom(1) // seed random number generator
+do sayln(random()) // expect 0.001251
+do sayln(randomint()) // expect 18467
+do sayln(randomrange(1, 10)) // expect 5
+do sayln(randombool()) // expect false
+
+/// std_time
+do sayln(time()) // expect current time in seconds
+do sayln(datetime()) // expect current date formatted
+
+// we don't sleep to avoid blocking the test
+// do sleep(1)
+
+
+/// std_type
+do sayln(typeof(1)) // expect "ulong"
+do sayln(typeof(1.5)) // expect "double"
+do sayln(typeof("hello")) // expect "string"
+do sayln(typeof([1, 2, 3])) // expect "array"
+do sayln(typeof({})) // expect "object"
+do sayln(typeof(true)) // expect "bool"
+do sayln(typeof(null)) // expect "<unknown type>"
+
+do sayln(typeintof(1)) // expect 13
+do sayln(typeintof(1.5)) // expect 4
+do sayln(typeintof("hello")) // expect 2
+do sayln(typeintof([1, 2, 3])) // expect 10
+
+do sayln(isnull(null)) // expect true
+do sayln(isnull(false)) // expect false

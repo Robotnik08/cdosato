@@ -1,13 +1,13 @@
-MAKE INT a = 1;	
+make int a = 1
 
-DO {
-    MAKE INT b = 2;
-    DO SAYLN (a + b);
-    DO {
-        MAKE INT c = 3;
-        DO SAYLN (a + b + c);
-    };
-    MAKE INT a = 4;
-    DO SAYLN (a + b);
-};
-DO SAYLN (a);
+do {
+    make int b = 2
+    do sayln (a + b)
+    do {
+        make int c = 3
+        do sayln (a + b + c)
+    }
+    make int a = 4
+    do sayln (a + b)
+}
+do sayln (a)

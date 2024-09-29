@@ -1,19 +1,19 @@
-MAKE INT integer = 0;
-MAKE STRING str = "";
-MAKE ARRAY arr = [];
+make int integer = 0
+make string str = ""
+make array arr = []
 
-SET integer = 1;
-SET str = "Hello, World";
-SET arr = [1, 2, 3, 4, 5];
+set integer = 1
+set str = "hello, world"
+set arr = [1, 2, 3, 4, 5]
 
-DO SAYLN (integer);
-DO SAYLN (str);
-DO SAYLN (arr);
+do sayln (integer)
+do sayln (str)
+do sayln (arr)
 
-SET integer += 1;
-SET str += "!";
-SET arr += [6, 7, 8, 9, 10];
+set integer += 1
+set str += "!"
+set arr += [6, 7, 8, 9, 10]
 
-DO SAYLN (integer);
-DO SAYLN (str);
-DO SAYLN (arr);
+do sayln (integer)
+do sayln (str)
+do sayln (arr)
