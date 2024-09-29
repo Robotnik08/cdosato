@@ -40,7 +40,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     int endofline = getEndOfLine(tokens, i);
 
                     if (endofline == -1) {
-                        PRINT_ERROR(end - 1, E_MISSING_SEPERATOR);
+                        PRINT_ERROR(end - 1, E_MISSING_SEPARATOR);
                     }
                     if (endofline == -2) {
                         PRINT_ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
