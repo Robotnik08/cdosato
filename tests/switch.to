@@ -1,4 +1,4 @@
-define void switchCase (int i) {
+define void switchCase (var i) {
     switch i => {
         0 => {
             do sayln ("Nothing")
@@ -23,6 +23,10 @@ define void switchCase (int i) {
             do sayln ("Five or Six")
             break
         }
+        "Hello world" => {
+            do sayln ("Hello world")
+            break
+        }
         other => {
             do sayln ("Other")
             break
@@ -38,3 +42,4 @@ do switchCase(4) // Four or Three
 do switchCase(5) // Five or Six
 do switchCase(6) // Five or Six
 do switchCase(7) // Other
+do switchCase("Hello world") // Hello world
