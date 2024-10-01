@@ -311,6 +311,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
                 }
                 compileNode(vm, ci, node.body.nodes[1], ast, scope);
+                writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_VAR); // cast to the correct type
                 identifier_index = 0;
             } else {
                 if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
