@@ -29,6 +29,7 @@ typedef enum {
     OP_DEFINE, // define a global variable
 
     OP_TYPE_CAST,
+    OP_MARK_CONSTANT,
 
     OP_BUILD_LIST,
     OP_BUILD_OBJECT,

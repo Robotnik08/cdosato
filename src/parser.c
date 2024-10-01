@@ -60,7 +60,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_RETURN:
         case NODE_MASTER_BREAK:
         case NODE_MASTER_CONTINUE:
-        case NODE_MASTER_SWITCH: {
+        case NODE_MASTER_SWITCH:
+        case NODE_MASTER_CONST: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = EXT_NULL;
             int ext_start = start;
@@ -160,6 +161,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
+        case NODE_MASTER_CONST_BODY:
         case NODE_MASTER_MAKE_BODY: {
             // making a variable
             if (tokens.tokens[start].type == TOKEN_VAR_TYPE) {
@@ -177,6 +179,19 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     PRINT_ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                 }
                 write_NodeList(&root.body, parse(source, length, i + 2, end, tokens, NODE_EXPRESSION, file_name));
+            } else if (tokens.tokens[start].type == TOKEN_IDENTIFIER) {
+                // the variable is var type
+                if (tokens.tokens[start].type != TOKEN_IDENTIFIER) {
+                    PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
+                }
+
+                if (tokens.tokens[start + 1].type != TOKEN_OPERATOR || tokens.tokens[start + 1].carry != OPERATOR_ASSIGN) {
+                    PRINT_ERROR(start + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
+                }
+
+                write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_IDENTIFIER, file_name));
+
+                write_NodeList(&root.body, parse(source, length, start + 2, end, tokens, NODE_EXPRESSION, file_name));
             } else {
                 PRINT_ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
             }

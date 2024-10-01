@@ -61,6 +61,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_CONST:
         case NODE_MASTER_IMPORT:
         case NODE_MASTER_INCLUDE:
         case NODE_MASTER_DEFINE:
@@ -296,27 +297,41 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_CONST_BODY:
         case NODE_MASTER_MAKE_BODY: {
             // push the value to the stack
             if (scope != NULL) { // local scope (push null to the stack, used for the local variable)
                 writeByteCode(ci, OP_PUSH_NULL, node.body.nodes[1].start);
             }
 
-            compileNode(vm, ci, node.body.nodes[2], ast, scope);
-            writeInstruction(ci, node.start, OP_TYPE_CAST, ast->tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
-            
-            if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
-                PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+
+            int identifier_index = 1;
+            if (node.body.nodes[0].type == NODE_IDENTIFIER) {
+                if (ast->tokens.tokens[node.body.nodes[0].start].carry == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                }
+                compileNode(vm, ci, node.body.nodes[1], ast, scope);
+                identifier_index = 0;
+            } else {
+                if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                }
+                compileNode(vm, ci, node.body.nodes[2], ast, scope);
+                writeInstruction(ci, node.start, OP_TYPE_CAST, ast->tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
+            }
+
+            if (type == NODE_MASTER_CONST_BODY) {
+                writeByteCode(ci, OP_MARK_CONSTANT, node.start);
             }
 
             if (scope == NULL) { // global scope
-                writeInstruction(ci, node.body.nodes[1].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
+                writeInstruction(ci, node.body.nodes[identifier_index].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[identifier_index].start].carry));
             } else {
-                if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                if (inScope(scope, ast->tokens.tokens[node.body.nodes[identifier_index].start].carry)) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[identifier_index].start);
                 }
-                writeInstruction(ci, node.body.nodes[1].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
-                pushScopeData(scope, ast->tokens.tokens[node.body.nodes[1].start].carry);
+                writeInstruction(ci, node.body.nodes[identifier_index].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
+                pushScopeData(scope, ast->tokens.tokens[node.body.nodes[identifier_index].start].carry);
             }
             
             break;
