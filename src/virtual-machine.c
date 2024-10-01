@@ -97,12 +97,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
     size_t ip_stack_count = 0;
 
     // set global variable 0 to zero (underscore)
-    Value zero = (Value){ TYPE_LONG, .as.longValue = 0, .defined = false, .is_variable_type = true };
+    Value zero = (Value){ TYPE_LONG, .as.longValue = 0, .defined = false, .is_variable_type = true, .is_constant = true };
     vm->globals.values[0] = zero;
 
     // set all functions to globals
     for (size_t i = 0; i < vm->functions.count; i++) {
-        Value func = (Value){ TYPE_FUNCTION, .as.longValue = i, .defined = true, .is_variable_type = false };
+        Value func = (Value){ TYPE_FUNCTION, .as.longValue = i, .defined = true, .is_variable_type = false, .is_constant = true };
         vm->globals.values[vm->functions.funcs[i].name_index] = func;
     }
 
@@ -112,7 +112,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
         switch (instruction) {
             
             default: {
-                printf("Unknown instruction: %d at: %d\n", instruction, vm->ip - active_instance->code - 1);
+                printf("Unknown instruction: %d at: %x\n", instruction, vm->ip - active_instance->code - 1);
                 halt = true;
                 break;
             }
@@ -165,6 +165,22 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
 
+            case OP_JUMP_IF_MATCH: {
+                uint16_t offset = NEXT_SHORT();
+                Value match = POP_VALUE();
+                Value value = PEEK_VALUE();
+
+                // check if the two values are equal
+                if (valueEquals(&match, &value)) {
+                    // pop the value
+                    destroyValue(&POP_VALUE());
+                    vm->ip = offset + active_instance->code;
+                }
+                
+                DESTROYIFLITERAL(match);
+                break;
+            }
+
             case OP_JUMP_IF_EXCEPTION: {
                 uint16_t offset = NEXT_SHORT();
                 size_t stack_count = vm->stack.count;
@@ -186,6 +202,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t offset = NEXT_SHORT();
                 uint16_t pop_amount = NEXT_SHORT();
                 vm->ip = offset + active_instance->code;
+                
                 for (size_t i = 0; i < pop_amount; i++) {
                     destroyValue(&POP_VALUE());
                 }
@@ -193,10 +210,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (*vm->ip == OP_FOR_ITER) {
                     // set the iterator to -2 (so the loop will end)
                     vm->stack.values[vm->stack.count - 1].as.longValue = -2;
-                } else if (NEXT_BYTE() == OP_JUMP_IF_FALSE) {
+                } else if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP)) { 
+                    NEXT_BYTE(); // skip the offset
                     uint16_t offset = NEXT_SHORT();
                     vm->ip = offset + active_instance->code;
                 }
+
                 break;
             }
 
@@ -289,6 +308,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_LOAD_CONSTANT: {
                 uint16_t index = NEXT_SHORT();
                 Value constant = vm->constants.values[index];
+
+                constant.is_constant = false;
+
                 if (constant.type == TYPE_STRING) {
                     // copy the string so the original pointer stays intact
                     char* copy = malloc(strlen(constant.as.stringValue) + 1);
@@ -314,6 +336,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_LOAD_UNDERSCORE: {
                 // underscore is global variable 0
                 Value underscore = vm->globals.values[0];
+                underscore.is_constant = false;
                 underscore = hardCopyValue(underscore);
                 pushValue(&vm->stack, underscore);
                 break;
@@ -472,6 +495,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
 
+                local.is_constant = false;
+
                 Value copy = hardCopyValue(local);
                 pushValue(&vm->stack, copy);
                 break;
@@ -479,7 +504,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value value = POP_VALUE();
-                
+
+                if (vm->stack.values[index].is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
+                }
+
                 Value copy = hardCopyValue(value);
 
                 if (!vm->stack.values[index].is_variable_type && vm->stack.values[index].defined) {
@@ -543,6 +572,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (!global.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
+
+                global.is_constant = false;
                 
                 Value copy = hardCopyValue(global);
 
@@ -555,6 +586,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value value = POP_VALUE();
                 if (!vm->globals.values[index].defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
+                }
+                
+                if (vm->globals.values[index].is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
                 Value copy = hardCopyValue(value);
@@ -890,6 +925,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 }
                 pushValue(&vm->stack, val);
 
+                break;
+            }
+
+            case OP_MARK_CONSTANT: {
+                vm->stack.values[vm->stack.count - 1].is_constant = true;
                 break;
             }
 

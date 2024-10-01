@@ -36,6 +36,7 @@ typedef struct {
     DataType type;
     bool is_variable_type; // non strict type
     bool defined;
+    bool is_constant;
     union {
         char byteValue;
         unsigned char ubyteValue;
@@ -54,9 +55,11 @@ typedef struct {
     } as;
 } Value;
 
-#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, 0 }
-#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
-#define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
+#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true, .is_constant = false }
+#define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true, .is_constant = false }
+
+#define BUILD_VALUE(type, valueName, value) (Value){ type, .as.valueName = value, .defined = false, .is_variable_type = false, .is_constant = false }
 
 void destroyValue(Value* value);
 void printValue(Value value, bool extensive);

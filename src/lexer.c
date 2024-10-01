@@ -79,6 +79,27 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     i = code_length;
                 }
             }
+
+            if (full_code[i] == '/' && full_code[i + 1] == '*') {
+                int foundEnd = 0;
+                start = i;
+                for (int j = i; j < code_length; j++) {
+                    if (full_code[j] == '*' && full_code[j + 1] == '/') {
+                        end = j + 1;
+                        DOSATO_ADD_TOKEN(list, TOKEN_COMMENT, full_code + start, end - start, 0);
+                        start = end + 1;
+                        i = j + 1;
+                        foundEnd = 1;
+                        break;
+                    }
+                }
+                if (!foundEnd) {
+                    end = code_length - 1;
+                    DOSATO_ADD_TOKEN(list, TOKEN_COMMENT, full_code + start, end - start, 0);
+                    start = end + 1;
+                    i = code_length;
+                }
+            }
         } else {
             if (full_code[i] == quotationtype && escapeCount % 2 == 0) {
                 end = i;
@@ -232,20 +253,6 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     bracketTypeHiarcy[bracketTier - 1] = -1;
                     bracketTier--;
                 }
-                break;
-            }
-        }
-    }
-
-    REFRESH_LIST()
-
-    // get separator tokens
-    const char separatortokens[] = SEPARATORS;
-    for (int i = 0; i < code_length; i++) {
-        SKIP_TOKEN()
-        for (int j = 0; j < sizeof(separatortokens); j++) {
-            if (full_code[i] == separatortokens[j]) {
-                DOSATO_ADD_TOKEN(list, TOKEN_SEPARATOR, full_code + i, 0, j);
                 break;
             }
         }
@@ -412,8 +419,36 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             toUpper(next_word);
             if (!strcmp(next_word, nulltokens[j])) {
                 free(next_word);
-                DOSATO_ADD_TOKEN(list, TOKEN_NULL, full_code + i, strlen(nulltokens[j]) - 1, j);
+                DOSATO_ADD_TOKEN(list, TOKEN_NULL_KEYWORD, full_code + i, strlen(nulltokens[j]) - 1, j);
                 i += strlen(nulltokens[j]) - 1;
+                break;
+            } else {
+                free(next_word);
+            }
+        }
+    }
+
+    REFRESH_LIST()
+
+    // get reserved keywords
+    const char* reservedtokens[] = RESERVED_KEYWORDS;
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        for (int j = 0; j < sizeof(reservedtokens)/sizeof(char*); j++) {
+            // check if the previous char is not alphanumeric
+            if (i > 0) {
+                if (isAlphaNumeric(full_code[i-1])) break;
+                // check if the next char is not alphanameric
+                if (i + strlen(reservedtokens[j]) < code_length) {
+                    if (isAlphaNameric(full_code[i + strlen(reservedtokens[j])])) continue; // not a break, since the next type could differ in length
+                }
+            }
+            char* next_word = getWord(full_code, i);
+            toUpper(next_word);
+            if (!strcmp(next_word, reservedtokens[j])) {
+                free(next_word);
+                DOSATO_ADD_TOKEN(list, TOKEN_RESERVED_KEYWORD, full_code + i, strlen(reservedtokens[j]) - 1, j);
+                i += strlen(reservedtokens[j]) - 1;
                 break;
             } else {
                 free(next_word);

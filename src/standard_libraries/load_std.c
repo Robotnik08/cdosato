@@ -233,16 +233,16 @@ int loadConstants (VirtualMachine* vm) {
 
     // add the standard library constants
 
-    Value maxlong = (Value){ TYPE_LONG, .as.longValue = MAXINT64, .defined = true, .is_variable_type = false };
-    Value minlong = (Value){ TYPE_LONG, .as.longValue = MININT64, .defined = true, .is_variable_type = false };
-    Value maxint = (Value){ TYPE_LONG, .as.longValue = MAXINT32, .defined = true, .is_variable_type = false };
-    Value minint = (Value){ TYPE_LONG, .as.longValue = MININT32, .defined = true, .is_variable_type = false };
-    Value maxshort = (Value){ TYPE_LONG, .as.longValue = MAXINT16, .defined = true, .is_variable_type = false };
-    Value minshort = (Value){ TYPE_LONG, .as.longValue = MININT16, .defined = true, .is_variable_type = false };
-    Value maxchar = (Value){ TYPE_LONG, .as.longValue = MAXCHAR, .defined = true, .is_variable_type = false };
-    Value minchar = (Value){ TYPE_LONG, .as.longValue = MINCHAR, .defined = true, .is_variable_type = false };
-    Value pi = (Value){ TYPE_DOUBLE, .as.doubleValue = 3.14159265358979323846, .defined = true, .is_variable_type = false };
-    Value e = (Value){ TYPE_DOUBLE, .as.doubleValue = 2.71828182845904523536, .defined = true, .is_variable_type = false };
+    Value maxlong = (Value){ TYPE_LONG, .as.longValue = MAXINT64, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minlong = (Value){ TYPE_LONG, .as.longValue = MININT64, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxint = (Value){ TYPE_LONG, .as.longValue = MAXINT32, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minint = (Value){ TYPE_LONG, .as.longValue = MININT32, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxshort = (Value){ TYPE_LONG, .as.longValue = MAXINT16, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minshort = (Value){ TYPE_LONG, .as.longValue = MININT16, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxchar = (Value){ TYPE_LONG, .as.longValue = MAXCHAR, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minchar = (Value){ TYPE_LONG, .as.longValue = MINCHAR, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value pi = (Value){ TYPE_DOUBLE, .as.doubleValue = 3.14159265358979323846, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value e = (Value){ TYPE_DOUBLE, .as.doubleValue = 2.71828182845904523536, .defined = true, .is_variable_type = false, .is_constant = true };
 
     
     ADD_CONST("MAXLONG", maxlong);

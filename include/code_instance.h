@@ -29,6 +29,7 @@ typedef enum {
     OP_DEFINE, // define a global variable
 
     OP_TYPE_CAST,
+    OP_MARK_CONSTANT,
 
     OP_BUILD_LIST,
     OP_BUILD_OBJECT,
@@ -77,6 +78,7 @@ typedef enum {
     OP_JUMP,
     OP_JUMP_IF_FALSE,
     OP_JUMP_IF_TRUE,
+    OP_JUMP_IF_MATCH,
 
     OP_FOR_ITER,
 
