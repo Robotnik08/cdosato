@@ -79,6 +79,27 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     i = code_length;
                 }
             }
+
+            if (full_code[i] == '/' && full_code[i + 1] == '*') {
+                int foundEnd = 0;
+                start = i;
+                for (int j = i; j < code_length; j++) {
+                    if (full_code[j] == '*' && full_code[j + 1] == '/') {
+                        end = j + 1;
+                        DOSATO_ADD_TOKEN(list, TOKEN_COMMENT, full_code + start, end - start, 0);
+                        start = end + 1;
+                        i = j + 1;
+                        foundEnd = 1;
+                        break;
+                    }
+                }
+                if (!foundEnd) {
+                    end = code_length - 1;
+                    DOSATO_ADD_TOKEN(list, TOKEN_COMMENT, full_code + start, end - start, 0);
+                    start = end + 1;
+                    i = code_length;
+                }
+            }
         } else {
             if (full_code[i] == quotationtype && escapeCount % 2 == 0) {
                 end = i;
