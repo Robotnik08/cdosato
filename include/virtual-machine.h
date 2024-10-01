@@ -5,6 +5,8 @@
 #include "code_instance.h"
 #include "value.h"
 
+#define GC_MIN_THRESHOLD 1024
+
 typedef struct {
     CodeInstance* instance;
     char* name;
@@ -43,6 +45,11 @@ typedef struct {
     ErrorJumps error_jumps;
 
     CodeInstanceList includes;
+
+    DosatoObject** allocated_objects;
+    size_t allocated_objects_count;
+    size_t allocated_objects_capacity;
+    
 } VirtualMachine;
 
 extern VirtualMachine* main_vm;
@@ -66,6 +73,13 @@ void destroy_FunctionList(FunctionList* list);
 void init_Function(Function* func);
 
 Value callExternalFunction(size_t index, ValueArray args, bool debug);
+
+DosatoObject* buildDosatoObject(void* body);
+void markSweep (VirtualMachine* vm);
+void markValue(Value* value);
+#define BUILD_STRING(value) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ARRAY(value) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_OBJECT(value) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value), .defined = false, .is_variable_type = false, .is_constant = false }
 
 
 #define NEXT_BYTE() (*vm->ip++)

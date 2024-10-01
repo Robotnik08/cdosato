@@ -205,7 +205,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* pathValue = vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue;
+            char* pathValue = AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry]);
             char* path = malloc(strlen(pathValue) + 1);
             strcpy(path, pathValue);
             AST* included_ast = malloc(sizeof(AST));
@@ -246,8 +246,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* path = malloc(strlen(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue) + 1);
-            strcpy(path, vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue);
+            char* path = malloc(strlen(AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry])) + 1);
+            strcpy(path, AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry]));
             
             DynamicLibrary lib = loadLib(path);
             
@@ -388,7 +388,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                         id = getName(&vm->constants_map, val);
                     } else {
                         id = addName(&vm->constants_map, val);
-                        write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                        write_ValueArray(&vm->constants, BUILD_STRING(val));
                     }
                     writeInstruction(ci, node.body.nodes[0].body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
                 } else {
@@ -468,7 +468,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     id = getName(&vm->constants_map, val);
                 } else {
                     id = addName(&vm->constants_map, val);
-                    write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                    write_ValueArray(&vm->constants, BUILD_STRING(val));
                 }
                 writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
             } else {

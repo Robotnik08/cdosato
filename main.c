@@ -79,6 +79,7 @@ int main (int argc, char** argv) {
     if (debug & DEBUG_SOURCE) printf ("==== Source: (%d) ====\n%s\n", length, source);
     
     VirtualMachine vm;
+    main_vm = &vm;
     initVirtualMachine(&vm);
 
 
