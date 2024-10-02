@@ -692,8 +692,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     writeInstruction(ci, node.body.nodes[1].start, OP_STORE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
                 }
             } else {
-                // if underscore, don't store the value just pop it
-                writeByteCode(ci, OP_POP, node.body.nodes[1].start);
+                // if underscore, don't store the value
+                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
             }
 
             // if global scope, the 2 locals must be added to the scope
