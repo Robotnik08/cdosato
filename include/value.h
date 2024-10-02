@@ -82,6 +82,7 @@ Value buildArray(size_t count, ...);
 Value buildObject(size_t count, ...);
 
 char* valueToString (Value value, bool extensive);
+char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, int count);
 char* dataTypeToString (DataType type);
 
 typedef struct {

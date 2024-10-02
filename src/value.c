@@ -481,14 +481,29 @@ Value buildObject(size_t count, ...) {
     return BUILD_OBJECT(object);
 }
 
-
-
 char* valueToString (Value value, bool extensive) {
+    DosatoObject** pointers = malloc(sizeof(DosatoObject**));
+    char* str = valueToStringSafe(value, extensive, &pointers, 0);
+    free(pointers);
+    return str;
+}
+
+char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, int count) {
     char* string = malloc(1);
     string[0] = '\0';
 
     switch (value.type) {
         case TYPE_OBJECT: {
+            for (size_t i = 0; i < count; i++) {
+                if ((*pointers)[i] == value.as.objectValue) {
+                    string = realloc(string, strlen(string) + 6);
+                    strcat(string, "{...}");
+                    return string;
+                }
+            }
+            (*pointers) = realloc(*pointers, (count + 1) * sizeof(DosatoObject**));
+            (*pointers)[count++] = value.as.objectValue;
+
             string = realloc(string, strlen(string) + 2);
             strcat(string, "{");
             ValueObject* object = AS_OBJECT(value);
@@ -497,7 +512,7 @@ char* valueToString (Value value, bool extensive) {
                 strcat(string, "\"");
                 strcat(string, object->keys[i]);
                 strcat(string, "\": ");
-                char* valueString = valueToString(object->values[i], true);
+                char* valueString = valueToStringSafe(object->values[i], true, pointers, count);
                 string = realloc(string, strlen(string) + strlen(valueString) + 3);
                 strcat(string, valueString);
                 if (i < object->count - 1) {
@@ -511,11 +526,21 @@ char* valueToString (Value value, bool extensive) {
         }
 
         case TYPE_ARRAY: {
+            for (size_t i = 0; i < count; i++) {
+                if ((*pointers)[i] == value.as.objectValue) {
+                    string = realloc(string, strlen(string) + 6);
+                    strcat(string, "[...]");
+                    return string;
+                }
+            }
+            (*pointers) = realloc(*pointers, (count + 1) * sizeof(DosatoObject**));
+            (*pointers)[count++] = value.as.objectValue;
+
             string = realloc(string, strlen(string) + 2);
             strcat(string, "[");
             ValueArray* array = AS_ARRAY(value);
             for (size_t i = 0; i < array->count; i++) {
-                char* valueString = valueToString(array->values[i], true);
+                char* valueString = valueToStringSafe(array->values[i], true, pointers, count);
                 string = realloc(string, strlen(string) + strlen(valueString) + 3);
                 strcat(string, valueString);
                 if (i < array->count - 1) {

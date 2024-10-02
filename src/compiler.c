@@ -386,6 +386,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     int id = -1;
                     if (hasName(&vm->constants_map, val)) {
                         id = getName(&vm->constants_map, val);
+                        free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
                         write_ValueArray(&vm->constants, BUILD_STRING(val));
@@ -466,6 +467,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 int id = -1;
                 if (hasName(&vm->constants_map, val)) {
                     id = getName(&vm->constants_map, val);
+                    free(val);
                 } else {
                     id = addName(&vm->constants_map, val);
                     write_ValueArray(&vm->constants, BUILD_STRING(val));

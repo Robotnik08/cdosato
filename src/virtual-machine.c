@@ -149,7 +149,8 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free_ErrorJumps(&vm->error_jumps);
     destroy_CodeInstanceList(&vm->includes);
 
-    sweepObjects(vm);
+    sweepObjects(vm); // sweep all objects
+    sweepObjects(vm); // sweep remaining objects
 
     free_ValueArray(&vm->globals);
     free_ValueArray(&vm->stack);
