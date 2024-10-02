@@ -5,7 +5,7 @@
 #include "code_instance.h"
 #include "value.h"
 
-#define GC_MIN_THRESHOLD 1024
+#define GC_MIN_THRESHOLD 1
 
 typedef struct {
     CodeInstance* instance;
@@ -74,12 +74,13 @@ void init_Function(Function* func);
 
 Value callExternalFunction(size_t index, ValueArray args, bool debug);
 
-DosatoObject* buildDosatoObject(void* body);
-void markSweep (VirtualMachine* vm);
+DosatoObject* buildDosatoObject(void* body, DataType type);
+void markObjects (VirtualMachine* vm);
+void sweepObjects (VirtualMachine* vm);
 void markValue(Value* value);
-#define BUILD_STRING(value) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_ARRAY(value) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_OBJECT(value) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_STRING(value) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ARRAY(value) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_OBJECT(value) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT), .defined = false, .is_variable_type = false, .is_constant = false }
 
 
 #define NEXT_BYTE() (*vm->ip++)

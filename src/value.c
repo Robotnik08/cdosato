@@ -703,6 +703,7 @@ void markDefined(Value* value) {
     if (value->type == TYPE_ARRAY) {
         ValueArray* array = AS_ARRAY(*value);
         for (size_t i = 0; i < array->count; i++) {
+            if (array->values[i].defined) continue;
             markDefined(&array->values[i]);
         }
     }
@@ -710,6 +711,7 @@ void markDefined(Value* value) {
     if (value->type == TYPE_OBJECT) {
         ValueObject* object = AS_OBJECT(*value);
         for (size_t i = 0; i < object->count; i++) {
+            if (object->values[i].defined) continue;
             markDefined(&object->values[i]);
         }
     }
@@ -793,7 +795,6 @@ void write_ValueObject(ValueObject* object, char* key, Value value) {
 void free_ValueObject(ValueObject* object) {
     for (size_t i = 0; i < object->count; i++) {
         free(object->keys[i]);
-        destroyValue(&object->values[i]);
     }
     free(object->values);
     free(object->keys);

@@ -11,16 +11,18 @@ VirtualMachine* main_vm = NULL;
 DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
 
 
-DosatoObject* buildDosatoObject(void* body) {
+DosatoObject* buildDosatoObject(void* body, DataType type) {
     DosatoObject* object = malloc(sizeof(DosatoObject));
     object->body = body;
-    object->marked = false;
+    object->type = type;
+    object->marked = true; // immune to garbage collection for the first sweep, to ensure values that are not on the stack are not deleted (for arithmetics)
 
     main_vm->allocated_objects[main_vm->allocated_objects_count++] = object;
 
     if (main_vm->allocated_objects_count >= main_vm->allocated_objects_capacity) {
         // mark and sweep
-        markSweep(main_vm);
+        markObjects(main_vm);
+        sweepObjects(main_vm);
         // set new capacity to double the amount of allocated objects left
         main_vm->allocated_objects_capacity = __max(main_vm->allocated_objects_count * 2, GC_MIN_THRESHOLD);
         main_vm->allocated_objects = realloc(main_vm->allocated_objects, sizeof(DosatoObject*) * main_vm->allocated_objects_capacity);
@@ -29,7 +31,7 @@ DosatoObject* buildDosatoObject(void* body) {
     return object;
 }
 
-void markSweep (VirtualMachine* vm) {
+void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->stack.count; i++) {
         markValue(&vm->stack.values[i]);
     }
@@ -41,17 +43,26 @@ void markSweep (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->constants.count; i++) {
         markValue(&vm->constants.values[i]);
     }
+}
 
-    // sweep
+void sweepObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->allocated_objects_count; i++) {
         DosatoObject* object = vm->allocated_objects[i];
         if (!object->marked) {
+            if (object->type == TYPE_ARRAY) {
+                free_ValueArray((ValueArray*)object->body);
+            } else if (object->type == TYPE_OBJECT) {
+                free_ValueObject((ValueObject*)object->body);
+            }
+
             free(object->body);
             free(object);
+            
             for (size_t j = i; j < vm->allocated_objects_count - 1; j++) {
                 vm->allocated_objects[j] = vm->allocated_objects[j + 1];
             }
             vm->allocated_objects_count--;
+            i--; // recheck this index
         } else {
             object->marked = false;
         }
@@ -61,6 +72,7 @@ void markSweep (VirtualMachine* vm) {
 void markValue(Value* value) {
     if (value->type == TYPE_ARRAY) {
         DosatoObject* object = value->as.objectValue;
+        if (object->marked) return; // already marked
         object->marked = true;
         ValueArray* array = AS_ARRAY(*value);
         for (size_t i = 0; i < array->count; i++) {
@@ -68,6 +80,7 @@ void markValue(Value* value) {
         }
     } else if (value->type == TYPE_OBJECT) {
         DosatoObject* object = value->as.objectValue;
+        if (object->marked) return; // already marked
         object->marked = true;
         ValueObject* objectList = AS_OBJECT(*value);
         for (size_t i = 0; i < objectList->count; i++) {
@@ -136,12 +149,7 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free_ErrorJumps(&vm->error_jumps);
     destroy_CodeInstanceList(&vm->includes);
 
-    markSweep(vm);
-    for (size_t i = 0; i < vm->allocated_objects_count; i++) {
-        DosatoObject* object = vm->allocated_objects[i];
-        free(object->body);
-        free(object);
-    }
+    sweepObjects(vm);
 
     free_ValueArray(&vm->globals);
     free_ValueArray(&vm->stack);
@@ -484,85 +492,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
 
-            case OP_REFERENCE: {
-                uint16_t index = NEXT_SHORT();
-                Value global = vm->globals.values[index];
-                if (!global.defined) {
-                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
-                }
-
-                pushValue(&vm->stack, global);
-                break;
-            }
-
-            case OP_REFERENCE_FAST: {
-                uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                Value local = vm->stack.values[index];
-                if (!local.defined) {
-                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
-                }
-
-                pushValue(&vm->stack, local);
-                break;
-            }
-
-            case OP_REFERENCE_SUBSCR: {
-                Value index = POP_VALUE();
-                Value list = POP_VALUE();
-                if (list.type != TYPE_ARRAY) {
-                    PRINT_ERROR(E_NOT_AN_ARRAY);
-                }
-                if (!list.defined) {
-                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
-                }
-
-                // TO DO type checking
-                int i = index.as.longValue;
-                ValueArray* array = AS_ARRAY(list);
-                if (i < 0 || i >= array->count) {
-                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
-                }
-
-                Value value = array->values[i];
-                pushValue(&vm->stack, value);
-
-                break;
-            }
-
-            case OP_REFERENCE_GETOBJ: {
-                Value key = POP_VALUE();
-                Value object = POP_VALUE();
-
-                if (object.type != TYPE_OBJECT) {
-                    PRINT_ERROR(E_NOT_AN_OBJECT);
-                }
-
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
-                ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
-                    PRINT_ERROR(E_KEY_NOT_FOUND);
-                }
-
-                Value value = *getValueAtKey(obj, AS_STRING(key));
-                pushValue(&vm->stack, value);
-
-                break;
-            }
-
-
 
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
-
-                local.is_constant = false;
 
                 pushValue(&vm->stack, local);
                 break;
@@ -586,7 +519,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     value.is_variable_type = true;
                 }
 
-                // destroy old value
+                value.is_constant = false;
 
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
@@ -626,10 +559,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 }
                 
                 int i = ++index->as.longValue;
-                ValueArray* array = (ValueArray*)list.as.objectValue;
+                ValueArray* array = AS_ARRAY(list);
                 if (i >= array->count || i < 0) {
-                    destroyValue(&POP_VALUE()); // pop index
-                    destroyValue(&POP_VALUE()); // pop list
+                    POP_VALUE(); // pop index
+                    POP_VALUE(); // pop list
                     vm->ip = offset + active_instance->code;
                 }
                 // don't push iterator
@@ -653,8 +586,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (!global.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
-
-                global.is_constant = false;
 
                 pushValue(&vm->stack, global);
 
@@ -682,6 +613,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     value.is_variable_type = true;
                 }
                 
+                value.is_constant = false;
 
                 vm->globals.values[index] = value;
                 markDefined(&vm->globals.values[index]);
@@ -714,11 +646,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
                 ErrorType code = castValue(&index, TYPE_LONG);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
                 }
+
                 long long int i = index.as.longValue;
                 if (list.type == TYPE_ARRAY) {
                     ValueArray* array = AS_ARRAY(list);

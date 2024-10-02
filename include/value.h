@@ -35,6 +35,7 @@ typedef enum {
 typedef struct {
     void* body;
     bool marked;
+    DataType type;
 } DosatoObject;
 
 typedef struct {
