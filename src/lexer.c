@@ -481,6 +481,16 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             free(word);
         }
     }
+    
+    REFRESH_LIST()
+
+    // check if theres any invalid tokens
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        if (!IS_SPACE(full_code[i])) {
+            printError(full_code, i, file_name, E_UNEXPECTED_TOKEN);
+        }
+    }
 
     // finalise tokens
     REFRESH_LIST()

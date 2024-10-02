@@ -81,6 +81,7 @@ typedef enum {
     OP_JUMP_IF_MATCH,
 
     OP_FOR_ITER,
+    OP_FOR_DISCARD,
 
     OP_JUMP_IF_EXCEPTION,
     OP_CLEAR_EXCEPTION,

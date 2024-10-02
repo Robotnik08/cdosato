@@ -555,6 +555,25 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
 
+            case OP_FOR_DISCARD: {
+                uint16_t offset = NEXT_SHORT();
+                Value* index = &vm->stack.values[vm->stack.count - 1];
+                Value list = PEEK_VALUE_TWO();
+                if (list.type != TYPE_ARRAY) {
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
+                }
+                
+                int i = ++index->as.longValue;
+                ValueArray* array = (ValueArray*)list.as.objectValue;
+                if (i >= array->count || i < 0) {
+                    destroyValue(&POP_VALUE()); // pop index
+                    destroyValue(&POP_VALUE()); // pop list
+                    vm->ip = offset + active_instance->code;
+                }
+                // don't push iterator
+                break;
+            }
+
             case OP_PUSH_NULL: {
                 pushValue(&vm->stack, UNDEFINED_VALUE);
                 break;
