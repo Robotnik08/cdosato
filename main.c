@@ -28,7 +28,8 @@ int main (int argc, char** argv) {
             PRINT_USAGE
             return 0;
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
-            printf("Dosato version %s\n", DOSATO_VERSION);
+            printf("Dosato version %s, compiled at %s\n", DOSATO_VERSION, DOSATO_DATE);
+            printf("Type 'dosato -h' for help\n");
             return 0;
         }
     }

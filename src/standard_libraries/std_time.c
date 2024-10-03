@@ -43,7 +43,7 @@ Value io_datetime (ValueArray args, bool debug) {
 
     if (allocated) free(format);
 
-    return BUILD_STRING(buffer);
+    return BUILD_STRING(buffer, false);
 }
 
 Value io_clock (ValueArray args, bool debug) {

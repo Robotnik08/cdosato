@@ -27,12 +27,12 @@ Value string_split(ValueArray args, bool debug) {
     while (token != NULL) {
         char* new_token = malloc(strlen(token) + 1);
         strcpy(new_token, token);
-        Value value = BUILD_STRING(new_token);
+        Value value = BUILD_STRING(new_token, false);
         write_ValueArray(result, value);
         token = strtok(NULL, delim);
     }
 
-    return BUILD_ARRAY(result);
+    return BUILD_ARRAY(result, false);
 }
 
 Value string_lower(ValueArray args, bool debug) {
@@ -123,7 +123,7 @@ Value string_substr(ValueArray args, bool debug) {
     result[end - start + 1] = '\0';
 
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }
 
 Value string_indexof(ValueArray args, bool debug) {
@@ -299,7 +299,7 @@ Value string_replace(ValueArray args, bool debug) {
     }
     result[strlen(result)] = '\0';
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }
 
 Value string_trim(ValueArray args, bool debug) {
@@ -329,7 +329,7 @@ Value string_trim(ValueArray args, bool debug) {
     result[strlen(result)] = '\0';
 
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }
 
 Value string_reverse(ValueArray args, bool debug) {
@@ -353,7 +353,7 @@ Value string_reverse(ValueArray args, bool debug) {
     }
     result[len] = '\0';
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }
 
 Value string_contains(ValueArray args, bool debug) {
@@ -424,7 +424,7 @@ Value string_remove(ValueArray args, bool debug) {
     }
     result[strlen(result)] = '\0';
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }
 
 Value string_insert(ValueArray args, bool debug) {
@@ -471,7 +471,7 @@ Value string_insert(ValueArray args, bool debug) {
     }
     result[strlen(str) + strlen(substr)] = '\0';
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }
 
 Value string_atoi(ValueArray args, bool debug) {
@@ -575,5 +575,5 @@ Value string_join(ValueArray args, bool debug) {
     }
 
 
-    return BUILD_STRING(result);
+    return BUILD_STRING(result, false);
 }

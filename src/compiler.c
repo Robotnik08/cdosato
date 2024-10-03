@@ -805,7 +805,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->code[jump_end_index + 2] = ci->count >> 8;  
 
             // free the jump locations
-            for (int i = 0; i < switch_body.body.count - 1; i++) {
+            for (int i = 0; i < switch_body.body.count; i++) {
                 free(jump_locations[i]);
             }
             free(jump_locations);
