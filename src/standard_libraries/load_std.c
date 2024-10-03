@@ -211,7 +211,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
     return 0;
 }
 
-int loadConstants (VirtualMachine* vm) {
+int loadConstants (VirtualMachine* vm, char** argv, int argc) {
 
     #define ADD_CONST(name, value) do { \
         size_t name_index = -1; \
@@ -244,6 +244,21 @@ int loadConstants (VirtualMachine* vm) {
     Value pi = (Value){ TYPE_DOUBLE, .as.doubleValue = 3.14159265358979323846, .defined = true, .is_variable_type = false, .is_constant = true };
     Value e = (Value){ TYPE_DOUBLE, .as.doubleValue = 2.71828182845904523536, .defined = true, .is_variable_type = false, .is_constant = true };
 
+    Value argc_ = (Value){ TYPE_LONG, .as.longValue = argc, .defined = true, .is_variable_type = false, .is_constant = true };
+
+    ValueArray* list = malloc(sizeof(ValueArray));
+    init_ValueArray(list);
+    for (int i = 0; i < argc; i++) {
+        Value arg = BUILD_STRING(argv[i], false);
+        write_ValueArray(list, arg);
+    }
+
+    Value argv_ = BUILD_ARRAY(list, false);
+    argv_.is_constant = true;
+    argv_.defined = true;
+
+
+
     
     ADD_CONST("MAXLONG", maxlong);
     ADD_CONST("MINLONG", minlong);
@@ -256,6 +271,9 @@ int loadConstants (VirtualMachine* vm) {
     ADD_CONST("MATH_PI", pi);
     ADD_CONST("MATH_E", e);
 
+    ADD_CONST("ARGC", argc_);
+    ADD_CONST("ARGV", argv_);
+
     // add lower case constants
     ADD_CONST("maxlong", maxlong);
     ADD_CONST("minlong", minlong);
@@ -267,6 +285,9 @@ int loadConstants (VirtualMachine* vm) {
     ADD_CONST("minbyte", minchar);
     ADD_CONST("math_pi", pi);
     ADD_CONST("math_e", e);
+
+    ADD_CONST("argc", argc_);
+    ADD_CONST("argv", argv_);
 
     #undef constMapAdd
 

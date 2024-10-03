@@ -18,6 +18,6 @@
 #include "std_type.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
-int loadConstants (VirtualMachine* vm);
+int loadConstants (VirtualMachine* vm, char** argv, int argc);
 
 #endif // DOSATO_STD_LOADER_H	

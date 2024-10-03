@@ -115,7 +115,7 @@ int main (int argc, char** argv) {
         write_ValueArray(&vm.globals, UNDEFINED_VALUE);
     }
 
-    loadConstants(&vm);    
+    loadConstants(&vm, argv, argc);    
 
     compile(&vm, main_ast);
 
