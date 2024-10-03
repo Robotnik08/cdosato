@@ -29,6 +29,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
     bool created_scope = false;
 
     switch (type) {
+        default: {
+            break; // do nothing
+        }
+
         case NODE_BLOCK: {
             if (scope == NULL) { // first scope after global
                 ScopeData* new_scope = malloc(sizeof(ScopeData));
@@ -389,7 +393,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                         free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
-                        write_ValueArray(&vm->constants, BUILD_STRING(val));
+                        write_ValueArray(&vm->constants, BUILD_STRING(val, true));
                     }
                     writeInstruction(ci, node.body.nodes[0].body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
                 } else {
@@ -470,7 +474,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     free(val);
                 } else {
                     id = addName(&vm->constants_map, val);
-                    write_ValueArray(&vm->constants, BUILD_STRING(val));
+                    write_ValueArray(&vm->constants, BUILD_STRING(val, true));
                 }
                 writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
             } else {

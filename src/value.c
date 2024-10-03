@@ -50,7 +50,7 @@ Value hardCopyValue(Value value) {
             for (size_t i = 0; i < array->count; i++) {
                 write_ValueArray(newArray, hardCopyValue(array->values[i]));
             }
-            value = BUILD_ARRAY(newArray);
+            value = BUILD_ARRAY(newArray, false);
             break;
         }
         case TYPE_OBJECT: {
@@ -60,13 +60,13 @@ Value hardCopyValue(Value value) {
             for (size_t i = 0; i < object->count; i++) {
                 write_ValueObject(newObject, object->keys[i], hardCopyValue(object->values[i]));
             }
-            value = BUILD_OBJECT(newObject);
+            value = BUILD_OBJECT(newObject, false);
             break;
         }
         case TYPE_STRING: {
             char* new_str = malloc(strlen(AS_STRING(value)) + 1);
             strcpy(new_str, AS_STRING(value));
-            value = BUILD_STRING(new_str);
+            value = BUILD_STRING(new_str, false);
             break;
         }
         default: {
@@ -381,7 +381,7 @@ ErrorType castValue(Value* value, DataType type) {
         }
     } else if (type == TYPE_STRING) {
         char* str = valueToString(*value, false);
-        newValue = BUILD_STRING(str);
+        newValue = BUILD_STRING(str, false);
     }
 
 
@@ -460,7 +460,7 @@ Value buildArray(size_t count, ...) {
 
     va_end(args);
 
-    return BUILD_ARRAY(array);
+    return BUILD_ARRAY(array, false);
 }
 
 Value buildObject(size_t count, ...) {
@@ -478,7 +478,7 @@ Value buildObject(size_t count, ...) {
 
     va_end(args);
 
-    return BUILD_OBJECT(object);
+    return BUILD_OBJECT(object, false);
 }
 
 char* valueToString (Value value, bool extensive) {

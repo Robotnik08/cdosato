@@ -7,4 +7,4 @@ do {
     set result += [(ulong)i]
 } for (arr => i)
 
-do sayln(result)
+do sayln (result)

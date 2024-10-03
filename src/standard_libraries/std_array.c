@@ -51,8 +51,8 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
     for (int j = left; j < right; j++) {
         ValueArray args;
         init_ValueArray(&args);
-        write_ValueArray(&args, hardCopyValue(array->values[j]));
-        write_ValueArray(&args, hardCopyValue(pivot));
+        write_ValueArray(&args, array->values[j]);
+        write_ValueArray(&args, pivot);
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -60,7 +60,6 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
         }
 
         if (!ISINTTYPE(result.type) && !ISFLOATTYPE(result.type)) {
-            destroyValue(&result);
             return BUILD_EXCEPTION(E_EXPECTED_NUMBER);
         }
         
@@ -98,7 +97,7 @@ Value array_sort(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     if (arg.type != TYPE_ARRAY) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
@@ -108,7 +107,7 @@ Value array_sort(ValueArray args, bool debug) {
         if (arg2.type != TYPE_FUNCTION) {
             return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
         }
-        Value res = dosato_quick_sort(((ValueArray*)arg.as.objectValue), 0, ((ValueArray*)arg.as.objectValue)->count - 1, arg2.as.longValue);
+        Value res = dosato_quick_sort(AS_ARRAY(arg), 0, AS_ARRAY(arg)->count - 1, arg2.as.longValue);
 
         if (res.type == TYPE_EXCEPTION || res.type == TYPE_HLT) {
             return res;
@@ -116,7 +115,7 @@ Value array_sort(ValueArray args, bool debug) {
         return arg;
     }
 
-    qsort(((ValueArray*)arg.as.objectValue)->values, ((ValueArray*)arg.as.objectValue)->count, sizeof(Value), compareValues);
+    qsort(AS_ARRAY(arg)->values, AS_ARRAY(arg)->count, sizeof(Value), compareValues);
 
     return arg;
 }
@@ -126,13 +125,13 @@ Value array_push (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     if (arg.type != TYPE_ARRAY) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
     Value value = GET_ARG(args, 1);
-    write_ValueArray((ValueArray*)arg.as.objectValue, hardCopyValue(value));
+    write_ValueArray(AS_ARRAY(arg), value);
 
     return arg;
 }
@@ -147,17 +146,11 @@ Value array_pop (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    if (((ValueArray*)arg.as.objectValue)->count == 0) {
+    if ((AS_ARRAY(arg))->count == 0) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
-    Value arr = hardCopyValue(arg);
-
-    destroyValue(&((ValueArray*)arr.as.objectValue)->values[((ValueArray*)arr.as.objectValue)->count - 1]);
-
-    ((ValueArray*)arr.as.objectValue)->count--;
-
-    return arr;
+    return AS_ARRAY(arg)->values[AS_ARRAY(arg)->count--]; // return the popped value
 }
 
 Value array_shift (ValueArray args, bool debug) {
@@ -170,20 +163,18 @@ Value array_shift (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    if (((ValueArray*)arg.as.objectValue)->count == 0) {
+    if ((AS_ARRAY(arg))->count == 0) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
-    Value arr = hardCopyValue(arg);
-    ValueArray* obj = (ValueArray*)arr.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
 
-    destroyValue(&obj->values[0]);
     obj->count--;
     for (int i = 0; i < obj->count; i++) {
         obj->values[i] = obj->values[i + 1];
     }
 
-    return arr;
+    return arg;
 }
 
 Value array_unshift (ValueArray args, bool debug) {
@@ -197,16 +188,16 @@ Value array_unshift (ValueArray args, bool debug) {
     }
 
     Value value = GET_ARG(args, 1);
-    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
+    write_ValueArray(obj, UNDEFINED_VALUE); // make space for the new value
 
-    ValueArray* new_array = malloc(sizeof(ValueArray));
-    init_ValueArray(new_array);
-    write_ValueArray(new_array, hardCopyValue(value));
-    for (int i = 0; i < obj->count; i++) {
-        write_ValueArray(new_array, hardCopyValue(obj->values[i]));
+    for (int i = obj->count; i > 0; i--) {
+        obj->values[i] = obj->values[i - 1];
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    obj->values[0] = value;
+
+    return arg;
 }
 
 Value array_slice (ValueArray args, bool debug) {
@@ -219,7 +210,7 @@ Value array_slice (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    Value start = GET_ARG_COPY(args, 1);
+    Value start = GET_ARG(args, 1);
     int cast_error = castValue(&start, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -227,27 +218,27 @@ Value array_slice (ValueArray args, bool debug) {
 
     Value end;
     if (args.count == 3) {
-        end = GET_ARG_COPY(args, 2);
+        end = GET_ARG(args, 2);
         cast_error = castValue(&end, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        end = (Value){ TYPE_LONG, .as.longValue = ((ValueArray*)arg.as.objectValue)->count };
+        end = (Value){ TYPE_LONG, .as.longValue = (AS_ARRAY(arg))->count };
     }
 
-    if (start.as.longValue < 0 || start.as.longValue >= ((ValueArray*)arg.as.objectValue)->count || end.as.longValue < 0 || end.as.longValue > ((ValueArray*)arg.as.objectValue)->count) {
+    if (start.as.longValue < 0 || start.as.longValue >= (AS_ARRAY(arg))->count || end.as.longValue < 0 || end.as.longValue > (AS_ARRAY(arg))->count) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
-    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (int i = start.as.longValue; i < end.as.longValue; i++) {
-        write_ValueArray(new_array, hardCopyValue(obj->values[i]));
+        write_ValueArray(new_array, obj->values[i]);
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    return BUILD_ARRAY(new_array, false);
 }
 
 Value array_splice (ValueArray args, bool debug) {
@@ -260,7 +251,7 @@ Value array_splice (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    Value start = GET_ARG_COPY(args, 1);
+    Value start = GET_ARG(args, 1);
     int cast_error = castValue(&start, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -268,16 +259,16 @@ Value array_splice (ValueArray args, bool debug) {
 
     Value delete_count;
     if (args.count > 2) {
-        delete_count = GET_ARG_COPY(args, 2);
+        delete_count = GET_ARG(args, 2);
         cast_error = castValue(&delete_count, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        delete_count = (Value){ TYPE_LONG, .as.longValue = ((ValueArray*)arg.as.objectValue)->count - start.as.longValue };
+        delete_count = (Value){ TYPE_LONG, .as.longValue = (AS_ARRAY(arg))->count - start.as.longValue };
     }
 
-    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
     if (start.as.longValue < 0 || start.as.longValue >= obj->count || delete_count.as.longValue < 0 || start.as.longValue + delete_count.as.longValue > obj->count) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
@@ -285,13 +276,13 @@ Value array_splice (ValueArray args, bool debug) {
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (int i = 0; i < start.as.longValue; i++) {
-        write_ValueArray(new_array, hardCopyValue(obj->values[i]));
+        write_ValueArray(new_array, obj->values[i]);
     }
     for (int i = start.as.longValue + delete_count.as.longValue; i < obj->count; i++) {
-        write_ValueArray(new_array, hardCopyValue(obj->values[i]));
+        write_ValueArray(new_array, obj->values[i]);
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    return BUILD_ARRAY(new_array, false);
 }
 
 Value array_index_of (ValueArray args, bool debug) {
@@ -306,7 +297,7 @@ Value array_index_of (ValueArray args, bool debug) {
 
     Value value = GET_ARG(args, 1);
 
-    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
     for (int i = 0; i < obj->count; i++) {
         if (valueEquals(&obj->values[i], &value)) {
             return (Value){ TYPE_LONG, .as.longValue = i };
@@ -328,7 +319,7 @@ Value array_last_index_of(ValueArray args, bool debug) {
 
     Value value = GET_ARG(args, 1);
 
-    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
     for (int i = obj->count - 1; i >= 0; i--) {
         if (valueEquals(&obj->values[i], &value)) {
             return (Value){ TYPE_LONG, .as.longValue = i };
@@ -348,14 +339,14 @@ Value array_reverse (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    ValueArray* obj = (ValueArray*)arg.as.objectValue;
+    ValueArray* obj = AS_ARRAY(arg);
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (int i = obj->count - 1; i >= 0; i--) {
-        write_ValueArray(new_array, hardCopyValue(obj->values[i]));
+        write_ValueArray(new_array, obj->values[i]);
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    return BUILD_ARRAY(new_array, false);
 }
 
 Value array_fill (ValueArray args, bool debug) {
@@ -364,7 +355,7 @@ Value array_fill (ValueArray args, bool debug) {
     }
 
     Value value = GET_ARG(args, 0);
-    Value count = GET_ARG_COPY(args, 1);
+    Value count = GET_ARG(args, 1);
 
     int cast_error = castValue(&count, TYPE_LONG);
     if (cast_error != E_NULL) {
@@ -374,10 +365,10 @@ Value array_fill (ValueArray args, bool debug) {
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (int i = 0; i < count.as.longValue; i++) {
-        write_ValueArray(new_array, hardCopyValue(value));
+        write_ValueArray(new_array, value);
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    return BUILD_ARRAY(new_array, false);
 }
 
 
@@ -386,7 +377,7 @@ Value array_range (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value start = GET_ARG_COPY(args, 0);
+    Value start = GET_ARG(args, 0);
     int cast_error = castValue(&start, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -394,7 +385,7 @@ Value array_range (ValueArray args, bool debug) {
 
     Value end;
     if (args.count > 1) {
-        end = GET_ARG_COPY(args, 1);
+        end = GET_ARG(args, 1);
         cast_error = castValue(&end, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -406,7 +397,7 @@ Value array_range (ValueArray args, bool debug) {
 
     Value step;
     if (args.count > 2) {
-        step = GET_ARG_COPY(args, 2);
+        step = GET_ARG(args, 2);
         cast_error = castValue(&step, TYPE_LONG);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -425,7 +416,7 @@ Value array_range (ValueArray args, bool debug) {
         write_ValueArray(new_array, (Value){ TYPE_LONG, .as.longValue = i });
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    return BUILD_ARRAY(new_array, false);
 }
 
 Value array_rangef (ValueArray args, bool debug) {
@@ -433,7 +424,7 @@ Value array_rangef (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value start = GET_ARG_COPY(args, 0);
+    Value start = GET_ARG(args, 0);
     int cast_error = castValue(&start, TYPE_DOUBLE);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);
@@ -441,7 +432,7 @@ Value array_rangef (ValueArray args, bool debug) {
 
     Value end;
     if (args.count > 1) {
-        end = GET_ARG_COPY(args, 1);
+        end = GET_ARG(args, 1);
         cast_error = castValue(&end, TYPE_DOUBLE);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -453,7 +444,7 @@ Value array_rangef (ValueArray args, bool debug) {
 
     Value step;
     if (args.count > 2) {
-        step = GET_ARG_COPY(args, 2);
+        step = GET_ARG(args, 2);
         cast_error = castValue(&step, TYPE_DOUBLE);
         if (cast_error != E_NULL) {
             return BUILD_EXCEPTION(cast_error);
@@ -472,7 +463,7 @@ Value array_rangef (ValueArray args, bool debug) {
         write_ValueArray(new_array, (Value){ TYPE_DOUBLE, .as.doubleValue = i });
     }
 
-    return (Value){ TYPE_ARRAY, .as.objectValue = new_array, .defined = false };
+    return BUILD_ARRAY(new_array, false);
 }
 
 long long int counter = 0;
@@ -490,7 +481,7 @@ Value array_set_counter(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     int cast_error = castValue(&arg, TYPE_LONG);
     if (cast_error != E_NULL) {
         return BUILD_EXCEPTION(cast_error);

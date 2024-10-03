@@ -5,8 +5,8 @@ Value string_split(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -18,8 +18,8 @@ Value string_split(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* delim = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* delim = AS_STRING(arg2);
 
     char* token = strtok(str, delim);
     ValueArray* result = malloc(sizeof(ValueArray));
@@ -27,15 +27,12 @@ Value string_split(ValueArray args, bool debug) {
     while (token != NULL) {
         char* new_token = malloc(strlen(token) + 1);
         strcpy(new_token, token);
-        Value value = { TYPE_STRING, .as.stringValue = new_token };
+        Value value = BUILD_STRING(new_token);
         write_ValueArray(result, value);
         token = strtok(NULL, delim);
     }
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-
-    return (Value){ TYPE_ARRAY, .as.objectValue = result, .defined = false };
+    return BUILD_ARRAY(result);
 }
 
 Value string_lower(ValueArray args, bool debug) {
@@ -43,14 +40,14 @@ Value string_lower(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    toLower(arg.as.stringValue);
+    toLower(AS_STRING(arg));
 
     return arg;
 }
@@ -60,14 +57,14 @@ Value string_upper(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    toUpper(arg.as.stringValue);
+    toUpper(AS_STRING(arg));
 
     return arg;
 }
@@ -77,16 +74,14 @@ Value string_length(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    size_t len = strlen(arg.as.stringValue);
-
-    destroyValue(&arg);
+    size_t len = strlen(AS_STRING(arg));
 
     return (Value){ TYPE_LONG, .as.longValue = len };
 }
@@ -96,9 +91,9 @@ Value string_substr(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
-    Value arg3 = GET_ARG_COPY(args, 2);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+    Value arg3 = GET_ARG(args, 2);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -115,12 +110,11 @@ Value string_substr(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
+    char* str = AS_STRING(arg1);
     long long int start = arg2.as.longValue;
     long long int end = arg3.as.longValue;
 
     if (start < 0 || start >= strlen(str) || end < 0 || end >= strlen(str) || start > end) {
-        destroyValue(&arg1);
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
@@ -128,9 +122,8 @@ Value string_substr(ValueArray args, bool debug) {
     strncpy(result, str + start, end - start + 1);
     result[end - start + 1] = '\0';
 
-    destroyValue(&arg1);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }
 
 Value string_indexof(ValueArray args, bool debug) {
@@ -138,8 +131,8 @@ Value string_indexof(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -151,8 +144,8 @@ Value string_indexof(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
     char* result = strstr(str, substr);
 
@@ -163,8 +156,6 @@ Value string_indexof(ValueArray args, bool debug) {
 
     long long int res = result - str;
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = res };   
 }
@@ -174,8 +165,8 @@ Value string_lastindexof(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -187,8 +178,8 @@ Value string_lastindexof(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
     long long int res = -1;
     for (size_t i = 0; i < strlen(str); i++) {
@@ -197,8 +188,6 @@ Value string_lastindexof(ValueArray args, bool debug) {
         }
     }
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_LONG, .as.longValue = res };
 }
@@ -208,8 +197,8 @@ Value string_startswith(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -221,13 +210,11 @@ Value string_startswith(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
     bool result = strncmp(str, substr, strlen(substr)) == 0;
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
@@ -237,8 +224,8 @@ Value string_endswith(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -250,13 +237,11 @@ Value string_endswith(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
     bool result = strcmp(str + strlen(str) - strlen(substr), substr) == 0;
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
@@ -266,9 +251,9 @@ Value string_replace(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
-    Value arg3 = GET_ARG_COPY(args, 2);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+    Value arg3 = GET_ARG(args, 2);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -285,9 +270,9 @@ Value string_replace(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
-    char* replacement = arg3.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
+    char* replacement = AS_STRING(arg3);
 
 
     char* result = malloc(1);
@@ -314,11 +299,7 @@ Value string_replace(ValueArray args, bool debug) {
     }
     result[strlen(result)] = '\0';
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-    destroyValue(&arg3);
-
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }
 
 Value string_trim(ValueArray args, bool debug) {
@@ -326,14 +307,14 @@ Value string_trim(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg.as.stringValue;
+    char* str = AS_STRING(arg);
 
     size_t start = 0;
     size_t end = strlen(str) - 1;
@@ -347,9 +328,8 @@ Value string_trim(ValueArray args, bool debug) {
     strncpy(result, str + start, end - start + 1);
     result[strlen(result)] = '\0';
 
-    destroyValue(&arg);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }
 
 Value string_reverse(ValueArray args, bool debug) {
@@ -357,14 +337,14 @@ Value string_reverse(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg.as.stringValue;
+    char* str = AS_STRING(arg);
     size_t len = strlen(str);
 
     char* result = malloc(len + 1);
@@ -373,9 +353,7 @@ Value string_reverse(ValueArray args, bool debug) {
     }
     result[len] = '\0';
 
-    destroyValue(&arg);
-
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }
 
 Value string_contains(ValueArray args, bool debug) {
@@ -383,8 +361,8 @@ Value string_contains(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -396,13 +374,10 @@ Value string_contains(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
     bool result = strstr(str, substr) != NULL;
-
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
     return (Value){ TYPE_BOOL, .as.boolValue = result };
 }
@@ -412,8 +387,8 @@ Value string_remove(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -425,8 +400,8 @@ Value string_remove(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
     char* result = malloc(1);
     result[0] = '\0';
@@ -449,10 +424,7 @@ Value string_remove(ValueArray args, bool debug) {
     }
     result[strlen(result)] = '\0';
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }
 
 Value string_insert(ValueArray args, bool debug) {
@@ -460,9 +432,9 @@ Value string_insert(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
-    Value arg3 = GET_ARG_COPY(args, 2);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+    Value arg3 = GET_ARG(args, 2);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -479,13 +451,11 @@ Value string_insert(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
+    char* str = AS_STRING(arg1);
     long long int index = arg2.as.longValue;
-    char* substr = arg3.as.stringValue;
+    char* substr = AS_STRING(arg3);
 
     if (index < 0 || index >= strlen(str)) {
-        destroyValue(&arg1);
-        destroyValue(&arg3);
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
@@ -501,10 +471,7 @@ Value string_insert(ValueArray args, bool debug) {
     }
     result[strlen(str) + strlen(substr)] = '\0';
 
-    destroyValue(&arg1);
-    destroyValue(&arg3);
-
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }
 
 Value string_atoi(ValueArray args, bool debug) {
@@ -512,17 +479,15 @@ Value string_atoi(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg.as.stringValue;
+    char* str = AS_STRING(arg);
     long long int result = atoll(str);
-
-    destroyValue(&arg);
 
     return (Value){ TYPE_LONG, .as.longValue = result };
 }
@@ -532,17 +497,15 @@ Value string_atod(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
 
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg.as.stringValue;
+    char* str = AS_STRING(arg);
     double result = atof(str);
-
-    destroyValue(&arg);
 
     return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
 }
@@ -552,8 +515,8 @@ Value string_count(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -565,8 +528,8 @@ Value string_count(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    char* str = arg1.as.stringValue;
-    char* substr = arg2.as.stringValue;
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
 
 
     size_t count = 0;
@@ -576,9 +539,6 @@ Value string_count(ValueArray args, bool debug) {
         result++;
     }
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
-
     return (Value){ TYPE_LONG, .as.longValue = count };
 }
 
@@ -587,12 +547,10 @@ Value string_join(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     if (arg1.type != TYPE_ARRAY) {
-        destroyValue(&arg1);
-        destroyValue(&arg2);
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
@@ -601,8 +559,8 @@ Value string_join(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    ValueArray* arr = (ValueArray*)arg1.as.objectValue;
-    char* delim = arg2.as.stringValue;
+    ValueArray* arr = AS_ARRAY(arg1);
+    char* delim = AS_STRING(arg2);
 
     char* result = malloc(1);
     result[0] = '\0';
@@ -616,8 +574,6 @@ Value string_join(ValueArray args, bool debug) {
         free(str);
     }
 
-    destroyValue(&arg1);
-    destroyValue(&arg2);
 
-    return (Value){ TYPE_STRING, .as.stringValue = result, .defined = false };
+    return BUILD_STRING(result);
 }

@@ -11,7 +11,7 @@ VirtualMachine* main_vm = NULL;
 DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
 
 
-DosatoObject* buildDosatoObject(void* body, DataType type) {
+DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep) {
     DosatoObject* object = malloc(sizeof(DosatoObject));
     object->body = body;
     object->type = type;
@@ -21,8 +21,10 @@ DosatoObject* buildDosatoObject(void* body, DataType type) {
 
     if (main_vm->allocated_objects_count >= main_vm->allocated_objects_capacity) {
         // mark and sweep
-        markObjects(main_vm);
-        sweepObjects(main_vm);
+        if (sweep) {
+            markObjects(main_vm);
+            sweepObjects(main_vm);
+        }
         // set new capacity to double the amount of allocated objects left
         main_vm->allocated_objects_capacity = __max(main_vm->allocated_objects_count * 2, GC_MIN_THRESHOLD);
         main_vm->allocated_objects = realloc(main_vm->allocated_objects, sizeof(DosatoObject*) * main_vm->allocated_objects_capacity);
@@ -403,7 +405,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     char* source = AS_STRING(constant);
                     char* copy = malloc(strlen(source) + 1);
                     strcpy(copy, source);
-                    constant = BUILD_STRING(copy);
+                    constant = BUILD_STRING(copy, true);
                 }
                 pushValue(&vm->stack, constant);
                 break;
@@ -726,7 +728,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 }
                 
                 vm->stack.count -= count;
-                pushValue(&vm->stack, BUILD_ARRAY(list));
+                pushValue(&vm->stack, BUILD_ARRAY(list, true));
                 break;
             }
 
@@ -752,7 +754,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 vm->stack.count -= count;
 
-                pushValue(&vm->stack, BUILD_OBJECT(obj));
+                pushValue(&vm->stack, BUILD_OBJECT(obj, true));
                 break;
             }
 
@@ -990,7 +992,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     strcat(new_string, b_str);
                     free(a_str);
                     free(b_str);
-                    Value result = BUILD_STRING(new_string);
+                    Value result = BUILD_STRING(new_string, true);
                     pushValue(&vm->stack, result);
                     break;
                 } else if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
@@ -1018,7 +1020,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         Value val = b_array->values[i];
                         write_ValueArray(new_array, val);
                     }
-                    Value result = BUILD_ARRAY(new_array);
+                    Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
                 } else if (a.type == TYPE_OBJECT && b.type == TYPE_OBJECT) {
@@ -1037,7 +1039,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         Value val = b_obj->values[i];
                         write_ValueObject(new_obj, b_obj->keys[i], val);
                     }
-                    Value result = BUILD_OBJECT(new_obj);
+                    Value result = BUILD_OBJECT(new_obj, true);
                     pushValue(&vm->stack, result);
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
@@ -1092,7 +1094,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         Value val = a_array->values[i];
                         write_ValueArray(new_array, val);
                     }
-                    Value result = BUILD_ARRAY(new_array);
+                    Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
                 } else if (a.type == TYPE_OBJECT && b.type == TYPE_STRING) {
@@ -1119,7 +1121,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     }
                     char* new_string = malloc(strlen(string) - pop_amount + 1);
                     strncpy(new_string, string, strlen(string) - pop_amount);
-                    Value result = BUILD_STRING(new_string);
+                    Value result = BUILD_STRING(new_string, true);
                     pushValue(&vm->stack, result);
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
@@ -1173,7 +1175,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                             write_ValueArray(new_array, val);
                         }
                     }
-                    Value result = BUILD_ARRAY(new_array);
+                    Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
                 } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
