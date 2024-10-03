@@ -662,6 +662,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     array->values[i] = value;
                     markDefined(&array->values[i]);
                 } else if (list.type == TYPE_STRING) {
+                    if (list.is_constant) {
+                        PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
+                    }
                     char* string = AS_STRING(list);
                     if (i < 0 || i >= strlen(string)) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
