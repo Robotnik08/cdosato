@@ -103,10 +103,10 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"move", io_move_file},
         {"copy", io_copy_file},
 
-        // {"clear", io_clear},
-        // {"end", io_end},
-        // {"pause", io_pause},
-        // {"system", io_system},
+        {"clear", io_clear},
+        {"end", io_end},
+        {"pause", io_pause},
+        {"system", io_system},
 
         // {"srandom", io_seed_random},
         // {"random", io_random_double},

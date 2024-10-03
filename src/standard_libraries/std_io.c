@@ -55,7 +55,7 @@ Value io_listen (ValueArray args, bool debug) {
 
     char delimiter = '\n';
     if (args.count == 2) {
-        Value arg = GET_ARG_COPY(args, 1);
+        Value arg = GET_ARG(args, 1);
         int cast_result = castValue(&arg, TYPE_CHAR);
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
@@ -86,7 +86,7 @@ Value io_read_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -117,8 +117,8 @@ Value io_write_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -150,8 +150,8 @@ Value io_append_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
@@ -183,7 +183,7 @@ Value io_delete_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -206,7 +206,7 @@ Value io_file_exists (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
@@ -227,8 +227,8 @@ Value io_move_file (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg1 = GET_ARG_COPY(args, 0);
-    Value arg2 = GET_ARG_COPY(args, 1);
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
 
     int cast_result = castValue(&arg1, TYPE_STRING);
     if (cast_result != 0) {
