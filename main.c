@@ -65,6 +65,18 @@ int main (int argc, char** argv) {
         return 1;
     }
 
+    char* argument_dir = malloc(strlen(argv[1]) + 1);
+    strcpy(argument_dir, argv[1]);
+    char* index = strrchr(argument_dir, '/');
+    if (index == NULL) {
+        index = strrchr(argument_dir, '\\');
+    }
+    if (index != NULL) {
+        *index = '\0';
+    }
+
+    chdir(argument_dir);
+
     long long int length = getFileSize(file);
 
     char* source = malloc(length + 1);

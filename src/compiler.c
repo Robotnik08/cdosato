@@ -228,7 +228,25 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_TOO_MANY_INCLUDES, node.start);
             }
 
+            // set working directory to the included file's directory
+            #ifdef _WIN32
+            char* last_slash = strrchr(path, '\\');
+            #else
+            char* last_slash = strrchr(path, '/');
+            #endif
+
+            if (last_slash != NULL) {
+                *last_slash = '\0';
+                chdir(path);
+            }
+
             compileNode(vm, &included_instance, included_ast->root, included_ast, NULL);
+
+            // reset working directory
+            if (last_slash != NULL) {
+                *last_slash = '/';
+                chdir(".."); // go back to the previous directory
+            }
 
             // push OP_END_INCLUDE
             writeByteCode(&included_instance, OP_END_INCLUDE, node.start);
