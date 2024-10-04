@@ -535,6 +535,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         val = '"';
                         break;
                     default:
+                        val = lit[2]; // if it's not an escape sequence, just use the character
                         break;
                 }
             }
@@ -576,6 +577,9 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                             break;
                         case '"':
                             val[j] = '"';
+                            break;
+                        default:
+                            val[j] = val[j + 1]; // if it's not an escape sequence, just use the character
                             break;
                     }
                     for (int k = j + 1; k < strlen(val); k++) {

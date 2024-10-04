@@ -211,6 +211,11 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_MARK_CONSTANT");
             break;
 
+
+        case OP_COPY:
+            printf("OP_COPY");
+            break;
+
         case OP_JUMP:
             printf("OP_JUMP");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);

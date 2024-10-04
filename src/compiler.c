@@ -1033,6 +1033,10 @@ int writeUnaryInstruction (CodeInstance* ci, OperatorType operator, size_t token
             writeByteCode(ci, OP_UNARY_ABSOLUTE, token_index);
             break;
         }
+        case OPERATOR_MULTIPLY: {
+            writeByteCode(ci, OP_COPY, token_index);
+            break;
+        }
         default: {
             return -1;
         }

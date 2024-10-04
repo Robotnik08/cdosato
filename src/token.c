@@ -126,10 +126,10 @@ int isUnaryOperator (OperatorType operator) {
     switch (operator) {
         case OPERATOR_NOT:
         case OPERATOR_SUBTRACT:
-        case OPERATOR_ADD:
         case OPERATOR_NOT_BITWISE:
         case OPERATOR_ABSOLUTE:
         case OPERATOR_ROOT:
+        case OPERATOR_MULTIPLY:
             return true;
         default:
             return false;

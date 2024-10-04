@@ -82,6 +82,7 @@ void markValue(Value* value);
 #define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
 
+#define BUILD_NULL() (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
 
 #define NEXT_BYTE() (*vm->ip++)
 #define NEXT_SHORT() ((*vm->ip++) | (*vm->ip++ << 8))

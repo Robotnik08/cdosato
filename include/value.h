@@ -74,6 +74,7 @@ void destroyValue(Value* value);
 void printValue(Value value, bool extensive);
 void markDefined(Value* value);
 Value hardCopyValue(Value value);
+Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count);
 ErrorType castValue(Value* value, DataType type);
 bool valueEquals (Value* a, Value* b);
 ErrorType incValue (Value* value, int amount);

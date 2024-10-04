@@ -77,6 +77,8 @@ int main (int argc, char** argv) {
 
     chdir(argument_dir);
 
+    free (argument_dir);
+
     long long int length = getFileSize(file);
 
     char* source = malloc(length + 1);
