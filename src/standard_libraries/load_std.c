@@ -211,7 +211,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
     return 0;
 }
 
-int loadConstants (VirtualMachine* vm) {
+int loadConstants (VirtualMachine* vm, char** argv, int argc) {
 
     #define ADD_CONST(name, value) do { \
         size_t name_index = -1; \
@@ -233,16 +233,31 @@ int loadConstants (VirtualMachine* vm) {
 
     // add the standard library constants
 
-    Value maxlong = (Value){ TYPE_LONG, .as.longValue = MAXINT64, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minlong = (Value){ TYPE_LONG, .as.longValue = MININT64, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value maxint = (Value){ TYPE_LONG, .as.longValue = MAXINT32, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minint = (Value){ TYPE_LONG, .as.longValue = MININT32, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value maxshort = (Value){ TYPE_LONG, .as.longValue = MAXINT16, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minshort = (Value){ TYPE_LONG, .as.longValue = MININT16, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value maxchar = (Value){ TYPE_LONG, .as.longValue = MAXCHAR, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minchar = (Value){ TYPE_LONG, .as.longValue = MINCHAR, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxlong = (Value){ TYPE_LONG, .as.longValue = 9223372036854775807LL, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minlong = (Value){ TYPE_LONG, .as.longValue = -9223372036854775807LL - 1, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxint = (Value){ TYPE_LONG, .as.longValue = 2147483647, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minint = (Value){ TYPE_LONG, .as.longValue = -2147483648, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxshort = (Value){ TYPE_LONG, .as.longValue = 32767, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minshort = (Value){ TYPE_LONG, .as.longValue = -32768, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxchar = (Value){ TYPE_LONG, .as.longValue = 127, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minchar = (Value){ TYPE_LONG, .as.longValue = -128, .defined = true, .is_variable_type = false, .is_constant = true };
     Value pi = (Value){ TYPE_DOUBLE, .as.doubleValue = 3.14159265358979323846, .defined = true, .is_variable_type = false, .is_constant = true };
     Value e = (Value){ TYPE_DOUBLE, .as.doubleValue = 2.71828182845904523536, .defined = true, .is_variable_type = false, .is_constant = true };
+
+    Value argc_ = (Value){ TYPE_LONG, .as.longValue = argc, .defined = true, .is_variable_type = false, .is_constant = true };
+
+    ValueArray* list = malloc(sizeof(ValueArray));
+    init_ValueArray(list);
+    for (int i = 0; i < argc; i++) {
+        Value arg = BUILD_STRING(argv[i], false);
+        write_ValueArray(list, arg);
+    }
+
+    Value argv_ = BUILD_ARRAY(list, false);
+    argv_.is_constant = true;
+    argv_.defined = true;
+
+
 
     
     ADD_CONST("MAXLONG", maxlong);
@@ -256,6 +271,9 @@ int loadConstants (VirtualMachine* vm) {
     ADD_CONST("MATH_PI", pi);
     ADD_CONST("MATH_E", e);
 
+    ADD_CONST("ARGC", argc_);
+    ADD_CONST("ARGV", argv_);
+
     // add lower case constants
     ADD_CONST("maxlong", maxlong);
     ADD_CONST("minlong", minlong);
@@ -267,6 +285,9 @@ int loadConstants (VirtualMachine* vm) {
     ADD_CONST("minbyte", minchar);
     ADD_CONST("math_pi", pi);
     ADD_CONST("math_e", e);
+
+    ADD_CONST("argc", argc_);
+    ADD_CONST("argv", argv_);
 
     #undef constMapAdd
 

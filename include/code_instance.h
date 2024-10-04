@@ -19,10 +19,6 @@ typedef enum {
     OP_LOAD,
     OP_STORE,
     OP_STORE_SUBSCR, // store to list or object
-    OP_REFERENCE_SUBSCR, // get reference to list or object
-    OP_REFERENCE, // get reference to variable
-    OP_REFERENCE_FAST, // get reference to local variable
-    OP_REFERENCE_GETOBJ, // get reference to object
     OP_STORE_OBJ, // store to object
 
 
@@ -147,6 +143,6 @@ int getOffset(OpCode instruction);
 
 #define DOSATO_GET_ADDRESS_SHORT(code, offset) (*(uint16_t *)(code + offset))
 
-#define DOSATO_SPLIT_SHORT(value) (value & 0xFF), (value >> 8)
+#define DOSATO_SPLIT_SHORT(value) ((value) & 0xFF), ((value) >> 8)
 
 #endif // dosato_byte_code_instance_h

@@ -534,6 +534,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     case '"':
                         val = '"';
                         break;
+                    default:
+                        break;
                 }
             }
 
@@ -582,7 +584,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
 
-            write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+            write_ValueArray(&vm->constants, BUILD_STRING(val, true));
         }
     }
     for (int i = 0; i < numberCount; i++) {

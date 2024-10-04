@@ -19,7 +19,7 @@ Value io_end (ValueArray args, bool debug) {
     }
 
     if (args.count == 1) {
-        Value arg = GET_ARG_COPY(args, 0);
+        Value arg = GET_ARG(args, 0);
         int cast_result = castValue(&arg, TYPE_LONG);
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
@@ -47,15 +47,13 @@ Value io_system (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    Value arg = GET_ARG_COPY(args, 0);
+    Value arg = GET_ARG(args, 0);
     int cast_result = castValue(&arg, TYPE_STRING);
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
 
-    int result = system(arg.as.stringValue);
-
-    destroyValue(&arg);
+    int result = system(AS_STRING(arg));
 
     return (Value){ TYPE_LONG, .as.longValue = result };
 }

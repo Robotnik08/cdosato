@@ -47,8 +47,8 @@ do sayln(clamp(0, 1, 2)) // expect 1
 
 // /// std_str
 do sayln(split("hello my name is dosato and i am a test string", " ")) // expect ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"]
-do sayln(lower("hello")) // expect "hello"
-do sayln(upper("hello")) // expect "hello"
+do sayln(lower("Hello")) // expect "hello"
+do sayln(upper("Hello")) // expect "HELLO"
 do sayln(stringlength("hello")) // expect 5
 do sayln(substring("hello", 1, 2)) // expect "el"
 do sayln(stringindexof("hello", "e")) // expect 1
@@ -74,8 +74,9 @@ define long compare (long a, long b) {
     return b - a
 }
 do sayln(sort(a, compare)) // expect [3, 2, 1]
+set a = [1, 2, 3]
 do sayln(push(a, 4)) // expect [1, 2, 3, 4]
-do sayln(pop(a)) // expect [1, 2]
+do sayln(pop(a)) // expect 4
 do sayln(unshift(a, 0)) // expect [0, 1, 2, 3]
 do sayln(shift(a)) // expect [2, 3]
 do sayln(splice(a, 1, 1)) // expect [1, 3]

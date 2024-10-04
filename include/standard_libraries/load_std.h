@@ -7,7 +7,7 @@
 #include "common_std.h"
 #include "dynamic_library_loader.h"
 
-
+// temporaryly disabled 
 #include "std_io.h"
 #include "std_system.h"
 #include "std_random.h"
@@ -18,6 +18,6 @@
 #include "std_type.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
-int loadConstants (VirtualMachine* vm);
+int loadConstants (VirtualMachine* vm, char** argv, int argc);
 
 #endif // DOSATO_STD_LOADER_H	
