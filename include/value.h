@@ -33,9 +33,16 @@ typedef enum {
 
 
 typedef struct {
+    void* body;
+    bool marked;
+    DataType type;
+} DosatoObject;
+
+typedef struct {
     DataType type;
     bool is_variable_type; // non strict type
     bool defined;
+    bool is_constant;
     union {
         char byteValue;
         unsigned char ubyteValue;
@@ -49,14 +56,19 @@ typedef struct {
         double doubleValue;
         char boolValue;
         char charValue;
-        char* stringValue;
-        void* objectValue;
+        DosatoObject* objectValue;
     } as;
 } Value;
 
-#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, 0 }
-#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true }
-#define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true }
+#define AS_STRING(value) ((char*)(value).as.objectValue->body)
+#define AS_ARRAY(value) ((ValueArray*)(value).as.objectValue->body)
+#define AS_OBJECT(value) ((ValueObject*)(value).as.objectValue->body)
+
+#define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true, .is_constant = false }
+#define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true, .is_constant = false }
+
+#define BUILD_VALUE(type, valueName, value) (Value){ type, .as.valueName = value, .defined = false, .is_variable_type = false, .is_constant = false }
 
 void destroyValue(Value* value);
 void printValue(Value value, bool extensive);
@@ -70,6 +82,7 @@ Value buildArray(size_t count, ...);
 Value buildObject(size_t count, ...);
 
 char* valueToString (Value value, bool extensive);
+char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, int count);
 char* dataTypeToString (DataType type);
 
 typedef struct {

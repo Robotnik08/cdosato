@@ -29,6 +29,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
     bool created_scope = false;
 
     switch (type) {
+        default: {
+            break; // do nothing
+        }
+
         case NODE_BLOCK: {
             if (scope == NULL) { // first scope after global
                 ScopeData* new_scope = malloc(sizeof(ScopeData));
@@ -61,6 +65,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_CONST:
         case NODE_MASTER_IMPORT:
         case NODE_MASTER_INCLUDE:
         case NODE_MASTER_DEFINE:
@@ -72,6 +77,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;      
         }
 
+        case NODE_MASTER_SWITCH:
         case NODE_MASTER_CONTINUE:
         case NODE_MASTER_BREAK:
         case NODE_MASTER_RETURN:
@@ -203,7 +209,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* pathValue = vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue;
+            char* pathValue = AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry]);
             char* path = malloc(strlen(pathValue) + 1);
             strcpy(path, pathValue);
             AST* included_ast = malloc(sizeof(AST));
@@ -222,7 +228,25 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_TOO_MANY_INCLUDES, node.start);
             }
 
+            // set working directory to the included file's directory
+            #ifdef _WIN32
+            char* last_slash = strrchr(path, '\\');
+            #else
+            char* last_slash = strrchr(path, '/');
+            #endif
+
+            if (last_slash != NULL) {
+                *last_slash = '\0';
+                chdir(path);
+            }
+
             compileNode(vm, &included_instance, included_ast->root, included_ast, NULL);
+
+            // reset working directory
+            if (last_slash != NULL) {
+                *last_slash = '/';
+                chdir(".."); // go back to the previous directory
+            }
 
             // push OP_END_INCLUDE
             writeByteCode(&included_instance, OP_END_INCLUDE, node.start);
@@ -244,8 +268,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* path = malloc(strlen(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue) + 1);
-            strcpy(path, vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue);
+            char* path = malloc(strlen(AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry])) + 1);
+            strcpy(path, AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry]));
             
             DynamicLibrary lib = loadLib(path);
             
@@ -295,27 +319,42 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_CONST_BODY:
         case NODE_MASTER_MAKE_BODY: {
             // push the value to the stack
             if (scope != NULL) { // local scope (push null to the stack, used for the local variable)
                 writeByteCode(ci, OP_PUSH_NULL, node.body.nodes[1].start);
             }
 
-            compileNode(vm, ci, node.body.nodes[2], ast, scope);
-            writeInstruction(ci, node.start, OP_TYPE_CAST, ast->tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
-            
-            if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
-                PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+
+            int identifier_index = 1;
+            if (node.body.nodes[0].type == NODE_IDENTIFIER) {
+                if (ast->tokens.tokens[node.body.nodes[0].start].carry == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                }
+                compileNode(vm, ci, node.body.nodes[1], ast, scope);
+                writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_VAR); // cast to the correct type
+                identifier_index = 0;
+            } else {
+                if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                }
+                compileNode(vm, ci, node.body.nodes[2], ast, scope);
+                writeInstruction(ci, node.start, OP_TYPE_CAST, ast->tokens.tokens[node.body.nodes[0].start].carry); // cast to the correct type
+            }
+
+            if (type == NODE_MASTER_CONST_BODY) {
+                writeByteCode(ci, OP_MARK_CONSTANT, node.start);
             }
 
             if (scope == NULL) { // global scope
-                writeInstruction(ci, node.body.nodes[1].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
+                writeInstruction(ci, node.body.nodes[identifier_index].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[identifier_index].start].carry));
             } else {
-                if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
+                if (inScope(scope, ast->tokens.tokens[node.body.nodes[identifier_index].start].carry)) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[identifier_index].start);
                 }
-                writeInstruction(ci, node.body.nodes[1].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
-                pushScopeData(scope, ast->tokens.tokens[node.body.nodes[1].start].carry);
+                writeInstruction(ci, node.body.nodes[identifier_index].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
+                pushScopeData(scope, ast->tokens.tokens[node.body.nodes[identifier_index].start].carry);
             }
             
             break;
@@ -357,9 +396,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     compileNode(vm, ci, node.body.nodes[0].body.nodes[0], ast, scope); // the left side of the subscript (the object)
                 } else {
                     if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)) {
-                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_REFERENCE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)));
+                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)));
                     } else {
-                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry));
+                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry));
                     }
                 }
 
@@ -369,9 +408,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     int id = -1;
                     if (hasName(&vm->constants_map, val)) {
                         id = getName(&vm->constants_map, val);
+                        free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
-                        write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                        write_ValueArray(&vm->constants, BUILD_STRING(val, true));
                     }
                     writeInstruction(ci, node.body.nodes[0].body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
                 } else {
@@ -395,9 +435,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 compileNode(vm, ci, node.body.nodes[0], ast, scope); // the left side of the subscript (the object)
             } else {
                 if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)) {
-                    writeInstruction(ci, node.body.nodes[0].start, OP_REFERENCE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+                    writeInstruction(ci, node.body.nodes[0].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
                 } else {
-                    writeInstruction(ci, node.body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
+                    writeInstruction(ci, node.body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
                 }
             }
             
@@ -412,7 +452,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             if (ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_HASH && ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_ARROW) {
                 PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
             }
-            writeByteCode(ci, operator == OPERATOR_HASH ? OP_REFERENCE_SUBSCR : OP_REFERENCE_GETOBJ, node.body.nodes[1].start);
+            writeByteCode(ci, operator == OPERATOR_HASH ? OP_GETLIST : OP_GETOBJECT, node.body.nodes[1].start);
             break;
         }
 
@@ -449,9 +489,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 int id = -1;
                 if (hasName(&vm->constants_map, val)) {
                     id = getName(&vm->constants_map, val);
+                    free(val);
                 } else {
                     id = addName(&vm->constants_map, val);
-                    write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                    write_ValueArray(&vm->constants, BUILD_STRING(val, true));
                 }
                 writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
             } else {
@@ -675,8 +716,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     writeInstruction(ci, node.body.nodes[1].start, OP_STORE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
                 }
             } else {
-                // if underscore, don't store the value just pop it
-                writeByteCode(ci, OP_POP, node.body.nodes[1].start);
+                // if underscore, don't store the value
+                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
             }
 
             // if global scope, the 2 locals must be added to the scope
@@ -711,6 +752,85 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->loop_jump_locations.count--;
             break;
         }
+        
+        case NODE_MASTER_SWITCH_BODY: {
+            // compile the condition
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+
+            // for each case, compile a jump instruction
+            Node switch_body = node.body.nodes[1];
+            int default_index = -1;
+            int** jump_locations = malloc(sizeof(int*) * (switch_body.body.count));
+            for (int i = 0; i < switch_body.body.count; i++) {
+                // compile the conditions
+                Node case_node = switch_body.body.nodes[i];
+                jump_locations[i] = malloc(sizeof(int) * (case_node.body.count - 1));
+                for (int j = 0; j < case_node.body.count - 1; j++) {
+                    if (case_node.body.nodes[j].type == NODE_OTHER) {
+                        default_index = default_index == -1 ? i : default_index;
+                        jump_locations[i][j] = -1;
+                    } else {
+                        compileNode(vm, ci, case_node.body.nodes[j], ast, scope);
+                        writeInstruction(ci, case_node.start, OP_JUMP_IF_MATCH, DOSATO_SPLIT_SHORT(0)); // jump to the next case if the condition is false
+                        jump_locations[i][j] = ci->count - getOffset(OP_JUMP_IF_MATCH); // index of the jump instruction
+                    }
+                }
+            }
+
+            int default_jump_index = -1;
+            if (default_index != -1) {
+                // if theres a default case, write a jump instruction for it
+                writeByteCode(ci, OP_POP, node.start);
+                writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+                default_jump_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+            }
+
+            // jump to end of the switch block if no case is matched
+            writeByteCode(ci, OP_POP, node.start);
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_end_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+
+            bool is_local = scope != NULL;
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_end_index, is_local ? scope->locals_count : 0);
+
+            // compile the bodies
+            for (int i = 0; i < switch_body.body.count; i++) {
+                Node case_node = switch_body.body.nodes[i];
+                // upgrade the jump instructions
+                for (int j = 0; j < case_node.body.count - 1; j++) {
+                    if (jump_locations[i][j] != -1) {
+                        ci->code[jump_locations[i][j] + 1] = ci->count & 0xFF;
+                        ci->code[jump_locations[i][j] + 2] = ci->count >> 8;
+                    }
+                }
+
+                // if the case is the default case, update the default jump instruction
+                if (i == default_index) {
+                    ci->code[default_jump_index + 1] = ci->count & 0xFF;
+                    ci->code[default_jump_index + 2] = ci->count >> 8;
+                }
+
+                // last node is the body
+                compileNode(vm, ci, case_node.body.nodes[case_node.body.count - 1], ast, scope);
+            }
+
+            // pop the loop location data
+            ci->loop_jump_locations.count--;
+
+            // manually edit the jump instruction
+            ci->code[jump_end_index + 1] = ci->count & 0xFF;
+            ci->code[jump_end_index + 2] = ci->count >> 8;  
+
+            // free the jump locations
+            for (int i = 0; i < switch_body.body.count; i++) {
+                free(jump_locations[i]);
+            }
+            free(jump_locations);
+
+            break;
+        }
+
         
         case NODE_MASTER_BREAK_BODY:
         case NODE_MASTER_CONTINUE_BODY: {

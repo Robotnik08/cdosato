@@ -2,10 +2,12 @@
 
 #include "../include/memory.h"
 #include "../include/value.h"
+#include "../include/virtual-machine.h"
 
 DOSATO_LIST_FUNC_GEN(ValueArray, Value, values)
 DOSATO_LIST_FUNC_GEN(StackFrames, size_t, stack)
 DOSATO_LIST_FUNC_GEN(ErrorJumps, ErrorJump, jumps)
+
 
 void destroyValueArray(ValueArray* array) {
     for (size_t i = 0; i < array->count; i++) {
@@ -17,18 +19,16 @@ void destroyValueArray(ValueArray* array) {
 void destroyValue(Value* value) {
     
     if (value->type == TYPE_ARRAY) {
-        ValueArray* array = value->as.objectValue;
+        ValueArray* array = AS_ARRAY(*value);
         destroyValueArray(array);
-        free(value->as.objectValue);
         return;
     }
 
     if (value->type == TYPE_OBJECT) {
-        ValueObject* object = value->as.objectValue;
+        ValueObject* object = AS_OBJECT(*value);
         free_ValueObject(object);
-        free(value->as.objectValue); // free the object
     } else if (value->type == TYPE_STRING) {
-        free(value->as.stringValue);
+        free(AS_STRING(*value));
     }
     value->defined = false;
     value->type = D_NULL;
@@ -44,29 +44,29 @@ Value hardCopyValue(Value value) {
     value.defined = false;
     switch (value.type) {
         case TYPE_ARRAY: {
-            ValueArray* array = value.as.objectValue;
+            ValueArray* array = AS_ARRAY(value);
             ValueArray* newArray = malloc(sizeof(ValueArray));
             init_ValueArray(newArray);
             for (size_t i = 0; i < array->count; i++) {
                 write_ValueArray(newArray, hardCopyValue(array->values[i]));
             }
-            value.as.objectValue = newArray;
+            value = BUILD_ARRAY(newArray, false);
             break;
         }
         case TYPE_OBJECT: {
-            ValueObject* object = value.as.objectValue;
+            ValueObject* object = AS_OBJECT(value);
             ValueObject* newObject = malloc(sizeof(ValueObject));
             init_ValueObject(newObject);
             for (size_t i = 0; i < object->count; i++) {
                 write_ValueObject(newObject, object->keys[i], hardCopyValue(object->values[i]));
             }
-            value.as.objectValue = newObject;
+            value = BUILD_OBJECT(newObject, false);
             break;
         }
         case TYPE_STRING: {
-            char* new_str = malloc(strlen(value.as.stringValue) + 1);
-            strcpy(new_str, value.as.stringValue);
-            value.as.stringValue = new_str;
+            char* new_str = malloc(strlen(AS_STRING(value)) + 1);
+            strcpy(new_str, AS_STRING(value));
+            value = BUILD_STRING(new_str, false);
             break;
         }
         default: {
@@ -122,8 +122,8 @@ bool valueEquals (Value* a, Value* b) {
 
         return aValue == bValue;
     } else if (a->type == TYPE_OBJECT && b->type == TYPE_OBJECT) {
-        ValueObject* aObject = a->as.objectValue;
-        ValueObject* bObject = b->as.objectValue;
+        ValueObject* aObject = AS_OBJECT(*a);
+        ValueObject* bObject = AS_OBJECT(*b);
 
         if (aObject->count != bObject->count) {
             return false;
@@ -140,8 +140,8 @@ bool valueEquals (Value* a, Value* b) {
 
         return true;
     } else if (a->type == TYPE_ARRAY && b->type == TYPE_ARRAY) {
-        ValueArray* aArray = a->as.objectValue;
-        ValueArray* bArray = b->as.objectValue;
+        ValueArray* aArray = AS_ARRAY(*a);
+        ValueArray* bArray = AS_ARRAY(*b);
 
         if (aArray->count != bArray->count) {
             return false;
@@ -230,12 +230,12 @@ ErrorType castValue(Value* value, DataType type) {
                 break;
             }
             case TYPE_STRING: {
-                char* str = value->as.stringValue;
+                char* str = AS_STRING(*value);
                 numberValue = strlen(str);
                 break;
             }
             case TYPE_ARRAY: {
-                numberValue = ((ValueArray*)value->as.objectValue)->count;
+                numberValue = AS_ARRAY(*value)->count;
                 break;
             }
 
@@ -344,12 +344,12 @@ ErrorType castValue(Value* value, DataType type) {
                 break;
             }
             case TYPE_STRING: {
-                char* str = value->as.stringValue;
+                char* str = AS_STRING(*value);
                 numberValue = strlen(str);
                 break;
             }
             case TYPE_ARRAY: {
-                numberValue = ((ValueArray*)value->as.objectValue)->count;
+                numberValue = AS_ARRAY(*value)->count;
                 break;
             }
             case TYPE_OBJECT: {
@@ -381,11 +381,10 @@ ErrorType castValue(Value* value, DataType type) {
         }
     } else if (type == TYPE_STRING) {
         char* str = valueToString(*value, false);
-        newValue.type = type;
-        newValue.as.stringValue = str;
+        newValue = BUILD_STRING(str, false);
     }
 
-    destroyValue(value);
+
     *value = newValue;
 
     return 0;
@@ -440,6 +439,9 @@ ErrorType incValue (Value* value, int amount) {
                 value->as.charValue += amount;
                 break;
             }
+            default: {
+                return E_CANT_PERFORM_OPERATION;
+            }
         }
     } else {
         return E_CANT_PERFORM_OPERATION;
@@ -461,7 +463,7 @@ Value buildArray(size_t count, ...) {
 
     va_end(args);
 
-    return (Value) { TYPE_ARRAY, .as.objectValue = array, .defined = false };
+    return BUILD_ARRAY(array, false);
 }
 
 Value buildObject(size_t count, ...) {
@@ -479,26 +481,41 @@ Value buildObject(size_t count, ...) {
 
     va_end(args);
 
-    return (Value) { TYPE_OBJECT, .as.objectValue = object, .defined = false };
+    return BUILD_OBJECT(object, false);
 }
 
-
-
 char* valueToString (Value value, bool extensive) {
+    DosatoObject** pointers = malloc(sizeof(DosatoObject**));
+    char* str = valueToStringSafe(value, extensive, &pointers, 0);
+    free(pointers);
+    return str;
+}
+
+char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, int count) {
     char* string = malloc(1);
     string[0] = '\0';
 
     switch (value.type) {
         case TYPE_OBJECT: {
+            for (size_t i = 0; i < count; i++) {
+                if ((*pointers)[i] == value.as.objectValue) {
+                    string = realloc(string, strlen(string) + 6);
+                    strcat(string, "{...}");
+                    return string;
+                }
+            }
+            (*pointers) = realloc(*pointers, (count + 1) * sizeof(DosatoObject**));
+            (*pointers)[count++] = value.as.objectValue;
+
             string = realloc(string, strlen(string) + 2);
             strcat(string, "{");
-            ValueObject* object = value.as.objectValue;
+            ValueObject* object = AS_OBJECT(value);
             for (size_t i = 0; i < object->count; i++) {
                 string = realloc(string, strlen(string) + strlen(object->keys[i]) + 5);
                 strcat(string, "\"");
                 strcat(string, object->keys[i]);
                 strcat(string, "\": ");
-                char* valueString = valueToString(object->values[i], true);
+                char* valueString = valueToStringSafe(object->values[i], true, pointers, count);
                 string = realloc(string, strlen(string) + strlen(valueString) + 3);
                 strcat(string, valueString);
                 if (i < object->count - 1) {
@@ -512,11 +529,21 @@ char* valueToString (Value value, bool extensive) {
         }
 
         case TYPE_ARRAY: {
+            for (size_t i = 0; i < count; i++) {
+                if ((*pointers)[i] == value.as.objectValue) {
+                    string = realloc(string, strlen(string) + 6);
+                    strcat(string, "[...]");
+                    return string;
+                }
+            }
+            (*pointers) = realloc(*pointers, (count + 1) * sizeof(DosatoObject**));
+            (*pointers)[count++] = value.as.objectValue;
+
             string = realloc(string, strlen(string) + 2);
             strcat(string, "[");
-            ValueArray* array = value.as.objectValue;
+            ValueArray* array = AS_ARRAY(value);
             for (size_t i = 0; i < array->count; i++) {
-                char* valueString = valueToString(array->values[i], true);
+                char* valueString = valueToStringSafe(array->values[i], true, pointers, count);
                 string = realloc(string, strlen(string) + strlen(valueString) + 3);
                 strcat(string, valueString);
                 if (i < array->count - 1) {
@@ -577,13 +604,15 @@ char* valueToString (Value value, bool extensive) {
         }
         case TYPE_STRING: {
             if (extensive) {
-                string = realloc(string, strlen(string) + strlen(value.as.stringValue) + 3);
+                char* str = AS_STRING(value);
+                string = realloc(string, strlen(string) + strlen(str) + 3);
                 strcat(string, "\"");
-                strcat(string, value.as.stringValue);
+                strcat(string, AS_STRING(value));
                 strcat(string, "\"");
             } else {
-                string = realloc(string, strlen(string) + strlen(value.as.stringValue) + 1);
-                strcat(string, value.as.stringValue);
+                char* str = AS_STRING(value);
+                string = realloc(string, strlen(string) + strlen(str) + 1);
+                strcat(string, str);
             }
             break;
         }
@@ -700,15 +729,17 @@ char* dataTypeToString (DataType type) {
 void markDefined(Value* value) {
     value->defined = true;
     if (value->type == TYPE_ARRAY) {
-        ValueArray* array = value->as.objectValue;
+        ValueArray* array = AS_ARRAY(*value);
         for (size_t i = 0; i < array->count; i++) {
+            if (array->values[i].defined) continue;
             markDefined(&array->values[i]);
         }
     }
 
     if (value->type == TYPE_OBJECT) {
-        ValueObject* object = value->as.objectValue;
+        ValueObject* object = AS_OBJECT(*value);
         for (size_t i = 0; i < object->count; i++) {
+            if (object->values[i].defined) continue;
             markDefined(&object->values[i]);
         }
     }
@@ -792,7 +823,6 @@ void write_ValueObject(ValueObject* object, char* key, Value value) {
 void free_ValueObject(ValueObject* object) {
     for (size_t i = 0; i < object->count; i++) {
         free(object->keys[i]);
-        destroyValue(&object->values[i]);
     }
     free(object->values);
     free(object->keys);
@@ -821,7 +851,6 @@ void removeFromKey (ValueObject* object, char* key) {
     for (size_t i = 0; i < object->count; i++) {
         if (strcmp(object->keys[i], key) == 0) {
             free(object->keys[i]);
-            destroyValue(&object->values[i]);
             for (size_t j = i; j < object->count - 1; j++) {
                 object->keys[j] = object->keys[j + 1];
                 object->values[j] = object->values[j + 1];

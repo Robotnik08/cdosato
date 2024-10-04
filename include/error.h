@@ -62,6 +62,7 @@ typedef enum {
     E_WRONG_NUMBER_OF_ARGUMENTS,
     E_EXPECTED_STRING_TYPE,
     E_EXPECTED_NUMBER,
+    E_CANNOT_ASSIGN_TO_CONSTANT,
 
     // standard library errors
     E_FILE_NOT_FOUND,

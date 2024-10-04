@@ -14,6 +14,14 @@
 #include "error.h"
 #include "filetools.h"
 
-#define DOSATO_VERSION "0.3.3"
+// unistd.h is not available on windows
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
+#define DOSATO_VERSION "0.4"
+#define DOSATO_DATE "03/10/2024"
 
 #endif // dosato_common_h

@@ -112,11 +112,6 @@ int getOffset(OpCode instruction) {
         case OP_BUILD_OBJECT:
             return 3; // 2 bytes for the count
 
-        case OP_REFERENCE:
-            return 3; // 2 bytes for the address
-        case OP_REFERENCE_FAST:
-            return 3; // 2 bytes for the address
-
         case OP_DECREMENT_FAST:
             return 3; // 2 bytes for the address
         case OP_INCREMENT_FAST:
@@ -133,7 +128,11 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for the location
         case OP_JUMP_IF_TRUE:
             return 3; // 2 bytes for the location
+        case OP_JUMP_IF_MATCH:
+            return 3; // 2 bytes for the location
         case OP_FOR_ITER:
+            return 3; // 2 bytes for the location
+        case OP_FOR_DISCARD:
             return 3; // 2 bytes for the location
 
         case OP_JUMP_IF_EXCEPTION:
