@@ -534,6 +534,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     case '"':
                         val = '"';
                         break;
+                    default:
+                        break;
                 }
             }
 

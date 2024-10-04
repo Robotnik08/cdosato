@@ -439,6 +439,9 @@ ErrorType incValue (Value* value, int amount) {
                 value->as.charValue += amount;
                 break;
             }
+            default: {
+                return E_CANT_PERFORM_OPERATION;
+            }
         }
     } else {
         return E_CANT_PERFORM_OPERATION;
