@@ -104,7 +104,7 @@ int main (int argc, char** argv) {
 
     if (debug & DEBUG_PARSE) {
         printf("==== AST: ====\n");
-        printNode(main_ast->root, 1);
+        printNode(main_ast->root, 0);
     } 
 
     // initialize the standard library
