@@ -33,6 +33,12 @@ typedef enum {
 
 
 typedef struct {
+    void* body;
+    bool marked;
+    DataType type;
+} DosatoObject;
+
+typedef struct {
     DataType type;
     bool is_variable_type; // non strict type
     bool defined;
@@ -50,10 +56,13 @@ typedef struct {
         double doubleValue;
         char boolValue;
         char charValue;
-        char* stringValue;
-        void* objectValue;
+        DosatoObject* objectValue;
     } as;
 } Value;
+
+#define AS_STRING(value) ((char*)(value).as.objectValue->body)
+#define AS_ARRAY(value) ((ValueArray*)(value).as.objectValue->body)
+#define AS_OBJECT(value) ((ValueObject*)(value).as.objectValue->body)
 
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true, .is_constant = false }
@@ -73,6 +82,7 @@ Value buildArray(size_t count, ...);
 Value buildObject(size_t count, ...);
 
 char* valueToString (Value value, bool extensive);
+char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, int count);
 char* dataTypeToString (DataType type);
 
 typedef struct {

@@ -165,23 +165,8 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_GETOBJECT");
             break;
 
-        case OP_REFERENCE_SUBSCR:
-            printf("OP_REFERENCE_SUBSCR");
-            break;
-
         case OP_STORE_SUBSCR:
             printf("OP_STORE_SUBSCR");
-            break;
-
-        case OP_REFERENCE:
-            printf("OP_REFERENCE");
-            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
-            printf(": (0x%x)", address);
-            break;
-        case OP_REFERENCE_FAST:
-            printf("OP_REFERENCE_FAST");
-            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
-            printf(": (0x%x)", address);
             break;
 
         case OP_INCREMENT_FAST:
@@ -218,10 +203,6 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("OP_DECREMENT_SUBSCR");
             break;
 
-        case OP_REFERENCE_GETOBJ:
-            printf("OP_REFERENCE_GETOBJ");
-            break;
-
         case OP_STORE_OBJ:
             printf("OP_STORE_OBJ");
             break;
@@ -253,6 +234,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         
         case OP_FOR_ITER:
             printf("OP_FOR_ITER");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+        
+        case OP_FOR_DISCARD:
+            printf("OP_FOR_DISCARD");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;

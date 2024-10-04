@@ -28,7 +28,8 @@ int main (int argc, char** argv) {
             PRINT_USAGE
             return 0;
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
-            printf("Dosato version %s\n", DOSATO_VERSION);
+            printf("Dosato version %s, compiled at %s\n", DOSATO_VERSION, DOSATO_DATE);
+            printf("Type 'dosato -h' for help\n");
             return 0;
         }
     }
@@ -64,6 +65,18 @@ int main (int argc, char** argv) {
         return 1;
     }
 
+    char* argument_dir = malloc(strlen(argv[1]) + 1);
+    strcpy(argument_dir, argv[1]);
+    char* index = strrchr(argument_dir, '/');
+    if (index == NULL) {
+        index = strrchr(argument_dir, '\\');
+    }
+    if (index != NULL) {
+        *index = '\0';
+    }
+
+    chdir(argument_dir);
+
     long long int length = getFileSize(file);
 
     char* source = malloc(length + 1);
@@ -79,6 +92,7 @@ int main (int argc, char** argv) {
     if (debug & DEBUG_SOURCE) printf ("==== Source: (%d) ====\n%s\n", length, source);
     
     VirtualMachine vm;
+    main_vm = &vm;
     initVirtualMachine(&vm);
 
 
@@ -101,7 +115,7 @@ int main (int argc, char** argv) {
         write_ValueArray(&vm.globals, UNDEFINED_VALUE);
     }
 
-    loadConstants(&vm);    
+    loadConstants(&vm, argv, argc);    
 
     compile(&vm, main_ast);
 

@@ -1,3 +1,0 @@
-import "mydll.dll"
-
-do sayln(sumTest(10.3, 20))

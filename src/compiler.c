@@ -29,6 +29,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
     bool created_scope = false;
 
     switch (type) {
+        default: {
+            break; // do nothing
+        }
+
         case NODE_BLOCK: {
             if (scope == NULL) { // first scope after global
                 ScopeData* new_scope = malloc(sizeof(ScopeData));
@@ -205,7 +209,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* pathValue = vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue;
+            char* pathValue = AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry]);
             char* path = malloc(strlen(pathValue) + 1);
             strcpy(path, pathValue);
             AST* included_ast = malloc(sizeof(AST));
@@ -224,7 +228,25 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_TOO_MANY_INCLUDES, node.start);
             }
 
+            // set working directory to the included file's directory
+            #ifdef _WIN32
+            char* last_slash = strrchr(path, '\\');
+            #else
+            char* last_slash = strrchr(path, '/');
+            #endif
+
+            if (last_slash != NULL) {
+                *last_slash = '\0';
+                chdir(path);
+            }
+
             compileNode(vm, &included_instance, included_ast->root, included_ast, NULL);
+
+            // reset working directory
+            if (last_slash != NULL) {
+                *last_slash = '/';
+                chdir(".."); // go back to the previous directory
+            }
 
             // push OP_END_INCLUDE
             writeByteCode(&included_instance, OP_END_INCLUDE, node.start);
@@ -246,8 +268,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_STRING, node.body.nodes[0].start);
             }
 
-            char* path = malloc(strlen(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue) + 1);
-            strcpy(path, vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry].as.stringValue);
+            char* path = malloc(strlen(AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry])) + 1);
+            strcpy(path, AS_STRING(vm->constants.values[ast->tokens.tokens[node.body.nodes[0].start].carry]));
             
             DynamicLibrary lib = loadLib(path);
             
@@ -374,9 +396,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     compileNode(vm, ci, node.body.nodes[0].body.nodes[0], ast, scope); // the left side of the subscript (the object)
                 } else {
                     if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)) {
-                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_REFERENCE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)));
+                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry)));
                     } else {
-                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry));
+                        writeInstruction(ci, node.body.nodes[0].body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].body.nodes[0].start].carry));
                     }
                 }
 
@@ -386,9 +408,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     int id = -1;
                     if (hasName(&vm->constants_map, val)) {
                         id = getName(&vm->constants_map, val);
+                        free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
-                        write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                        write_ValueArray(&vm->constants, BUILD_STRING(val, true));
                     }
                     writeInstruction(ci, node.body.nodes[0].body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
                 } else {
@@ -412,9 +435,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 compileNode(vm, ci, node.body.nodes[0], ast, scope); // the left side of the subscript (the object)
             } else {
                 if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)) {
-                    writeInstruction(ci, node.body.nodes[0].start, OP_REFERENCE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+                    writeInstruction(ci, node.body.nodes[0].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
                 } else {
-                    writeInstruction(ci, node.body.nodes[0].start, OP_REFERENCE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
+                    writeInstruction(ci, node.body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
                 }
             }
             
@@ -429,7 +452,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             if (ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_HASH && ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_ARROW) {
                 PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
             }
-            writeByteCode(ci, operator == OPERATOR_HASH ? OP_REFERENCE_SUBSCR : OP_REFERENCE_GETOBJ, node.body.nodes[1].start);
+            writeByteCode(ci, operator == OPERATOR_HASH ? OP_GETLIST : OP_GETOBJECT, node.body.nodes[1].start);
             break;
         }
 
@@ -466,9 +489,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 int id = -1;
                 if (hasName(&vm->constants_map, val)) {
                     id = getName(&vm->constants_map, val);
+                    free(val);
                 } else {
                     id = addName(&vm->constants_map, val);
-                    write_ValueArray(&vm->constants, (Value) { TYPE_STRING, .as.stringValue = val, .defined = false });
+                    write_ValueArray(&vm->constants, BUILD_STRING(val, true));
                 }
                 writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
             } else {
@@ -692,8 +716,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     writeInstruction(ci, node.body.nodes[1].start, OP_STORE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
                 }
             } else {
-                // if underscore, don't store the value just pop it
-                writeByteCode(ci, OP_POP, node.body.nodes[1].start);
+                // if underscore, don't store the value
+                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
             }
 
             // if global scope, the 2 locals must be added to the scope
@@ -799,7 +823,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->code[jump_end_index + 2] = ci->count >> 8;  
 
             // free the jump locations
-            for (int i = 0; i < switch_body.body.count - 1; i++) {
+            for (int i = 0; i < switch_body.body.count; i++) {
                 free(jump_locations[i]);
             }
             free(jump_locations);
