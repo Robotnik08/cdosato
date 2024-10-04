@@ -233,14 +233,14 @@ int loadConstants (VirtualMachine* vm, char** argv, int argc) {
 
     // add the standard library constants
 
-    Value maxlong = (Value){ TYPE_LONG, .as.longValue = MAXINT64, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minlong = (Value){ TYPE_LONG, .as.longValue = MININT64, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value maxint = (Value){ TYPE_LONG, .as.longValue = MAXINT32, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minint = (Value){ TYPE_LONG, .as.longValue = MININT32, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value maxshort = (Value){ TYPE_LONG, .as.longValue = MAXINT16, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minshort = (Value){ TYPE_LONG, .as.longValue = MININT16, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value maxchar = (Value){ TYPE_LONG, .as.longValue = MAXCHAR, .defined = true, .is_variable_type = false, .is_constant = true };
-    Value minchar = (Value){ TYPE_LONG, .as.longValue = MINCHAR, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxlong = (Value){ TYPE_LONG, .as.longValue = 9223372036854775807LL, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minlong = (Value){ TYPE_LONG, .as.longValue = -9223372036854775807LL - 1, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxint = (Value){ TYPE_LONG, .as.longValue = 2147483647, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minint = (Value){ TYPE_LONG, .as.longValue = -2147483648, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxshort = (Value){ TYPE_LONG, .as.longValue = 32767, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minshort = (Value){ TYPE_LONG, .as.longValue = -32768, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value maxchar = (Value){ TYPE_LONG, .as.longValue = 127, .defined = true, .is_variable_type = false, .is_constant = true };
+    Value minchar = (Value){ TYPE_LONG, .as.longValue = -128, .defined = true, .is_variable_type = false, .is_constant = true };
     Value pi = (Value){ TYPE_DOUBLE, .as.doubleValue = 3.14159265358979323846, .defined = true, .is_variable_type = false, .is_constant = true };
     Value e = (Value){ TYPE_DOUBLE, .as.doubleValue = 2.71828182845904523536, .defined = true, .is_variable_type = false, .is_constant = true };
 
