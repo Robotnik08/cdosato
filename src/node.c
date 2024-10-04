@@ -76,11 +76,13 @@ static const char* NODE_NAMES[] = {
 };
 
 void printNode (Node node, int depth) {
-    for (int i = 0; i < depth; i++) {
-        printf("  ");
-    }
+    printf(depth <= 1 ? "  " : "\0");
+    putchar(node.body.count == 0 ? '-' : '+');
     printf("Node: s:%d e:%d Type:%s\n", node.start, node.end - 1, NODE_NAMES[node.type]);
     for (size_t i = 0; i < node.body.count; i++) {
+        for (int j = 0; j < depth + 1; j++) {
+            printf("  %c", j == depth ? '\0' : '|');
+        }
         printNode(node.body.nodes[i], depth + 1);
     }
 }

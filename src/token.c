@@ -31,6 +31,43 @@ char* getTokenString (Token token) {
     return string;
 }
 
+char* getTokenEnumString (LexTokenType type) {
+    switch (type) {
+        case TOKEN_NULL:
+            return "NULL";
+        case TOKEN_COMMENT:
+            return "COMMENT";
+        case TOKEN_STRING:
+            return "STRING";
+        case TOKEN_NUMBER:
+            return "NUMBER";
+        case TOKEN_OPERATOR:
+            return "OPERATOR";
+        case TOKEN_MASTER_KEYWORD:
+            return "MASTER_KEYWORD";
+        case TOKEN_EXT:
+            return "EXTENSION KEYWORD";
+        case TOKEN_IDENTIFIER:
+            return "IDENTIFIER";
+        case TOKEN_PARENTHESIS_OPEN:
+            return "PARENTHESIS_OPEN";
+        case TOKEN_PARENTHESIS_CLOSED:
+            return "PARENTHESIS_CLOSED";
+        case TOKEN_VAR_TYPE:
+            return "VAR_TYPE";
+        case TOKEN_BOOLEAN:
+            return "BOOLEAN";
+        case TOKEN_NULL_KEYWORD:
+            return "NULL_KEYWORD";
+        case TOKEN_RESERVED_KEYWORD:
+            return "RESERVED_KEYWORD";
+        case TOKEN_END:
+            return "END";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 void printTokens (TokenList list) {
     Token* tokens = list.tokens;
     if (list.count == 0) {
@@ -40,8 +77,9 @@ void printTokens (TokenList list) {
     char* offset = tokens[0].start; // first token start
     for (int i = 0; i < list.count; i++) {
         char* string = getTokenString(tokens[i]);
-        printf("Token %d: '%s' start: %d, end: %d, type: %d, carry: %d\n",
-              i, string,  tokens[i].start - offset, tokens[i].start - offset + tokens[i].length, tokens[i].type, tokens[i].carry);
+        char* type_string = getTokenEnumString(tokens[i].type);
+        printf("Token %d: `%s`\t type: %s, carry: %d, char: %d->%d\n",
+              i, string, type_string, tokens[i].carry, tokens[i].start - offset, tokens[i].start - offset + tokens[i].length);
         
         free(string);
     }
