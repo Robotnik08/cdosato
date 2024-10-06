@@ -35,6 +35,8 @@ typedef enum {
     TOKEN_BOOLEAN,
     TOKEN_NULL_KEYWORD,
     TOKEN_RESERVED_KEYWORD,
+    TOKEN_TEMPLATE,
+    TOKEN_TEMPLATE_END,
     TOKEN_END = -1
 } LexTokenType;
 

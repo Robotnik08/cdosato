@@ -61,6 +61,10 @@ char* getTokenEnumString (LexTokenType type) {
             return "NULL_KEYWORD";
         case TOKEN_RESERVED_KEYWORD:
             return "RESERVED_KEYWORD";
+        case TOKEN_TEMPLATE:
+            return "TEMPLATE";
+        case TOKEN_TEMPLATE_END:
+            return "TEMPLATE_END";
         case TOKEN_END:
             return "END";
         default:
