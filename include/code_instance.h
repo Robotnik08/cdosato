@@ -26,6 +26,8 @@ typedef enum {
 
     OP_TYPE_CAST,
     OP_MARK_CONSTANT,
+    
+    OP_COPY,
 
     OP_BUILD_LIST,
     OP_BUILD_OBJECT,

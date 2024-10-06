@@ -1,5 +1,5 @@
 make int size = 10
-make array board = [[0] * size] * size
+make array board = *([[0] * size] * size)
 
 define void printBoard () {
     make var i = 0
@@ -29,7 +29,7 @@ define bool getAlive (int x, int y) {
 }
 
 define void nextGen () {
-    make array newBoard = [[0] * size] * size
+    make array newBoard = *board
     make int i = 0
     do {
         make int j = 0

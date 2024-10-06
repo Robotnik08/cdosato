@@ -577,3 +577,42 @@ Value string_join(ValueArray args, bool debug) {
 
     return BUILD_STRING(result, false);
 }
+
+Value string_format(ValueArray args, bool debug) {
+    if (args.count < 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+
+    int cast_result = castValue(&arg1, TYPE_STRING);
+    if (cast_result != 0) {
+        return BUILD_EXCEPTION(cast_result);
+    }
+
+    char* format = AS_STRING(arg1);
+    char* result = malloc(1);
+    result[0] = '\0';
+    int arg_index = 1;
+    for (size_t i = 0; i < strlen(format); i++) {
+        if (format[i] == '{' && format[i + 1] == '}') {
+            if (arg_index >= args.count) {
+                return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+            }
+            Value arg = GET_ARG(args, arg_index);
+            arg_index++;
+            char* str = valueToString(arg, false);
+            result = realloc(result, strlen(result) + strlen(str) + 1);
+            strcat(result, str);
+            i++; // skip the closing brace
+            free(str);
+        } else {
+            result = realloc(result, strlen(result) + 2);
+            size_t len = strlen(result);
+            result[len] = format[i];
+            result[len + 1] = '\0';
+        }
+    }
+
+    return BUILD_STRING(result, false);
+}

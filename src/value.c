@@ -41,24 +41,47 @@ void printValue(Value value, bool extensive) {
 }
 
 Value hardCopyValue(Value value) {
+    DosatoObject** pointers = malloc(sizeof(DosatoObject**));
+    Value result = hardCopyValueSafe(value, &pointers, 0);
+    free(pointers);
+    return result;
+}
+
+Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count) {
     value.defined = false;
     switch (value.type) {
         case TYPE_ARRAY: {
+            for (int i = 0; i < count; i++) {
+                if ((*pointers)[i] == value.as.objectValue) {
+                    return BUILD_NULL();
+                }
+            }
+            (*pointers) = realloc(*pointers, sizeof(DosatoObject**) * (count + 1));
+            (*pointers)[count++] = value.as.objectValue;
+
             ValueArray* array = AS_ARRAY(value);
             ValueArray* newArray = malloc(sizeof(ValueArray));
             init_ValueArray(newArray);
             for (size_t i = 0; i < array->count; i++) {
-                write_ValueArray(newArray, hardCopyValue(array->values[i]));
+                write_ValueArray(newArray, hardCopyValueSafe(array->values[i], pointers, count));
             }
             value = BUILD_ARRAY(newArray, false);
             break;
         }
         case TYPE_OBJECT: {
+            for (int i = 0; i < count; i++) {
+                if ((*pointers)[i] == value.as.objectValue) {
+                    return BUILD_NULL();
+                }
+            }
+            (*pointers) = realloc(*pointers, sizeof(DosatoObject**) * (count + 1));
+            (*pointers)[count++] = value.as.objectValue;
+
             ValueObject* object = AS_OBJECT(value);
             ValueObject* newObject = malloc(sizeof(ValueObject));
             init_ValueObject(newObject);
             for (size_t i = 0; i < object->count; i++) {
-                write_ValueObject(newObject, object->keys[i], hardCopyValue(object->values[i]));
+                write_ValueObject(newObject, object->keys[i], hardCopyValueSafe(object->values[i], pointers, count));
             }
             value = BUILD_OBJECT(newObject, false);
             break;

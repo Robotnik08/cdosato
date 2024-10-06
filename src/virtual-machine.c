@@ -936,6 +936,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
 
+            case OP_COPY: {
+                pushValue(&vm->stack, hardCopyValue(POP_VALUE()));
+                break;
+            }
+
             
             case OP_PRINT: {
                 Value value = POP_VALUE();

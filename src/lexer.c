@@ -31,6 +31,7 @@ void trimComments (TokenList* list) {
     list->count = tokenCount;
 }
 
+#define MAX_TEMPLETE_RECURSION 255
 
 int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm, const char* file_name) {
     int tokenCount = list->count;
@@ -52,14 +53,75 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     char quotationtype = '\0';
     int escapeCount = 0;
     int stringCount = 0;
+
+    bool in_template = false;
+    int template_start_positions[MAX_TEMPLETE_RECURSION];
+    int template_bracket_depths[MAX_TEMPLETE_RECURSION];
+    int template_ids[MAX_TEMPLETE_RECURSION];
+    int template_id = 0;
+    int template_start_count = 0;
+    int bracket_depth = 0;
+
     for (int i = 0; i < code_length; i++) {
-        if (!quotationtype) {
+        // handle inside template block
+        if (template_start_count > 0) {
+            // closing template string with backtick
+            if (full_code[i] == '`' && escapeCount % 2 == 0) {
+                if (in_template && template_start_count > 0) {
+                    end = i;
+                    DOSATO_ADD_TOKEN(list, TOKEN_TEMPLATE_END, full_code + template_start_positions[template_start_count - 1], end - template_start_positions[template_start_count - 1], template_ids[template_start_count - 1]);
+                    template_start_count--;
+                    in_template = false;  // nested template check
+                    start = end + 1;
+                    continue;
+                }
+            }
+
+            // handling `{}` expression block
+            if (full_code[i] == '{' && escapeCount % 2 == 0 && in_template) {
+                in_template = false;  // entering template expression
+                template_bracket_depths[template_start_count - 1] = bracket_depth++;
+
+                // emit token for string part before `{`
+                DOSATO_ADD_TOKEN(list, TOKEN_TEMPLATE, full_code + template_start_positions[template_start_count - 1], i - template_start_positions[template_start_count - 1] - 1, template_ids[template_start_count - 1]);
+
+                start = i + 1;  // mark the start of `{`
+                continue;
+            }
+
+            // handle curly braces for template expression depth
+            if (full_code[i] == '{' && escapeCount % 2 == 0 && !quotationtype && !in_template) {
+                bracket_depth++;
+            }
+
+            if (full_code[i] == '}' && escapeCount % 2 == 0 && !quotationtype && !in_template) {
+                if (--bracket_depth == template_bracket_depths[template_start_count - 1]) {
+                    in_template = true;  // end of `{}` block
+                    start = i + 1;  // resume after closing brace
+                    template_start_positions[template_start_count - 1] = start;
+                }
+            }
+        }
+
+        if (!quotationtype && !in_template) {
             if ((full_code[i] == '"' || full_code[i] == '\'') && escapeCount % 2 == 0) {
                 quotationtype = full_code[i];
                 start = i;
                 continue;
             }
+            if (full_code[i] == '`' && escapeCount % 2 == 0) {
+                in_template = true;
+                if (template_start_count >= MAX_TEMPLETE_RECURSION) {
+                    printError(full_code, start, file_name, E_TEMPLATE_RECURSION_LIMIT);
+                }
+                template_bracket_depths[template_start_count] = bracket_depth;
+                template_ids[template_start_count] = template_id++;
+                template_start_positions[template_start_count++] = i;
+                start = i;
+                continue;
+            }
             if (full_code[i] == '/' && full_code[i + 1] == '/') {
+                // kandle single-line comment
                 int foundEnd = 0;
                 start = i;
                 for (int j = i; j < code_length; j++) {
@@ -81,6 +143,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
 
             if (full_code[i] == '/' && full_code[i + 1] == '*') {
+                // handle block comment
                 int foundEnd = 0;
                 start = i;
                 for (int j = i; j < code_length; j++) {
@@ -101,13 +164,14 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
         } else {
+            // handle string literals
             if (full_code[i] == quotationtype && escapeCount % 2 == 0) {
                 end = i;
                 int id = 0;
                 char* lit = malloc(end - start + 2);
                 memcpy(lit, full_code + start, end - start + 2);
                 lit[end - start + 1] = '\0';
-                
+
                 if (lit[0] == '\'') {
                     if (lit[2] != '\'' && !(lit[3] == '\'' && lit[1] == '\\') ) {
                         printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL);
@@ -142,6 +206,12 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     if (quotationtype) {
         printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL);
     }
+
+    if (template_start_count > 0) {
+        // Handle unclosed template literals
+        printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL);
+    }
+
     
     REFRESH_LIST()
     
@@ -535,6 +605,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         val = '"';
                         break;
                     default:
+                        val = lit[2]; // if it's not an escape sequence, just use the character
                         break;
                 }
             }
@@ -577,10 +648,16 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         case '"':
                             val[j] = '"';
                             break;
+                        default:
+                            val[j] = val[j + 1]; // if it's not an escape sequence, just use the character
+                            break;
                     }
                     for (int k = j + 1; k < strlen(val); k++) {
                         val[k] = val[k + 1];
                     }
+                } else if (val[j] == '\n') {
+                    val[j] = ' ';
+                    break;
                 }
             }
 

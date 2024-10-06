@@ -550,10 +550,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             writeInstruction(ci, node.start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.start].carry));
             break;
         }
+
         case NODE_TRUE: {
             writeByteCode(ci, OP_PUSH_TRUE, node.start);
             break;
         }
+
         case NODE_FALSE: {
             writeByteCode(ci, OP_PUSH_FALSE, node.start);
             break;
@@ -561,6 +563,43 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
         case NODE_NULL_KEYWORD: {
             writeByteCode(ci, OP_PUSH_NULL, node.start);
+            break;
+        }
+
+        case NODE_TEMPLATE_LITERAL: {
+            // the sum of all the parts
+            for (int i = 0; i < node.body.count; i++) {
+                if (node.body.nodes[i].type == NODE_TEMPLATE_STRING_PART) {
+                    // add constant to the constants pool
+                    char* val = getTokenString(ast->tokens.tokens[node.body.nodes[i].start]);
+                    if (i == 0) {
+                        char* new_val = malloc(strlen(val));
+                        strcpy(new_val, val + 1); // remove the first quote
+                        free(val);
+                        val = new_val;
+                    }
+
+                    if (i == node.body.count - 1) {
+                        val[strlen(val) - 1] = '\0'; // remove the last quote
+                    }
+
+                    int id = -1;
+                    if (hasName(&vm->constants_map, val)) {
+                        id = getName(&vm->constants_map, val);
+                        free(val);
+                    } else {
+                        id = addName(&vm->constants_map, val);
+                        write_ValueArray(&vm->constants, BUILD_STRING(val, true));
+                    }
+
+                    writeInstruction(ci, node.body.nodes[i].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
+                } else {
+                    compileNode(vm, ci, node.body.nodes[i], ast, scope);
+                }
+            }
+            for (int i = 0; i < node.body.count - 1; i++) {
+                writeByteCode(ci, OP_BINARY_ADD, node.start);
+            }
             break;
         }
 
@@ -1031,6 +1070,10 @@ int writeUnaryInstruction (CodeInstance* ci, OperatorType operator, size_t token
         }
         case OPERATOR_ABSOLUTE: {
             writeByteCode(ci, OP_UNARY_ABSOLUTE, token_index);
+            break;
+        }
+        case OPERATOR_MULTIPLY: {
+            writeByteCode(ci, OP_COPY, token_index);
             break;
         }
         default: {
