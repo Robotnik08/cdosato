@@ -25,6 +25,18 @@
         } \
     } while (0)
 
+#define SKIP_TEMPLATE(i) \
+    do { \
+        if (tokens.tokens[(i)].type == TOKEN_TEMPLATE) {  \
+            int endofblock = getEndOfBlock(tokens, (i)); \
+            if (endofblock == -1) { \
+                PRINT_ERROR((i), E_MISSING_CLOSING_TEMPLATE); \
+            } else { \
+                (i) = endofblock; \
+            } \
+        } \
+    } while (0)
+
 Node parse (const char *source, size_t length, const int start, const int end, TokenList tokens, NodeType type, const char* file_name) {
     Node root;
     root.start = start;
@@ -619,6 +631,30 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
+        case NODE_TEMPLATE_LITERAL: {
+            int amount_of_templates = 0;
+            for (int i = start; i < end; i++) {
+                // every even token is a string
+                if (amount_of_templates++ % 2 == 0) {
+                    if (tokens.tokens[i].type != TOKEN_TEMPLATE && tokens.tokens[i].type != TOKEN_TEMPLATE_END) {
+                        PRINT_ERROR(i, E_EXPECTED_STRING);
+                    }
+                    write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_TEMPLATE_STRING_PART, file_name));
+                } else {
+                    // block expression
+                    int start_expression = i;
+                    int end_expression = getEndOfBlock(tokens, i);
+                    if (end_expression == -1) {
+                        PRINT_ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
+                    }
+
+                    write_NodeList(&root.body, parse(source, length, start_expression + 1, end_expression, tokens, NODE_EXPRESSION, file_name));
+                    i = end_expression;
+                }
+            }
+            break;
+        }
+
         case NODE_SUBSCRIPT_EXPRESSION:
         case NODE_EXPRESSION: {
             int new_start = start;
@@ -648,6 +684,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     root.type = tokens.tokens[new_start].carry == 0 ? NODE_FALSE : NODE_TRUE;
                 } else if (tokens.tokens[new_start].type == TOKEN_NULL_KEYWORD) {
                     root.type = NODE_NULL_KEYWORD;
+                } else if (tokens.tokens[new_start].type == TOKEN_TEMPLATE_END) {
+                    root.type = NODE_TEMPLATE_LITERAL;
+                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_TEMPLATE_STRING_PART, file_name));
                 } else {
                     PRINT_ERROR(new_start, E_UNEXPECTED_TOKEN);
                 }
@@ -792,6 +831,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     write_NodeList(&root.body, parse(source, length, new_start + 1, new_end - 1, tokens, NODE_ARRAY_EXPRESSION, file_name));
                 } else if (ENCASED_IN_BRACKETS(new_start, new_end - 1, BRACKET_CURLY)) {
                     write_NodeList(&root.body, parse(source, length, new_start + 1, new_end - 1, tokens, NODE_OBJECT_EXPRESSION, file_name));
+                } else if ((tokens.tokens[new_start].type == TOKEN_TEMPLATE || tokens.tokens[new_start].type == TOKEN_TEMPLATE_END) && (tokens.tokens[new_end - 1].type == TOKEN_TEMPLATE_END && tokens.tokens[new_end - 1].carry == tokens.tokens[new_start].carry)) {
+                    write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_TEMPLATE_LITERAL, file_name));
                 } else {
                     PRINT_ERROR(new_start, E_UNEXPECTED_TOKEN);
                 }

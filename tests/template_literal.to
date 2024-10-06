@@ -1,0 +1,11 @@
+do sayln (`1 + 1 = {1 + 1}`) // 1 + 1 = 2
+
+define long add (long a, long b) {
+    return a + b
+}
+
+do sayln (`add(5,3) = {add(5, 3)}`) // add(5,3) = 8
+
+do sayln (`Hello {123 + `DDD {10 * 5}` + "EEE"}`) // Hello 123DDD 50EEE
+
+do sayln (`My object: {{"a": 1, "b": 2}}`) // My object: {"a": 1, "b": 2}
