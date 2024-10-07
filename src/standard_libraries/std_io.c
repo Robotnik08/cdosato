@@ -77,7 +77,7 @@ Value io_listen (ValueArray args, bool debug) {
         input[size] = '\0';
     }
 
-    return BUILD_STRING(input, false);
+    return BUILD_STRING(input, true);
 }
 
 
@@ -109,7 +109,7 @@ Value io_read_file (ValueArray args, bool debug) {
 
     fclose(file);
 
-    return BUILD_STRING(buffer, false);
+    return BUILD_STRING(buffer, true);
 }
 
 Value io_write_file (ValueArray args, bool debug) {

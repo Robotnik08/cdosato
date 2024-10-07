@@ -9,7 +9,7 @@ Value type_typeof(ValueArray args, bool debug) {
     char* typeString = dataTypeToString(type);
     char* result = malloc(strlen(typeString) + 1);
     strcpy(result, typeString);
-    return BUILD_STRING(result, false);
+    return BUILD_STRING(result, true);
 }
 
 Value type_isnull(ValueArray args, bool debug) {
