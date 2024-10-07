@@ -5,7 +5,7 @@
 #include "../include/token.h"
 
 #define PRINT_ERROR(index, code) do { \
-    printError(source, tokens.tokens[index].start - source, file_name, code); \
+    printError(source, tokens.tokens[index].start - source, file_name, code, tokens.tokens[index].length); \
 } while (0)
 
 #define ENCASED_IN_BRACKETS(start, end, b_type) \

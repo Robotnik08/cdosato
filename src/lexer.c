@@ -112,7 +112,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             if (full_code[i] == '`' && escapeCount % 2 == 0) {
                 in_template = true;
                 if (template_start_count >= MAX_TEMPLETE_RECURSION) {
-                    printError(full_code, start, file_name, E_TEMPLATE_RECURSION_LIMIT);
+                    printError(full_code, start, file_name, E_TEMPLATE_RECURSION_LIMIT, 1);
                 }
                 template_bracket_depths[template_start_count] = bracket_depth;
                 template_ids[template_start_count] = template_id++;
@@ -174,10 +174,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
 
                 if (lit[0] == '\'') {
                     if (lit[2] != '\'' && !(lit[3] == '\'' && lit[1] == '\\') ) {
-                        printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL);
+                        printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL, 1);
                     } else if (lit[3] == '\'' && lit[1] == '\\') {
                         if (lit[2] != 'n' && lit[2] != 't' && lit[2] != 'r' && lit[2] != 'b' && lit[2] != 'f' && lit[2] != '0' && lit[2] != '\\' && lit[2] != '\'' && lit[2] != '"') {
-                            printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL);
+                            printError(full_code, start, file_name, E_INVALID_CHAR_LITERAL, 1);
                         }
                     }
                 }
@@ -204,12 +204,12 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     }
 
     if (quotationtype) {
-        printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL);
+        printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL, 1);
     }
 
     if (template_start_count > 0) {
         // Handle unclosed template literals
-        printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL);
+        printError(full_code, start, file_name, E_UNCLOSED_STRING_LITERAL, 1);
     }
 
     
@@ -336,7 +336,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         SKIP_TOKEN()
         if (isFloateric(full_code[i])) {
             if (!(isNumeric(full_code[i]) || full_code[i] == '.') || isAlphaNameric(full_code[i-1]) || isAlphaNameric(full_code[i+1])) {
-                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, file_name, E_INVALID_NUMBER_LITERAL);
+                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, file_name, E_INVALID_NUMBER_LITERAL, 1);
                 for (int k = i; k < code_length && isFloateric(full_code[i]); k++) {
                     i = k;
                 }
@@ -353,7 +353,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                         end = k;
                     }
-                    printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
+                    printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                 }
                 if (full_code[j] == '.') {
                     if (foundDot) {
@@ -361,7 +361,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                             end = k;
                         }
-                        printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
+                        printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                     }
                     foundDot = true;
                     if (!isNumeric(full_code[j+1])) {
@@ -369,7 +369,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                         for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                             end = k;
                         }
-                        printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
+                        printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                     }
                 }
                 if (isFloateric(full_code[j])) {
@@ -379,7 +379,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                             for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
                                 end = k;
                             }
-                            printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL);
+                            printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                         }
                         if (isNumeric(full_code[j-1])) {
                             end = j;
@@ -558,7 +558,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
         if (!IS_SPACE(full_code[i])) {
-            printError(full_code, i, file_name, E_UNEXPECTED_TOKEN);
+            printError(full_code, i, file_name, E_UNEXPECTED_TOKEN, 1);
         }
     }
 
