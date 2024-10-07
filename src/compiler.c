@@ -19,7 +19,7 @@ void compile(VirtualMachine* vm, AST* ast) {
 
 }
 
-#define PRINT_ERROR(e_code, index) printError(ast->source, ast->tokens.tokens[index].start - ast->source, ast->name, e_code)
+#define PRINT_ERROR(e_code, index) printError(ast->source, ast->tokens.tokens[index].start - ast->source, ast->name, e_code, ast->tokens.tokens[index].length)
 
 int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, ScopeData* scope) {
     NodeType type = node.type;
