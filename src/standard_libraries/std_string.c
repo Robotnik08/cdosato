@@ -21,6 +21,22 @@ Value string_split(ValueArray args, bool debug) {
     char* str = AS_STRING(arg1);
     char* delim = AS_STRING(arg2);
 
+    if (strlen(delim) == 0) {
+        // build an array of characters
+        ValueArray* result = malloc(sizeof(ValueArray));
+        init_ValueArray(result);
+
+        for (size_t i = 0; i < strlen(str); i++) {
+            char* new_token = malloc(2);
+            new_token[0] = str[i];
+            new_token[1] = '\0';
+            Value value = BUILD_STRING(new_token, false);
+            write_ValueArray(result, value);
+        }
+
+        return BUILD_ARRAY(result, true);
+    }
+
     char* token = strtok(str, delim);
     ValueArray* result = malloc(sizeof(ValueArray));
     init_ValueArray(result);
