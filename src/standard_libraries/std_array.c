@@ -238,7 +238,7 @@ Value array_slice (ValueArray args, bool debug) {
         write_ValueArray(new_array, obj->values[i]);
     }
 
-    return BUILD_ARRAY(new_array, false);
+    return BUILD_ARRAY(new_array, true);
 }
 
 Value array_splice (ValueArray args, bool debug) {
@@ -282,7 +282,7 @@ Value array_splice (ValueArray args, bool debug) {
         write_ValueArray(new_array, obj->values[i]);
     }
 
-    return BUILD_ARRAY(new_array, false);
+    return BUILD_ARRAY(new_array, true);
 }
 
 Value array_index_of (ValueArray args, bool debug) {
@@ -346,7 +346,7 @@ Value array_reverse (ValueArray args, bool debug) {
         write_ValueArray(new_array, obj->values[i]);
     }
 
-    return BUILD_ARRAY(new_array, false);
+    return BUILD_ARRAY(new_array, true);
 }
 
 Value array_fill (ValueArray args, bool debug) {
@@ -368,7 +368,7 @@ Value array_fill (ValueArray args, bool debug) {
         write_ValueArray(new_array, value);
     }
 
-    return BUILD_ARRAY(new_array, false);
+    return BUILD_ARRAY(new_array, true);
 }
 
 
@@ -416,7 +416,7 @@ Value array_range (ValueArray args, bool debug) {
         write_ValueArray(new_array, (Value){ TYPE_LONG, .as.longValue = i });
     }
 
-    return BUILD_ARRAY(new_array, false);
+    return BUILD_ARRAY(new_array, true);
 }
 
 Value array_rangef (ValueArray args, bool debug) {
@@ -463,7 +463,7 @@ Value array_rangef (ValueArray args, bool debug) {
         write_ValueArray(new_array, (Value){ TYPE_DOUBLE, .as.doubleValue = i });
     }
 
-    return BUILD_ARRAY(new_array, false);
+    return BUILD_ARRAY(new_array, true);
 }
 
 long long int counter = 0;
