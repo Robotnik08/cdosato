@@ -150,7 +150,7 @@ Value array_pop (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
-    return AS_ARRAY(arg)->values[AS_ARRAY(arg)->count--]; // return the popped value
+    return AS_ARRAY(arg)->values[AS_ARRAY(arg)->count-- - 1]; // return the popped value
 }
 
 Value array_shift (ValueArray args, bool debug) {
