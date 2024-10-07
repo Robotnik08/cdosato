@@ -169,12 +169,14 @@ Value array_shift (ValueArray args, bool debug) {
 
     ValueArray* obj = AS_ARRAY(arg);
 
+    Value value = obj->values[0];
+    
     obj->count--;
     for (int i = 0; i < obj->count; i++) {
         obj->values[i] = obj->values[i + 1];
     }
 
-    return arg;
+    return value;
 }
 
 Value array_unshift (ValueArray args, bool debug) {
