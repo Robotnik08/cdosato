@@ -75,7 +75,7 @@ static const char* ERROR_MESSAGES[] = {
     "Error Amount (report this)"
 };
 
-void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type) {
+void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type, const int token_size) {
     if (type != E_EMPTY_MESSAGE) {
         printf("\nERROR:\n");
         printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
@@ -86,6 +86,29 @@ void printError (const char* full_code, const int pos, const char* file_name, co
     } else {
         printf("At UNSPECIFIED position\n");
     }
+
+    // print full line
+    int start = pos;
+    int end = pos;
+    while (start > 0 && full_code[start - 1] != '\n') {
+        start--;
+    }
+
+    while (end < strlen(full_code) && full_code[end] != '\n') {
+        end++;
+    }
+
+    printf("\n%.*s\n", end - start, full_code + start);
+
+    // print arrow to position
+    for (int i = start; i < pos; i++) {
+        printf(" ");
+    }
+
+    for (int i = pos; i < pos + token_size; i++) {
+        printf("^");
+    }
+
     #ifdef _WIN32
     _fcloseall(); // close all files if any were opened
     #endif

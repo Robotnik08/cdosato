@@ -80,6 +80,6 @@ typedef enum {
 } ErrorType;
 
 
-void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type);
+void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type, const int token_size);
 
 #endif // dosato_error_h
