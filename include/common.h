@@ -22,6 +22,6 @@
 #endif
 
 #define DOSATO_VERSION "0.4"
-#define DOSATO_DATE "03/10/2024"
+#define DOSATO_DATE "07/10/2024"
 
 #endif // dosato_common_h
