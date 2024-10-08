@@ -304,20 +304,22 @@ extern void removeFromKey(ValueObject* object, char* key);
 /// virtual-machine.h
 /// This part of the library is responsible for handling virtual machine gc generation and running.
 
+typedef struct VirtualMachine VirtualMachine;
+
 /**
  * @brief Don't call this function, use the BUILD_STRING, BUILD_ARRAY, BUILD_OBJECT macros instead.
  */
-extern DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep);
+extern DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, VirtualMachine* vm);
 
-#define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 
 /// dynamic_library_loader.h
 /// This part of the library is responsible for loading dynamic libraries and functions from them.
 
 typedef Value (*DosatoFunction)(ValueArray, bool debug);
-typedef void (*DosatoFunctionEmpty)();
+typedef void (*DosatoInitFunction)(VirtualMachine*);
 
 typedef struct {
     char* name;

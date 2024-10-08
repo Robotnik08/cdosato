@@ -93,16 +93,16 @@ int main (int argc, char** argv) {
 
     if (debug & DEBUG_SOURCE) printf ("==== Source: (%d) ====\n%s\n", length, source);
     
-    VirtualMachine vm;
-    main_vm = &vm;
-    initVirtualMachine(&vm);
+    VirtualMachine* vm = malloc(sizeof(VirtualMachine));
+    main_vm = vm;
+    initVirtualMachine(vm);
 
 
     AST* main_ast = malloc(sizeof(AST));
     init_AST(main_ast);
     char* name = malloc(strlen(argv[1]) + 1);
     strcpy(name, argv[1]);
-    load_AST(main_ast, source, length, name, debug, &vm);
+    load_AST(main_ast, source, length, name, debug, vm);
 
     if (debug & DEBUG_PARSE) {
         printf("==== AST: ====\n");
@@ -110,57 +110,58 @@ int main (int argc, char** argv) {
     } 
 
     // initialize the standard library
-    loadStandardLibrary(&vm);
+    loadStandardLibrary(vm);
 
-    init_ValueArray(&vm.globals);
-    for (int i = 0; i < vm.mappings.count; i++) {
-        write_ValueArray(&vm.globals, UNDEFINED_VALUE);
+    init_ValueArray(&vm->globals);
+    for (int i = 0; i < vm->mappings.count; i++) {
+        write_ValueArray(&vm->globals, UNDEFINED_VALUE);
     }
 
-    loadConstants(&vm, argv, argc);    
+    loadConstants(vm, argv, argc);    
 
-    compile(&vm, main_ast);
+    compile(vm, main_ast);
 
 
     if (debug & DEBUG_COMPILE) {
-        disassembleCode(vm.instance, "Main");
-        for (int i = 0; i < vm.includes.count; i++) {
-            disassembleCode(&vm.includes.instances[i], ((AST*)vm.includes.instances[i].ast)->name);
+        disassembleCode(vm->instance, "Main");
+        for (int i = 0; i < vm->includes.count; i++) {
+            disassembleCode(&vm->includes.instances[i], ((AST*)vm->includes.instances[i].ast)->name);
         }
 
-        for (int i = 0; i < vm.functions.count; i++) {
-            if (vm.functions.funcs[i].is_compiled) continue;
+        for (int i = 0; i < vm->functions.count; i++) {
+            if (vm->functions.funcs[i].is_compiled) continue;
             printf("\n");
-            disassembleCode(vm.functions.funcs[i].instance, vm.functions.funcs[i].name);
+            disassembleCode(vm->functions.funcs[i].instance, vm->functions.funcs[i].name);
         }
     }
 
     int exit_code = 0;
 
-    write_StackFrames(&vm.stack_frames, 0);
+    write_StackFrames(&vm->stack_frames, 0);
 
     if (!debug) {
-        exit_code = runVirtualMachine(&vm, debug);
+        exit_code = runVirtualMachine(vm, debug);
     } else {
         // time it
         clock_t start = clock();
-        exit_code = runVirtualMachine(&vm, debug);
+        exit_code = runVirtualMachine(vm, debug);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);
-        printf("Stack size: %d (%s)\n", vm.stack.count, vm.stack.count == 0 ? "passed" : "failed");
-        if (vm.stack.count > 0) {
+        printf("Stack size: %d (%s)\n", vm->stack.count, vm->stack.count == 0 ? "passed" : "failed");
+        if (vm->stack.count > 0) {
             printf("Left over stack: ");
-            for (int i = 0; i < vm.stack.count; i++) {
+            for (int i = 0; i < vm->stack.count; i++) {
                 printf("%d: ", i);
-                printValue(vm.stack.values[i], true);
+                printValue(vm->stack.values[i], true);
                 printf("\n");
             }
         }
         printf("Done running\n");
     }
 
-    freeVirtualMachine(&vm);
+    freeVirtualMachine(vm);
+    free(vm);
 
     if (debug) printf("Succesfull cleanup\n");
     return exit_code;
