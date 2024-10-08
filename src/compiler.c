@@ -907,11 +907,19 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // catch statement
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
 
+            // jump to the end of the catch block
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_end_index2 = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+
             // manually edit the jump instruction
             ci->code[jump_end_index + 1] = ci->count & 0xFF;
             ci->code[jump_end_index + 2] = ci->count >> 8;
 
             writeByteCode(ci, OP_CLEAR_EXCEPTION, node.start);
+
+            // manually edit the jump instruction
+            ci->code[jump_end_index2 + 1] = ci->count & 0xFF;
+            ci->code[jump_end_index2 + 2] = ci->count >> 8;
             break;
         }
         
