@@ -69,7 +69,19 @@ typedef struct {
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true, .is_constant = false }
 #define BUILD_NULL() (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
 
-#define BUILD_VALUE(type, valueName, value) (Value){ type, .as.valueName = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_BYTE(value) (Value){ TYPE_BYTE, .as.byteValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_UBYTE(value) (Value){ TYPE_UBYTE, .as.ubyteValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_SHORT(value) (Value){ TYPE_SHORT, .as.shortValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_USHORT(value) (Value){ TYPE_USHORT, .as.ushortValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_INT(value) (Value){ TYPE_INT, .as.intValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_UINT(value) (Value){ TYPE_UINT, .as.uintValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_LONG(value) (Value){ TYPE_LONG, .as.longValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ULONG(value) (Value){ TYPE_ULONG, .as.ulongValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_FLOAT(value) (Value){ TYPE_FLOAT, .as.floatValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_DOUBLE(value) (Value){ TYPE_DOUBLE, .as.doubleValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_BOOL(value) (Value){ TYPE_BOOL, .as.boolValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_CHAR(value) (Value){ TYPE_CHAR, .as.charValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+
 
 void destroyValue(Value* value);
 void printValue(Value value, bool extensive);
@@ -80,8 +92,6 @@ ErrorType castValue(Value* value, DataType type);
 bool valueEquals (Value* a, Value* b);
 ErrorType incValue (Value* value, int amount);
 
-Value buildArray(size_t count, ...);
-Value buildObject(size_t count, ...);
 
 char* valueToString (Value value, bool extensive);
 char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, int count);
@@ -135,6 +145,9 @@ void free_ValueObject(ValueObject* object);
 bool hasKey(ValueObject* object, char* key);
 Value* getValueAtKey(ValueObject* object, char* key);
 void removeFromKey(ValueObject* object, char* key);
+
+ValueArray* buildArray(size_t count, ...);
+ValueObject* buildObject(size_t count, ...);
 
 void init_StackFrames(StackFrames* stack);
 void write_StackFrames(StackFrames* stack, size_t frame);

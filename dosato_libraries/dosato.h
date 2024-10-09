@@ -183,8 +183,20 @@ typedef struct {
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true, .is_constant = false }
 #define BUILD_HLT(exit_code) (Value){ TYPE_HLT, .as.longValue = exit_code, .is_variable_type = false, .defined = true, .is_constant = false }
+#define BUILD_NULL() (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
 
-#define BUILD_VALUE(type, valueName, value) (Value){ type, .as.valueName = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_BYTE(value) (Value){ TYPE_BYTE, .as.byteValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_UBYTE(value) (Value){ TYPE_UBYTE, .as.ubyteValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_SHORT(value) (Value){ TYPE_SHORT, .as.shortValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_USHORT(value) (Value){ TYPE_USHORT, .as.ushortValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_INT(value) (Value){ TYPE_INT, .as.intValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_UINT(value) (Value){ TYPE_UINT, .as.uintValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_LONG(value) (Value){ TYPE_LONG, .as.longValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ULONG(value) (Value){ TYPE_ULONG, .as.ulongValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_FLOAT(value) (Value){ TYPE_FLOAT, .as.floatValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_DOUBLE(value) (Value){ TYPE_DOUBLE, .as.doubleValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_BOOL(value) (Value){ TYPE_BOOL, .as.boolValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_CHAR(value) (Value){ TYPE_CHAR, .as.charValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
 
 /**
  * @brief Destroys a value and frees the entire object safely.
@@ -226,21 +238,6 @@ extern bool valueEquals (Value* a, Value* b);
  */
 extern ErrorType incValue (Value* value, int amount);
 
-/**
- * @brief Builds an array value from a list of values.
- * @param count The number of values to include in the array.
- * @param ... The values to include in the array, must be of type 'Value'.
- * @return The built array value.
- */
-extern Value buildArray(size_t count, ...);
-
-/**
- * @brief Builds an object value from a list of key-value pairs.
- * @param count The number of key-value pairs to include in the object.
- * @param ... The key-value pairs to include in the object, must be of type 'char*' and 'Value'. Make sure to include the key first, then the value. Take note that the key is copied internally, so you are still the owner of the key.
- * @return The built object value.
- */
-extern Value buildObject(size_t count, ...);
 
 /**
  * @brief Converts a value to a string.
@@ -269,6 +266,22 @@ typedef struct {
     Value* values;
     char** keys;
 } ValueObject;
+
+/**
+ * @brief Builds an array value from a list of values.
+ * @param count The number of values to include in the array.
+ * @param ... The values to include in the array, must be of type 'Value'.
+ * @return The built array value.
+ */
+extern ValueArray* buildArray(size_t count, ...);
+
+/**
+ * @brief Builds an object value from a list of key-value pairs.
+ * @param count The number of key-value pairs to include in the object.
+ * @param ... The key-value pairs to include in the object, must be of type 'char*' and 'Value'. Make sure to include the key first, then the value. Take note that the key is copied internally, so you are still the owner of the key.
+ * @return The built object value.
+ */
+extern ValueObject* buildObject(size_t count, ...);
 
 extern void init_ValueArray(ValueArray* array);
 extern void write_ValueArray(ValueArray* array, Value value);
@@ -304,22 +317,24 @@ extern void removeFromKey(ValueObject* object, char* key);
 /// virtual-machine.h
 /// This part of the library is responsible for handling virtual machine gc generation and running.
 
-typedef struct VirtualMachine VirtualMachine;
-
 /**
  * @brief Don't call this function, use the BUILD_STRING, BUILD_ARRAY, BUILD_OBJECT macros instead.
  */
-extern DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, VirtualMachine* vm);
+extern DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
 
-#define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_STRING(value) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, false, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ARRAY(value) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, false, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_OBJECT(value) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, false, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+
+#define RETURN_STRING(value) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, true, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define RETURN_ARRAY(value) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, true, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define RETURN_OBJECT(value) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, true, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 
 /// dynamic_library_loader.h
 /// This part of the library is responsible for loading dynamic libraries and functions from them.
 
 typedef Value (*DosatoFunction)(ValueArray, bool debug);
-typedef void (*DosatoInitFunction)(VirtualMachine*);
+typedef void (*DosatoInitFunction)(void*);
 
 typedef struct {
     char* name;
@@ -345,6 +360,22 @@ extern void free_DosatoFunctionMapList(DosatoFunctionMapList* list);
  */
 extern long long int getFileSize(FILE *file);
 
+
+/// library specific
+
+/**
+ * Prints the arguments (like printf, first is the format string, the rest are the arguments).
+ * Based on the debug formatting used by dosato, meaning it'll stay consistent with the rest of the language.
+ */
+#define PRINT_ERROR(...) do { \
+    printf("ERROR: \n"); \
+    printf(__VA_ARGS__); \
+} while(0)
+
+/**
+ * Copy string to the heap, ready for use in BUILD_STRING.
+ */
+#define COPY_STRING(str) strcpy(malloc(strlen(str) + 1), str)
 
 
 #ifdef __cplusplus

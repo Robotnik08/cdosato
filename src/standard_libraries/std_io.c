@@ -23,7 +23,7 @@ Value io_say (ValueArray args, bool debug) {
         }
     }
     
-    return (Value){ TYPE_LONG, .as.longValue = char_count };
+    return BUILD_CHAR(char_count);
 }
 
 Value io_sayln (ValueArray args, bool debug) {
@@ -214,12 +214,12 @@ Value io_file_exists (ValueArray args, bool debug) {
 
     FILE* file = fopen(AS_STRING(arg), "r");
     if (file == NULL) {
-        return (Value){ TYPE_BOOL, .as.boolValue = false };
+        return BUILD_BOOL(false);
     }
 
     fclose(file);
 
-    return (Value){ TYPE_BOOL, .as.boolValue = true };
+    return BUILD_BOOL(true);
 }
 
 Value io_move_file (ValueArray args, bool debug) {

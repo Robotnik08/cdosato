@@ -89,7 +89,7 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
     array->values[i + 1] = array->values[right];
     array->values[right] = temp;
 
-    return (Value){ TYPE_LONG, .as.longValue = i + 1 };
+    return BUILD_LONG(i + 1);
 }
 
 Value array_sort(ValueArray args, bool debug) {
@@ -226,7 +226,7 @@ Value array_slice (ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        end = (Value){ TYPE_LONG, .as.longValue = (AS_ARRAY(arg))->count };
+        end = BUILD_LONG((AS_ARRAY(arg))->count);
     }
 
     if (start.as.longValue < 0 || start.as.longValue >= (AS_ARRAY(arg))->count || end.as.longValue < 0 || end.as.longValue > (AS_ARRAY(arg))->count) {
@@ -267,7 +267,7 @@ Value array_splice (ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        delete_count = (Value){ TYPE_LONG, .as.longValue = (AS_ARRAY(arg))->count - start.as.longValue };
+        delete_count = BUILD_LONG((AS_ARRAY(arg))->count - start.as.longValue);
     }
 
     ValueArray* obj = AS_ARRAY(arg);
@@ -302,11 +302,11 @@ Value array_index_of (ValueArray args, bool debug) {
     ValueArray* obj = AS_ARRAY(arg);
     for (int i = 0; i < obj->count; i++) {
         if (valueEquals(&obj->values[i], &value)) {
-            return (Value){ TYPE_LONG, .as.longValue = i };
+            return BUILD_LONG(i);
         }
     }
 
-    return (Value){ TYPE_LONG, .as.longValue = -1 };
+    return BUILD_LONG(-1);
 }
 
 Value array_last_index_of(ValueArray args, bool debug) {
@@ -324,11 +324,11 @@ Value array_last_index_of(ValueArray args, bool debug) {
     ValueArray* obj = AS_ARRAY(arg);
     for (int i = obj->count - 1; i >= 0; i--) {
         if (valueEquals(&obj->values[i], &value)) {
-            return (Value){ TYPE_LONG, .as.longValue = i };
+            return BUILD_LONG(i);
         }
     }
 
-    return (Value){ TYPE_LONG, .as.longValue = -1 };
+    return BUILD_LONG(-1);
 }
 
 Value array_reverse (ValueArray args, bool debug) {
@@ -393,8 +393,8 @@ Value array_range (ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        end = (Value){ TYPE_LONG, .as.longValue = start.as.longValue };
-        start = (Value){ TYPE_LONG, .as.longValue = 0 };
+        end = BUILD_LONG(start.as.longValue);
+        start = BUILD_LONG(0);
     }
 
     Value step;
@@ -405,7 +405,7 @@ Value array_range (ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        step = (Value){ TYPE_LONG, .as.longValue = 1 };
+        step = BUILD_LONG(1);
     }
 
     if (step.as.longValue == 0) {
@@ -415,7 +415,7 @@ Value array_range (ValueArray args, bool debug) {
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (int i = start.as.longValue; (step.as.longValue > 0 && i < end.as.longValue) || (step.as.longValue < 0 && i > end.as.longValue); i += step.as.longValue) {
-        write_ValueArray(new_array, (Value){ TYPE_LONG, .as.longValue = i });
+        write_ValueArray(new_array, BUILD_LONG(i));
     }
 
     return BUILD_ARRAY(new_array, true);
@@ -440,8 +440,8 @@ Value array_rangef (ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        end = (Value){ TYPE_DOUBLE, .as.doubleValue = start.as.doubleValue };
-        start = (Value){ TYPE_DOUBLE, .as.doubleValue = 0 };
+        end = BUILD_DOUBLE(start.as.doubleValue);
+        start = BUILD_DOUBLE(0);
     }
 
     Value step;
@@ -452,7 +452,7 @@ Value array_rangef (ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_error);
         }
     } else {
-        step = (Value){ TYPE_DOUBLE, .as.doubleValue = 1 };
+        step = BUILD_DOUBLE(1);
     }
 
     if (step.as.doubleValue == 0) {
@@ -462,7 +462,7 @@ Value array_rangef (ValueArray args, bool debug) {
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (double i = start.as.doubleValue; (step.as.doubleValue > 0 && i < end.as.doubleValue) || (step.as.doubleValue < 0 && i > end.as.doubleValue); i += step.as.doubleValue) {
-        write_ValueArray(new_array, (Value){ TYPE_DOUBLE, .as.doubleValue = i });
+        write_ValueArray(new_array, BUILD_DOUBLE(i));
     }
 
     return BUILD_ARRAY(new_array, true);
@@ -475,7 +475,7 @@ Value array_counter(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    return (Value){ TYPE_LONG, .as.longValue = counter++ };
+    return BUILD_LONG(counter++);
 }
 
 Value array_set_counter(ValueArray args, bool debug) {
@@ -491,5 +491,5 @@ Value array_set_counter(ValueArray args, bool debug) {
 
     counter = arg.as.longValue;
 
-    return (Value){ TYPE_LONG, .as.longValue = counter };
+    return BUILD_LONG(counter++);
 }

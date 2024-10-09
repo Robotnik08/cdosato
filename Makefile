@@ -7,6 +7,9 @@ TEMPDIR = temp
 TARGET = $(BUILDDIR)/dosato
 LIB_TARGET = $(BUILDDIR)/dosato_lib
 
+CURRENT_DATE := $(shell powershell -Command "Get-Date -Format 'dd/MM/yyyy'")
+CFLAGS += -DDOSATO_DATE="\"$(CURRENT_DATE)\""
+
 SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/standard_libraries/*.c) main.c
 OBJECTS := $(patsubst $(SRCDIR)/%.c,$(TEMPDIR)/%.o,$(patsubst $(SRCDIR)/standard_libraries/%.c,$(TEMPDIR)/standard_libraries/%.o,$(SOURCES:main.c=$(TEMPDIR)/main.o)))
 

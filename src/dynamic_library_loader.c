@@ -51,7 +51,6 @@ DynamicLibrary loadLib (const char* path) {
     }
 
     // call the init function
-    printf("Before Init: %p\n", main_vm);
     lib.init(main_vm);
 
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)GetProcAddress(lib.handle, "functions");

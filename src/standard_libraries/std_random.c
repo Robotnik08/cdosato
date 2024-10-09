@@ -23,7 +23,7 @@ Value io_random_double (ValueArray args, bool debug) {
     }
 
     double result = (double)rand() / (double)RAND_MAX;
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
+    return BUILD_DOUBLE(result);
 }
 
 Value io_random_int (ValueArray args, bool debug) {
@@ -32,7 +32,7 @@ Value io_random_int (ValueArray args, bool debug) {
     }
 
     long long int result = rand();
-    return (Value){ TYPE_LONG, .as.longValue = result };
+    return BUILD_LONG(result);
 }
 
 Value io_random_range (ValueArray args, bool debug) {
@@ -55,7 +55,7 @@ Value io_random_range (ValueArray args, bool debug) {
 
     long long int result = rand() % (arg2.as.longValue - arg1.as.longValue + 1) + arg1.as.longValue;
 
-    return (Value){ TYPE_LONG, .as.longValue = result };
+    return BUILD_LONG(result);
 }
 
 Value io_random_bool (ValueArray args, bool debug) {
@@ -64,5 +64,5 @@ Value io_random_bool (ValueArray args, bool debug) {
     }
 
     bool result = rand() % 2;
-    return (Value){ TYPE_BOOL, .as.boolValue = result };
+    return BUILD_BOOL(result);
 }

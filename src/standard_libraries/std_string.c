@@ -99,7 +99,7 @@ Value string_length(ValueArray args, bool debug) {
 
     size_t len = strlen(AS_STRING(arg));
 
-    return (Value){ TYPE_LONG, .as.longValue = len };
+    return BUILD_LONG(len);
 }
 
 Value string_substr(ValueArray args, bool debug) {
@@ -167,13 +167,13 @@ Value string_indexof(ValueArray args, bool debug) {
 
 
     if (result == NULL) {
-        return (Value){ TYPE_LONG, .as.longValue = -1 };
+        return BUILD_LONG(-1);
     }
 
     long long int res = result - str;
 
 
-    return (Value){ TYPE_LONG, .as.longValue = res };   
+    return BUILD_LONG(res);
 }
 
 Value string_lastindexof(ValueArray args, bool debug) {
@@ -205,7 +205,7 @@ Value string_lastindexof(ValueArray args, bool debug) {
     }
 
 
-    return (Value){ TYPE_LONG, .as.longValue = res };
+    return BUILD_LONG(res);
 }
 
 Value string_startswith(ValueArray args, bool debug) {
@@ -232,7 +232,7 @@ Value string_startswith(ValueArray args, bool debug) {
     bool result = strncmp(str, substr, strlen(substr)) == 0;
 
 
-    return (Value){ TYPE_BOOL, .as.boolValue = result };
+    return BUILD_BOOL(result);
 }
 
 Value string_endswith(ValueArray args, bool debug) {
@@ -259,7 +259,7 @@ Value string_endswith(ValueArray args, bool debug) {
     bool result = strcmp(str + strlen(str) - strlen(substr), substr) == 0;
 
 
-    return (Value){ TYPE_BOOL, .as.boolValue = result };
+    return BUILD_BOOL(result);
 }
 
 Value string_replace(ValueArray args, bool debug) {
@@ -395,7 +395,7 @@ Value string_contains(ValueArray args, bool debug) {
 
     bool result = strstr(str, substr) != NULL;
 
-    return (Value){ TYPE_BOOL, .as.boolValue = result };
+    return BUILD_BOOL(result);
 }
 
 Value string_remove(ValueArray args, bool debug) {
@@ -505,7 +505,7 @@ Value string_atoi(ValueArray args, bool debug) {
     char* str = AS_STRING(arg);
     long long int result = atoll(str);
 
-    return (Value){ TYPE_LONG, .as.longValue = result };
+    return BUILD_LONG(result);
 }
 
 Value string_atod(ValueArray args, bool debug) {
@@ -523,7 +523,7 @@ Value string_atod(ValueArray args, bool debug) {
     char* str = AS_STRING(arg);
     double result = atof(str);
 
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
+    return BUILD_DOUBLE(result);
 }
 
 Value string_count(ValueArray args, bool debug) {
@@ -555,7 +555,7 @@ Value string_count(ValueArray args, bool debug) {
         result++;
     }
 
-    return (Value){ TYPE_LONG, .as.longValue = count };
+    return BUILD_ULONG(count);
 }
 
 Value string_join(ValueArray args, bool debug) {
