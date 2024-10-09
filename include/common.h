@@ -21,7 +21,9 @@
 #include <unistd.h>
 #endif
 
-#define DOSATO_VERSION "0.4"
-#define DOSATO_DATE "03/10/2024"
+#define DOSATO_VERSION "0.4.1"
+#ifndef DOSATO_DATE
+    #define DOSATO_DATE "Unknown date"
+#endif
 
 #endif // dosato_common_h
