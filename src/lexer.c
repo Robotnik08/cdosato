@@ -610,7 +610,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
 
-            write_ValueArray(&vm->constants, (Value) { TYPE_CHAR, .as.charValue = val });
+            write_ValueArray(&vm->constants, (Value) { TYPE_CHAR, .as.charValue = val, .defined = false });
         }
         if (quote == '"') {
             char* val = malloc(strlen(lit) - 1);
@@ -670,16 +670,16 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < strlen(lit); j++) {
             if (lit[j] == '.' || lit[j] == 'F') {
                 if (lit[strlen(lit) - 1] == 'F') {
-                    write_ValueArray(&vm->constants, (Value) { TYPE_FLOAT, .as.floatValue = (float)atof(lit) });
+                    write_ValueArray(&vm->constants, (Value) { TYPE_FLOAT, .as.floatValue = (float)atof(lit), .defined = false });
                 } else {
-                    write_ValueArray(&vm->constants, (Value) { TYPE_DOUBLE, .as.doubleValue = atof(lit) });
+                    write_ValueArray(&vm->constants, (Value) { TYPE_DOUBLE, .as.doubleValue = atof(lit), .defined = false });
                 }
                 isInt = false;
                 break;
             }
         }
         if (isInt) {
-            write_ValueArray(&vm->constants, (Value) { TYPE_ULONG, .as.ulongValue = strtoull(lit, NULL, 10) });
+            write_ValueArray(&vm->constants, (Value) { TYPE_ULONG, .as.ulongValue = strtoull(lit, NULL, 10), .defined = false });
         }
     }
 

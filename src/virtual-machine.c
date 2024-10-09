@@ -412,13 +412,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             }
 
             case OP_PUSH_FALSE: {
-                Value value = (Value){ TYPE_BOOL, .as.boolValue = false };
+                Value value = (Value){ TYPE_BOOL, .as.boolValue = false, .defined = false };
                 pushValue(&vm->stack, value);
                 break;
             }
 
             case OP_PUSH_TRUE: {
-                Value value = (Value){ TYPE_BOOL, .as.boolValue = true };
+                Value value = (Value){ TYPE_BOOL, .as.boolValue = true, .defined = false };
                 pushValue(&vm->stack, value);
                 break;
             }
@@ -459,7 +459,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     }
 
                     char val = string[i];
-                    Value value = (Value){ TYPE_CHAR, .as.charValue = val };
+                    Value value = (Value){ TYPE_CHAR, .as.charValue = val, .defined = false };
                     pushValue(&vm->stack, value);
                 }
 
@@ -577,7 +577,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
             case OP_PUSH_MINUS_ONE: {
-                Value val = (Value){ TYPE_LONG, .as.longValue = -1, .is_variable_type = false };
+                Value val = (Value){ TYPE_LONG, .as.longValue = -1, .is_variable_type = false, .defined = false };
                 pushValue(&vm->stack, val);
                 break;
             }
@@ -1009,7 +1009,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue + b.as.doubleValue };
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue + b.as.doubleValue, .defined = false };
                     pushValue(&vm->stack, result);
                     break;
                 } else if (a.type == TYPE_ARRAY && b.type == TYPE_ARRAY) {
@@ -1057,7 +1057,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue + b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1077,7 +1077,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue - b.as.doubleValue };
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue - b.as.doubleValue, .defined = false };
                     pushValue(&vm->stack, result);
                     break;
                 } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
@@ -1139,7 +1139,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue - b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1159,7 +1159,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue * b.as.doubleValue };
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue * b.as.doubleValue, .defined = false };
                     pushValue(&vm->stack, result);
                     break;
                 } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
@@ -1193,7 +1193,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue * b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1216,7 +1216,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (b.as.doubleValue == 0) {
                         PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                     }
-                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue / b.as.doubleValue };
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = a.as.doubleValue / b.as.doubleValue, .defined = false };
                     pushValue(&vm->stack, result);
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
@@ -1232,7 +1232,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                     }
                     long long int result = a.as.longValue / b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1252,7 +1252,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue > b.as.doubleValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue > b.as.doubleValue, .defined = false });
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
@@ -1263,7 +1263,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue > b.as.longValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue > b.as.longValue, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1283,7 +1283,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue < b.as.doubleValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue < b.as.doubleValue, .defined = false });
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
@@ -1294,7 +1294,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue < b.as.longValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue < b.as.longValue, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1306,7 +1306,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value a = POP_VALUE();
 
                 bool result = valueEquals(&a, &b);
-                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_NOT_EQUAL: {
@@ -1314,7 +1314,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value a = POP_VALUE();
 
                 bool result = !valueEquals(&a, &b);
-                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_GREATER_EQUAL: {
@@ -1330,7 +1330,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue >= b.as.doubleValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue >= b.as.doubleValue, .defined = false });
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
@@ -1341,7 +1341,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue >= b.as.longValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue >= b.as.longValue, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1361,7 +1361,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue <= b.as.doubleValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.doubleValue <= b.as.doubleValue, .defined = false });
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
@@ -1372,7 +1372,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue <= b.as.longValue });
+                    pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.longValue <= b.as.longValue, .defined = false });
                     break;
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_BINARY_OPERATION);
@@ -1392,7 +1392,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
 
-                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue && b.as.boolValue });
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue && b.as.boolValue, .defined = false });
                 break;
             }
             case OP_BINARY_LOGICAL_OR: {
@@ -1408,7 +1408,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
 
-                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue || b.as.boolValue });
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = a.as.boolValue || b.as.boolValue, .defined = false });
                 break;
             }
             case OP_BINARY_MODULO: {
@@ -1425,7 +1425,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     double result = fmod(a.as.doubleValue, b.as.doubleValue);
-                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
@@ -1436,7 +1436,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue % b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 }
                 break;
             }
@@ -1457,7 +1457,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     if (isnan(result)) {
                         PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                     }
-                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
@@ -1468,7 +1468,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = powl(a.as.longValue, b.as.longValue);
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 }
                 break;
             }
@@ -1491,7 +1491,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (b.as.doubleValue > 0) {
                     result = powl(b.as.doubleValue, 1.0 / a.as.doubleValue);
                 }
-                pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_SHIFT_LEFT: {
@@ -1507,7 +1507,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue << b.as.longValue;
-                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_SHIFT_RIGHT: {
@@ -1523,7 +1523,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue >> b.as.longValue;
-                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_AND_BITWISE: {
@@ -1539,7 +1539,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue & b.as.longValue;
-                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_OR_BITWISE: {
@@ -1555,7 +1555,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue | b.as.longValue;
-                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_XOR_BITWISE: {
@@ -1571,7 +1571,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
                 long long int result = a.as.longValue ^ b.as.longValue;
-                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 break;
             }
             case OP_BINARY_MIN: {
@@ -1588,7 +1588,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     double result = fmin(a.as.doubleValue, b.as.doubleValue);
-                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
@@ -1599,7 +1599,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue < b.as.longValue ? a.as.longValue : b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 }
                 break;
             }
@@ -1617,7 +1617,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     double result = fmax(a.as.doubleValue, b.as.doubleValue);
-                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 } else {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
@@ -1628,7 +1628,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(code);
                     }
                     long long int result = a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue;
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 }
                 break;
             }
@@ -1639,10 +1639,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 Value a = POP_VALUE();
 
                 if (ISFLOATTYPE(a.type)) {
-                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = -a.as.doubleValue };
+                    Value result = (Value){ TYPE_DOUBLE, .as.doubleValue = -a.as.doubleValue, .defined = false };
                     pushValue(&vm->stack, result);
                 } else if (ISINTTYPE(a.type)) {
-                    Value result = (Value){ TYPE_LONG, .as.longValue = -a.as.longValue };
+                    Value result = (Value){ TYPE_LONG, .as.longValue = -a.as.longValue, .defined = false };
                     pushValue(&vm->stack, result);
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_UNARY_OPERATION);
@@ -1657,7 +1657,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
 
-                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = !a.as.boolValue });
+                pushValue(&vm->stack, (Value){ TYPE_BOOL, .as.boolValue = !a.as.boolValue, .defined = false });
                 break;
             }
             case OP_UNARY_BITWISE_NOT: {
@@ -1668,7 +1668,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(code);
                 }
 
-                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = ~a.as.longValue });
+                pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = ~a.as.longValue, .defined = false });
                 break;
             }
             case OP_UNARY_SQRT: {
@@ -1682,7 +1682,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_MATH_DOMAIN_ERROR);
                 }
                 double result = sqrt(a.as.doubleValue);
-                pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 break;
             }
             case OP_UNARY_ABSOLUTE: {
@@ -1690,10 +1690,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 if (ISFLOATTYPE(a.type)) {
                     double result = fabs(a.as.doubleValue);
-                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_DOUBLE, .as.doubleValue = result, .defined = false });
                 } else if (ISINTTYPE(a.type)) {
                     long long int result = llabs(a.as.longValue);
-                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result });
+                    pushValue(&vm->stack, (Value){ TYPE_LONG, .as.longValue = result, .defined = false });
                 } else {
                     PRINT_ERROR(E_CANT_PERFORM_UNARY_OPERATION);
                 }
