@@ -55,5 +55,5 @@ Value io_system (ValueArray args, bool debug) {
 
     int result = system(AS_STRING(arg));
 
-    return (Value){ TYPE_LONG, .as.longValue = result };
+    return BUILD_LONG(result);
 }

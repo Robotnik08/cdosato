@@ -6,7 +6,7 @@ Value io_time (ValueArray args, bool debug) {
     }
 
     time_t t = time(NULL);
-    return (Value){ TYPE_LONG, .as.longValue = t };
+    return BUILD_LONG(t);
 }
 
 Value io_datetime (ValueArray args, bool debug) {
@@ -51,7 +51,7 @@ Value io_clock (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    return (Value){ TYPE_LONG, .as.longValue = clock() };
+    return BUILD_LONG(clock());
 }
 
 Value io_sleep (ValueArray args, bool debug) {

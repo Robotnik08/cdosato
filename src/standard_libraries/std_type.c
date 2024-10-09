@@ -18,7 +18,7 @@ Value type_isnull(ValueArray args, bool debug) {
     }
 
     Value value = GET_ARG(args, 0);
-    return (Value){ TYPE_BOOL, .as.boolValue = value.type == D_NULL, .defined = false };
+    return BUILD_BOOL(value.type == D_NULL);
 }
 
 Value type_typeof_int(ValueArray args, bool debug) {
@@ -27,5 +27,5 @@ Value type_typeof_int(ValueArray args, bool debug) {
     }
 
     DataType type = GET_ARG(args, 0).type;
-    return (Value){ TYPE_LONG, .as.longValue = type, .defined = false };
+    return BUILD_LONG(type);
 }

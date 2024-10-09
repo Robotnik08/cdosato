@@ -5,6 +5,7 @@
 #include "../include/dynamic_library_loader.h"
 #include "../include/error.h"
 #include "../include/value.h"
+#include "../include/virtual-machine.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -43,14 +44,14 @@ DynamicLibrary loadLib (const char* path) {
         exit(1);
     }
     
-    lib.init = (DosatoFunctionEmpty)GetProcAddress(lib.handle, "init");
+    lib.init = (DosatoInitFunction)GetProcAddress(lib.handle, "init");
     if (!lib.init) {
         printf("Error, library must have init function: %s\n", path);
         exit(1);
     }
 
     // call the init function
-    lib.init();
+    lib.init(main_vm);
 
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)GetProcAddress(lib.handle, "functions");
 
@@ -68,14 +69,14 @@ DynamicLibrary loadLib (const char* path) {
         exit(1);
     }
 
-    lib.init = (DosatoFunctionEmpty)dlsym(lib.handle, "init");
+    lib.init = (DosatoInitFunction)dlsym(lib.handle, "init");
     if (!lib.init) {
         printf("Error, library must have init function: %s\n", dlerror());
         exit(1);
     }
     
     // call the init function
-    lib.init();
+    lib.init(main_vm);
 
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)dlsym(lib.handle, "functions");
 

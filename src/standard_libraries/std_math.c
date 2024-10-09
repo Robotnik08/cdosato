@@ -11,13 +11,13 @@ Value math_abs(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = fabs(arg.as.doubleValue) };
+        return BUILD_DOUBLE(fabs(arg.as.doubleValue));
     } else {\
         int cast_result = castValue(&arg, TYPE_LONG);
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_LONG, .as.longValue = llabs(arg.as.longValue) };
+        return BUILD_LONG(llabs(arg.as.longValue));
     }
 }
 
@@ -31,7 +31,7 @@ Value math_round(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = round(arg.as.doubleValue) };
+    return BUILD_DOUBLE(round(arg.as.doubleValue));
 }
 
 Value math_floor(ValueArray args, bool debug) {
@@ -44,7 +44,7 @@ Value math_floor(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = floor(arg.as.doubleValue) };
+    return BUILD_DOUBLE(floor(arg.as.doubleValue));
 }
 
 Value math_ceil(ValueArray args, bool debug) {
@@ -57,7 +57,7 @@ Value math_ceil(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = ceil(arg.as.doubleValue) };
+    return BUILD_DOUBLE(ceil(arg.as.doubleValue));
 }
 
 Value math_pow(ValueArray args, bool debug) {
@@ -81,7 +81,7 @@ Value math_pow(ValueArray args, bool debug) {
         if (isnan(result)) {
             return BUILD_EXCEPTION(E_MATH_DOMAIN_ERROR);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = result };
+        return BUILD_DOUBLE(result);
     } else {
         int cast_result = castValue(&a, TYPE_LONG);
         if (cast_result != 0) {
@@ -91,7 +91,7 @@ Value math_pow(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_LONG, .as.longValue = powl(a.as.longValue, b.as.longValue) };
+        return BUILD_LONG(powl(a.as.longValue, b.as.longValue));
     }
 };
 
@@ -108,7 +108,7 @@ Value math_sqrt(ValueArray args, bool debug) {
     if (arg.as.doubleValue < 0) {
         return BUILD_EXCEPTION(E_MATH_DOMAIN_ERROR);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = sqrt(arg.as.doubleValue) };
+    return BUILD_DOUBLE(sqrt(arg.as.doubleValue));
 }
 
 Value math_min(ValueArray args, bool debug) {
@@ -128,7 +128,7 @@ Value math_min(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = fmin(a.as.doubleValue, b.as.doubleValue) };
+        return BUILD_DOUBLE(fmin(a.as.doubleValue, b.as.doubleValue));
     } else {
         int cast_result = castValue(&a, TYPE_LONG);
         if (cast_result != 0) {
@@ -138,7 +138,7 @@ Value math_min(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_LONG, .as.longValue = a.as.longValue < b.as.longValue ? a.as.longValue : b.as.longValue };
+        return BUILD_LONG(a.as.longValue < b.as.longValue ? a.as.longValue : b.as.longValue);
     }
 }
 
@@ -159,7 +159,7 @@ Value math_max(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = fmax(a.as.doubleValue, b.as.doubleValue) };
+        return BUILD_DOUBLE(a.as.doubleValue > b.as.doubleValue ? a.as.doubleValue : b.as.doubleValue);
     } else {
         int cast_result = castValue(&a, TYPE_LONG);
         if (cast_result != 0) {
@@ -169,7 +169,7 @@ Value math_max(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_LONG, .as.longValue = a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue };
+        return BUILD_LONG(a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue);
     }
 }
 
@@ -195,7 +195,7 @@ Value math_clamp(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = fmax(b.as.doubleValue, fmin(a.as.doubleValue, c.as.doubleValue)) };
+        return BUILD_DOUBLE(fmax(b.as.doubleValue, fmin(a.as.doubleValue, c.as.doubleValue)));
     } else {
         int cast_result = castValue(&a, TYPE_LONG);
         if (cast_result != 0) {
@@ -210,7 +210,7 @@ Value math_clamp(ValueArray args, bool debug) {
             return BUILD_EXCEPTION(cast_result);
         }
         
-        return (Value){ TYPE_LONG, .as.longValue = __max(b.as.longValue, __min(a.as.longValue, c.as.longValue)) };
+        return BUILD_LONG(__max(b.as.longValue, __min(a.as.longValue, c.as.longValue)));
     }
 }
 
@@ -231,7 +231,7 @@ Value math_log(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = log(b.as.doubleValue) / log(a.as.doubleValue) };
+        return BUILD_DOUBLE(log(b.as.doubleValue) / log(a.as.doubleValue));
     } else {
         int cast_result = castValue(&a, TYPE_LONG);
         if (cast_result != 0) {
@@ -241,7 +241,7 @@ Value math_log(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_LONG, .as.longValue = logl(b.as.longValue) / logl(a.as.longValue) };
+        return BUILD_LONG(log(b.as.longValue) / log(a.as.longValue));
     }
 }
 
@@ -255,7 +255,7 @@ Value math_log10(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = log10(arg.as.doubleValue) };
+    return BUILD_DOUBLE(log10(arg.as.doubleValue));
 }
 
 Value math_log2(ValueArray args, bool debug) {
@@ -268,7 +268,7 @@ Value math_log2(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = log2(arg.as.doubleValue) };
+    return BUILD_DOUBLE(log2(arg.as.doubleValue));
 }
 
 Value math_sin(ValueArray args, bool debug) {
@@ -281,7 +281,7 @@ Value math_sin(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = sin(arg.as.doubleValue) };
+    return BUILD_DOUBLE(sin(arg.as.doubleValue));
 }
 
 Value math_cos(ValueArray args, bool debug) {
@@ -294,7 +294,7 @@ Value math_cos(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = cos(arg.as.doubleValue) };
+    return BUILD_DOUBLE(cos(arg.as.doubleValue));
 }
 
 Value math_tan(ValueArray args, bool debug) {
@@ -307,7 +307,7 @@ Value math_tan(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = tan(arg.as.doubleValue) };
+    return BUILD_DOUBLE(tan(arg.as.doubleValue));
 }
 
 Value math_asin(ValueArray args, bool debug) {
@@ -320,7 +320,7 @@ Value math_asin(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = asin(arg.as.doubleValue) };
+    return BUILD_DOUBLE(asin(arg.as.doubleValue));
 }
 
 Value math_acos(ValueArray args, bool debug) {
@@ -333,7 +333,7 @@ Value math_acos(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = acos(arg.as.doubleValue) };
+    return BUILD_DOUBLE(acos(arg.as.doubleValue));
 }
 
 Value math_atan(ValueArray args, bool debug) {
@@ -346,7 +346,7 @@ Value math_atan(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = atan(arg.as.doubleValue) };
+    return BUILD_DOUBLE(atan(arg.as.doubleValue));
 }
 
 Value math_atan2(ValueArray args, bool debug) {
@@ -366,7 +366,7 @@ Value math_atan2(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = atan2(a.as.doubleValue, b.as.doubleValue) };
+        return BUILD_DOUBLE(atan2(a.as.doubleValue, b.as.doubleValue));
     } else {
         int cast_result = castValue(&a, TYPE_LONG);
         if (cast_result != 0) {
@@ -376,7 +376,7 @@ Value math_atan2(ValueArray args, bool debug) {
         if (cast_result != 0) {
             return BUILD_EXCEPTION(cast_result);
         }
-        return (Value){ TYPE_DOUBLE, .as.doubleValue = atan2(a.as.longValue, b.as.longValue) };
+        return BUILD_DOUBLE(atan2(a.as.longValue, b.as.longValue));
     }
 }
 
@@ -390,5 +390,5 @@ Value math_exp(ValueArray args, bool debug) {
     if (cast_result != 0) {
         return BUILD_EXCEPTION(cast_result);
     }
-    return (Value){ TYPE_DOUBLE, .as.doubleValue = exp(arg.as.doubleValue) };
+    return BUILD_DOUBLE(exp(arg.as.doubleValue));
 }

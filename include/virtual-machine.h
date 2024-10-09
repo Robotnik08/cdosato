@@ -74,15 +74,13 @@ void init_Function(Function* func);
 
 Value callExternalFunction(size_t index, ValueArray args, bool debug);
 
-DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep);
+DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
 void markObjects (VirtualMachine* vm);
 void sweepObjects (VirtualMachine* vm);
 void markValue(Value* value);
-#define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
-#define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep), .defined = false, .is_variable_type = false, .is_constant = false }
-
-#define BUILD_NULL() (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 
 #define NEXT_BYTE() (*vm->ip++)
 #define NEXT_SHORT() ((*vm->ip++) | (*vm->ip++ << 8))
@@ -94,5 +92,7 @@ void markValue(Value* value);
 #define PEEK_STACK() (vm->stack_frames.stack[vm->stack_frames.count - 1])
 
 #define RECURSION_LIMIT 1000
+
+#define COPY_STRING(str) strcpy(malloc(strlen(str) + 1), str)
 
 #endif // dosato_virtual_machine_h

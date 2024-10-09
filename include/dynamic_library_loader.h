@@ -4,6 +4,7 @@
 #include "common.h"
 #include "error.h"
 #include "value.h"
+#include "virtual-machine.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -12,7 +13,7 @@
 #endif
 
 typedef Value (*DosatoFunction)(ValueArray, bool debug);
-typedef void (*DosatoFunctionEmpty)();
+typedef void (*DosatoInitFunction)(VirtualMachine*);
 
 typedef struct {
     char* name;
@@ -32,7 +33,7 @@ void free_DosatoFunctionMapList(DosatoFunctionMapList* list);
 typedef struct {
     char* name;
     void* handle;
-    DosatoFunctionEmpty init;
+    DosatoInitFunction init;
     DosatoFunctionMapList functions;
 } DynamicLibrary;
 

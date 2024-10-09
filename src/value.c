@@ -472,7 +472,7 @@ ErrorType incValue (Value* value, int amount) {
     return 0;
 }
 
-Value buildArray(size_t count, ...) {
+ValueArray* buildArray(size_t count, ...) {
     ValueArray* array = malloc(sizeof(ValueArray));
     init_ValueArray(array);
 
@@ -486,10 +486,10 @@ Value buildArray(size_t count, ...) {
 
     va_end(args);
 
-    return BUILD_ARRAY(array, false);
+    return array;
 }
 
-Value buildObject(size_t count, ...) {
+ValueObject* buildObject(size_t count, ...) {
     ValueObject* object = malloc(sizeof(ValueObject));
     init_ValueObject(object);
 
@@ -504,7 +504,7 @@ Value buildObject(size_t count, ...) {
 
     va_end(args);
 
-    return BUILD_OBJECT(object, false);
+    return object;
 }
 
 char* valueToString (Value value, bool extensive) {
