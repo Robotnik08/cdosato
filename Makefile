@@ -20,7 +20,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%.c,$(TEMPDIR)/%.o,$(patsubst $(SRCDIR)/standard
 all: $(BUILDDIR) $(TEMPDIR) $(TARGET) lib
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^-lm
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 lib: $(LIB_TARGET)
 
