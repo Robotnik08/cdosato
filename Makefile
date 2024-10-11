@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Iinclude -Iinclude/standard_libraries -Werror
+CFLAGS = -Iinclude -Iinclude/standard_libraries -Werror -Wno-format
 SRCDIR = src
 INCDIR = include
 BUILDDIR = build
@@ -7,7 +7,11 @@ TEMPDIR = temp
 TARGET = $(BUILDDIR)/dosato
 LIB_TARGET = $(BUILDDIR)/dosato_lib
 
+ifeq ($(OS),Windows_NT)
 CURRENT_DATE := $(shell powershell -Command "Get-Date -Format 'dd/MM/yyyy'")
+else
+CURRENT_DATE := $(shell date +"%d/%m/%Y")
+endif
 CFLAGS += -DDOSATO_DATE="\"$(CURRENT_DATE)\""
 
 SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/standard_libraries/*.c) main.c
@@ -16,26 +20,26 @@ OBJECTS := $(patsubst $(SRCDIR)/%.c,$(TEMPDIR)/%.o,$(patsubst $(SRCDIR)/standard
 all: $(BUILDDIR) $(TEMPDIR) $(TARGET) lib
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 lib: $(LIB_TARGET)
 
 ifeq ($(OS),Windows_NT)
 $(LIB_TARGET): $(OBJECTS)
-	$(CC) -shared -o $(LIB_TARGET).dll $^
+	$(CC) -shared -o $(LIB_TARGET).dll $^ -lm
 else
 $(LIB_TARGET): $(OBJECTS)
-	$(CC) -shared -o $(LIB_TARGET).so $^
+	$(CC) -shared -o $(LIB_TARGET).so $^ -lm
 endif
 
 $(TEMPDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(TEMPDIR)/standard_libraries/%.o: $(SRCDIR)/standard_libraries/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(TEMPDIR)/main.o: main.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(BUILDDIR):
 ifeq ($(OS),Windows_NT)
