@@ -7,7 +7,11 @@ TEMPDIR = temp
 TARGET = $(BUILDDIR)/dosato
 LIB_TARGET = $(BUILDDIR)/dosato_lib
 
+ifeq ($(OS),Windows_NT)
 CURRENT_DATE := $(shell powershell -Command "Get-Date -Format 'dd/MM/yyyy'")
+else
+CURRENT_DATE := $(shell date +"%d/%m/%Y")
+endif
 CFLAGS += -DDOSATO_DATE="\"$(CURRENT_DATE)\""
 
 SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/standard_libraries/*.c) main.c
@@ -29,13 +33,13 @@ $(LIB_TARGET): $(OBJECTS)
 endif
 
 $(TEMPDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(TEMPDIR)/standard_libraries/%.o: $(SRCDIR)/standard_libraries/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(TEMPDIR)/main.o: main.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(BUILDDIR):
 ifeq ($(OS),Windows_NT)
