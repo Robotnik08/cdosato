@@ -661,7 +661,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 }
             }
 
-            write_ValueArray(&vm->constants, BUILD_STRING(val, true));
+            write_ValueArray(&vm->constants, BUILD_STRING(val, false));
         }
     }
     for (int i = 0; i < numberCount; i++) {

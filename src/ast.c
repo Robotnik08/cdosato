@@ -58,10 +58,16 @@ void parseFile (AST* ast, char* name, int debug, VirtualMachine* vm) {
     long long int length = getFileSize(file);
     fseek(file, 0, SEEK_SET);
 
-    char* source = malloc(length + 1);
+    char* source = malloc(length + 1); // AST owns the source
     fread(source, 1, length, file);
     source[length] = '\0';
     fclose(file);
 
+    int globals_count_before = vm->globals.count;
+
     load_AST(ast, source, length, name, debug, vm);
+
+    for (int i = globals_count_before; i < vm->mappings.count; i++) { // add new mappings to globals
+        write_ValueArray(&vm->globals, UNDEFINED_VALUE);
+    }
 }

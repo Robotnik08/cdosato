@@ -87,9 +87,7 @@ Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count) {
             break;
         }
         case TYPE_STRING: {
-            char* new_str = malloc(strlen(AS_STRING(value)) + 1);
-            strcpy(new_str, AS_STRING(value));
-            value = BUILD_STRING(new_str, false);
+            value = BUILD_STRING(COPY_STRING(AS_STRING(value)), false);
             break;
         }
         default: {
@@ -837,9 +835,7 @@ void write_ValueObject(ValueObject* object, char* key, Value value) {
     }
     object->values[object->count] = value;
     // Copy the key
-    char* newKey = malloc(strlen(key) + 1);
-    strcpy(newKey, key);
-    object->keys[object->count] = newKey;
+    object->keys[object->count] = COPY_STRING(key);
     object->count++;
 }
 

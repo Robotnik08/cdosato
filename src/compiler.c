@@ -411,7 +411,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                         free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
-                        write_ValueArray(&vm->constants, BUILD_STRING(val, true));
+                        write_ValueArray(&vm->constants, BUILD_STRING(val, false));
                     }
                     writeInstruction(ci, node.body.nodes[0].body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
                 } else {
@@ -492,7 +492,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     free(val);
                 } else {
                     id = addName(&vm->constants_map, val);
-                    write_ValueArray(&vm->constants, BUILD_STRING(val, true));
+                    write_ValueArray(&vm->constants, BUILD_STRING(val, false));
                 }
                 writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
             } else {
@@ -589,7 +589,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                         free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
-                        write_ValueArray(&vm->constants, BUILD_STRING(val, true));
+                        write_ValueArray(&vm->constants, BUILD_STRING(val, false));
                     }
 
                     writeInstruction(ci, node.body.nodes[i].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));

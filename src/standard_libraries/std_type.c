@@ -6,10 +6,7 @@ Value type_typeof(ValueArray args, bool debug) {
     }
 
     DataType type = GET_ARG(args, 0).type;
-    char* typeString = dataTypeToString(type);
-    char* result = malloc(strlen(typeString) + 1);
-    strcpy(result, typeString);
-    return BUILD_STRING(result, true);
+    return BUILD_STRING(COPY_STRING(dataTypeToString(type)), true);
 }
 
 Value type_isnull(ValueArray args, bool debug) {
