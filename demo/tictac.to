@@ -1,7 +1,7 @@
 make array board = [0] * 9
 
 define void printBoard () {
-    make var i = 0
+    make i = 0
     do {
         do say(board#i ? (board#i == 1 ? "X" : "O") : i)
         do if (i % 3 == 2) then say("\n")
@@ -23,7 +23,7 @@ define bool checkWin (int player) {
 define int playGame () {
     make int player = 1
     do {
-        do sayln("Player " + player + "'s turn\n")
+        do sayln(`Player {player == 1 ? 'X' : 'O'}'s turn\n`)
         do printBoard()
         
         make int pos = -1
@@ -51,4 +51,4 @@ set winner = 2 when (winner == -1)
 do printBoard()
 do if (winner == 0) then 
     sayln("It's a draw!") else
-    sayln("Player " + winner + " wins!")
+    sayln(`Player {winner} wins!`)
