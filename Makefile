@@ -20,16 +20,16 @@ OBJECTS := $(patsubst $(SRCDIR)/%.c,$(TEMPDIR)/%.o,$(patsubst $(SRCDIR)/standard
 all: $(BUILDDIR) $(TEMPDIR) $(TARGET) lib
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^-lm
 
 lib: $(LIB_TARGET)
 
 ifeq ($(OS),Windows_NT)
 $(LIB_TARGET): $(OBJECTS)
-	$(CC) -shared -o $(LIB_TARGET).dll $^
+	$(CC) -shared -o $(LIB_TARGET).dll $^ -lm
 else
 $(LIB_TARGET): $(OBJECTS)
-	$(CC) -shared -o $(LIB_TARGET).so $^
+	$(CC) -shared -o $(LIB_TARGET).so $^ -lm
 endif
 
 $(TEMPDIR)/%.o: $(SRCDIR)/%.c
