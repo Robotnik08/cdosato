@@ -38,15 +38,19 @@ DynamicLibrary loadLib (const char* path) {
     strcpy(lib.name, path);
 
     #ifdef _WIN32
-    lib.handle = LoadLibraryA(path);
+
+    char* full_path = malloc(strlen(path) + 5);
+    strcpy(full_path, path);
+    strcat(full_path, ".dll");
+    lib.handle = LoadLibraryA(full_path);
     if (!lib.handle) {
-        printf("Error loading library (or library was not found) or interpreter is missing dll file: %s\n", path);
+        printf("Error loading library (or library was not found) or interpreter is missing dll file: %s\n", full_path);
         exit(1);
     }
     
     lib.init = (DosatoInitFunction)GetProcAddress(lib.handle, "init");
     if (!lib.init) {
-        printf("Error, library must have init function: %s\n", path);
+        printf("Error, library must have init function: %s\n", full_path);
         exit(1);
     }
 
@@ -56,37 +60,43 @@ DynamicLibrary loadLib (const char* path) {
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)GetProcAddress(lib.handle, "functions");
 
     if (!functions) {
-        printf("Error, library must have functions list: %s\n", path);
+        printf("Error, library must have functions list: %s\n", full_path);
         exit(1);
     }
 
     lib.functions = *functions;
 
-    #else
-    lib.handle = dlopen(path, RTLD_LAZY);
+    #else // unix
+    
+    char* full_path = malloc(strlen(path) + 4);
+    strcpy(full_path, path);
+    strcat(full_path, ".so");
+    lib.handle = dlopen(full_path, RTLD_LAZY);
+
     if (!lib.handle) {
-        printf("Error loading library: %s\n", dlerror());
+        printf("Error loading library (or library was not found) or interpreter is missing so file: %s\n", full_path);
         exit(1);
     }
 
     lib.init = (DosatoInitFunction)dlsym(lib.handle, "init");
+
     if (!lib.init) {
-        printf("Error, library must have init function: %s\n", dlerror());
+        printf("Error, library must have init function: %s\n", full_path);
         exit(1);
     }
-    
+
     // call the init function
     lib.init(main_vm);
 
     DosatoFunctionMapList* functions = (DosatoFunctionMapList*)dlsym(lib.handle, "functions");
 
     if (!functions) {
-        printf("Error, library must have functions list: %s\n", dlerror());
+        printf("Error, library must have functions list: %s\n", full_path);
         exit(1);
     }
-
-    lib.functions = *functions;
     
+    lib.functions = *functions;
+
     #endif
 
     return lib;
