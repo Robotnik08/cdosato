@@ -30,4 +30,8 @@
     #define __max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
+#ifndef __min
+    #define __min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 #endif // dosato_common_h
