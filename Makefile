@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Iinclude -Iinclude/standard_libraries -Werror
+CFLAGS = -Iinclude -Iinclude/standard_libraries -Werror -Wno-format
 SRCDIR = src
 INCDIR = include
 BUILDDIR = build
