@@ -251,7 +251,7 @@ int loadConstants (VirtualMachine* vm, char** argv, int argc) {
     ValueArray* list = malloc(sizeof(ValueArray));
     init_ValueArray(list);
     for (int i = 0; i < argc; i++) {
-        Value arg = BUILD_STRING(argv[i], false);
+        Value arg = BUILD_STRING(COPY_STRING(argv[i]), false);
         write_ValueArray(list, arg);
     }
 
