@@ -26,4 +26,8 @@
     #define DOSATO_DATE "Unknown date"
 #endif
 
+#ifndef __max
+    #define __max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 #endif // dosato_common_h
