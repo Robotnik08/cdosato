@@ -198,6 +198,19 @@ typedef struct {
 #define BUILD_BOOL(value) (Value){ TYPE_BOOL, .as.boolValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_CHAR(value) (Value){ TYPE_CHAR, .as.charValue = value, .defined = false, .is_variable_type = false, .is_constant = false }
 
+#define AS_BYTE(value) ((value).as.byteValue)
+#define AS_UBYTE(value) ((value).as.ubyteValue)
+#define AS_SHORT(value) ((value).as.shortValue)
+#define AS_USHORT(value) ((value).as.ushortValue)
+#define AS_INT(value) ((value).as.intValue)
+#define AS_UINT(value) ((value).as.uintValue)
+#define AS_LONG(value) ((value).as.longValue)
+#define AS_ULONG(value) ((value).as.ulongValue)
+#define AS_FLOAT(value) ((value).as.floatValue)
+#define AS_DOUBLE(value) ((value).as.doubleValue)
+#define AS_BOOL(value) ((value).as.boolValue)
+#define AS_CHAR(value) ((value).as.charValue)
+
 /**
  * @brief Destroys a value and frees the entire object safely.
  * The value may not be used after this function is called.

@@ -8,6 +8,8 @@
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR", "FUNCTION"}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
 #define NULL_KEYWORDS {"NULL"}
+#define INFINITY_KEYWORDS {"INFINITY"}
+#define NAN_KEYWORDS {"NAN"}
 #define RESERVED_KEYWORDS {"OTHER"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
@@ -34,6 +36,8 @@ typedef enum {
     TOKEN_VAR_TYPE,
     TOKEN_BOOLEAN,
     TOKEN_NULL_KEYWORD,
+    TOKEN_INFINITY_KEYWORD,
+    TOKEN_NAN_KEYWORD,
     TOKEN_RESERVED_KEYWORD,
     TOKEN_TEMPLATE,
     TOKEN_TEMPLATE_END,

@@ -575,6 +575,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 pushValue(&vm->stack, UNDEFINED_VALUE);
                 break;
             }
+            case OP_PUSH_INFINITY: {
+                Value val = BUILD_DOUBLE(INFINITY);
+                pushValue(&vm->stack, val);
+                break;
+            }
+            
+            case OP_PUSH_NAN: {
+                Value val = BUILD_DOUBLE(NAN);
+                pushValue(&vm->stack, val);
+                break;
+            }
+
             case OP_PUSH_MINUS_ONE: {
                 Value val = BUILD_LONG(-1);
                 pushValue(&vm->stack, val);

@@ -91,6 +91,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"TYPEOF", type_typeof},
         {"ISNULL", type_isnull},
         {"TYPEINTOF", type_typeof_int},
+        {"ISNAN", type_isnan},
 
         // no caps functions below (refrence the same functions)
         {"say", io_say},
@@ -180,7 +181,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
 
         {"typeof", type_typeof},
         {"isnull", type_isnull},
-        {"typeintof", type_typeof_int}
+        {"typeintof", type_typeof_int},
+        {"isnan", type_isnan}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

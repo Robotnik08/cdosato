@@ -95,6 +95,9 @@ typedef enum {
     OP_PUSH_NULL,
     OP_PUSH_MINUS_ONE,
 
+    OP_PUSH_INFINITY,
+    OP_PUSH_NAN,
+
     OP_INCLUDE,
     OP_END_INCLUDE,
 
