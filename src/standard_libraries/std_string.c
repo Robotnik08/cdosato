@@ -8,15 +8,8 @@ Value string_split(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* delim = AS_STRING(arg2);
@@ -58,10 +51,7 @@ Value string_lower(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     toLower(AS_STRING(arg));
 
@@ -75,10 +65,7 @@ Value string_upper(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     toUpper(AS_STRING(arg));
 
@@ -92,10 +79,7 @@ Value string_length(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     size_t len = strlen(AS_STRING(arg));
 
@@ -111,24 +95,13 @@ Value string_substr(ValueArray args, bool debug) {
     Value arg2 = GET_ARG(args, 1);
     Value arg3 = GET_ARG(args, 2);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_LONG);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg3, TYPE_LONG);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_LONG);
+    CAST_SAFE(arg3, TYPE_LONG);
 
     char* str = AS_STRING(arg1);
-    long long int start = arg2.as.longValue;
-    long long int end = arg3.as.longValue;
+    long long int start = AS_LONG(arg2);
+    long long int end = AS_LONG(arg3);
 
     if (start < 0 || start >= strlen(str) || end < 0 || end >= strlen(str) || start > end) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
@@ -150,15 +123,8 @@ Value string_indexof(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -184,15 +150,8 @@ Value string_lastindexof(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -216,15 +175,8 @@ Value string_startswith(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -243,15 +195,8 @@ Value string_endswith(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -271,20 +216,9 @@ Value string_replace(ValueArray args, bool debug) {
     Value arg2 = GET_ARG(args, 1);
     Value arg3 = GET_ARG(args, 2);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg3, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_SAFE(arg3, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -325,10 +259,7 @@ Value string_trim(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     char* str = AS_STRING(arg);
 
@@ -355,10 +286,7 @@ Value string_reverse(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     char* str = AS_STRING(arg);
     size_t len = strlen(str);
@@ -380,15 +308,8 @@ Value string_contains(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -406,15 +327,8 @@ Value string_remove(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -452,23 +366,12 @@ Value string_insert(ValueArray args, bool debug) {
     Value arg2 = GET_ARG(args, 1);
     Value arg3 = GET_ARG(args, 2);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_LONG);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg3, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_LONG);
+    CAST_SAFE(arg3, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
-    long long int index = arg2.as.longValue;
+    long long int index = AS_LONG(arg2);
     char* substr = AS_STRING(arg3);
 
     if (index < 0 || index >= strlen(str)) {
@@ -497,10 +400,7 @@ Value string_atoi(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     char* str = AS_STRING(arg);
     long long int result = atoll(str);
@@ -515,10 +415,7 @@ Value string_atod(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     char* str = AS_STRING(arg);
     double result = atof(str);
@@ -534,15 +431,8 @@ Value string_count(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -570,10 +460,7 @@ Value string_join(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    int cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg2, TYPE_STRING);
 
     ValueArray* arr = AS_ARRAY(arg1);
     char* delim = AS_STRING(arg2);
@@ -601,10 +488,7 @@ Value string_format(ValueArray args, bool debug) {
 
     Value arg1 = GET_ARG(args, 0);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
 
     char* format = AS_STRING(arg1);
     char* result = malloc(1);

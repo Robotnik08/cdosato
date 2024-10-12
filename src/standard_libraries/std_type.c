@@ -26,3 +26,19 @@ Value type_typeof_int(ValueArray args, bool debug) {
     DataType type = GET_ARG(args, 0).type;
     return BUILD_LONG(type);
 }
+
+Value type_isnan(ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value value = GET_ARG(args, 0);
+    if (ISFLOATTYPE(value.type)) {
+        CAST_SAFE(value, TYPE_DOUBLE);
+        return BUILD_BOOL(isnan(AS_DOUBLE(value)));
+    } else if (ISINTTYPE(value.type) || value.type == TYPE_CHAR || value.type == TYPE_BOOL) {
+        return BUILD_BOOL(false);
+    } else {
+        return BUILD_BOOL(true); // not a number
+    }
+}

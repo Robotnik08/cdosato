@@ -18,10 +18,7 @@ Value io_datetime (ValueArray args, bool debug) {
     bool allocated = false;
     if (args.count == 2) {
         Value arg = GET_ARG(args, 1);
-        int cast_result = castValue(&arg, TYPE_STRING);
-        if (cast_result != 0) {
-            return BUILD_EXCEPTION(cast_result);
-        }
+        CAST_SAFE(arg, TYPE_STRING);
         format = malloc(strlen(AS_STRING(arg)) + 1);
         strcpy(format, AS_STRING(arg));
         allocated = true;
@@ -30,11 +27,8 @@ Value io_datetime (ValueArray args, bool debug) {
     time_t t = time(NULL);
     if (args.count >= 1) {
         Value arg = GET_ARG(args, 0);
-        int cast_result = castValue(&arg, TYPE_LONG);
-        if (cast_result != 0) {
-            return BUILD_EXCEPTION(cast_result);
-        }
-        t = arg.as.longValue;
+        CAST_SAFE(arg, TYPE_LONG);
+        t = AS_LONG(arg);
     }
 
     struct tm* tm_info = localtime(&t);
@@ -60,12 +54,9 @@ Value io_sleep (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_DOUBLE);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_DOUBLE);
 
-    double seconds = arg.as.doubleValue;
+    double seconds = AS_DOUBLE(arg);
 
     clock_t start = clock();
     while ((double)(clock() - start) / CLOCKS_PER_SEC < seconds);

@@ -6,12 +6,9 @@ Value io_seed_random (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_UINT);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_UINT);
 
-    srand(arg.as.uintValue);
+    srand(AS_UINT(arg));
     rand(); // Discard the first random number
 
     return UNDEFINED_VALUE;
@@ -43,17 +40,10 @@ Value io_random_range (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_LONG);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_LONG);
+    CAST_SAFE(arg2, TYPE_LONG);
 
-    cast_result = castValue(&arg2, TYPE_LONG);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    long long int result = rand() % (arg2.as.longValue - arg1.as.longValue + 1) + arg1.as.longValue;
+    long long int result = rand() % (AS_LONG(arg2) - AS_LONG(arg1) + 1) + AS_LONG(arg1);
 
     return BUILD_LONG(result);
 }

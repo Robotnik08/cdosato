@@ -5,9 +5,6 @@
 #endif
 
 Value io_say (ValueArray args, bool debug) {
-    if (args.count == 0) {
-        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
-    }
 
     int char_count = 0;
     for (int i = 0; i < args.count; i++) {
@@ -23,7 +20,7 @@ Value io_say (ValueArray args, bool debug) {
         }
     }
     
-    return BUILD_CHAR(char_count);
+    return BUILD_INT(char_count);
 }
 
 Value io_sayln (ValueArray args, bool debug) {
@@ -32,7 +29,7 @@ Value io_sayln (ValueArray args, bool debug) {
         return say_result;
     }
     printf("\n"); // sayln adds a newline
-    say_result.as.longValue++; // add one to the char count
+    AS_LONG(say_result)++; // add one to the char count
     return say_result;
 }
 
@@ -56,11 +53,8 @@ Value io_listen (ValueArray args, bool debug) {
     char delimiter = '\n';
     if (args.count == 2) {
         Value arg = GET_ARG(args, 1);
-        int cast_result = castValue(&arg, TYPE_CHAR);
-        if (cast_result != 0) {
-            return BUILD_EXCEPTION(cast_result);
-        }
-        delimiter = arg.as.charValue;
+        CAST_SAFE(arg, TYPE_CHAR);
+        delimiter = AS_CHAR(arg);
     }
 
     char* input = malloc(1);
@@ -87,10 +81,7 @@ Value io_read_file (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     FILE* file = fopen(AS_STRING(arg), "r");
     if (file == NULL) {
@@ -120,15 +111,8 @@ Value io_write_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     FILE* file = fopen(AS_STRING(arg1), "w");
     if (file == NULL) {
@@ -153,15 +137,8 @@ Value io_append_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     FILE* file = fopen(AS_STRING(arg1), "a");
     if (file == NULL) {
@@ -184,10 +161,7 @@ Value io_delete_file (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     int result = remove(AS_STRING(arg));
     if (result != 0) {
@@ -207,10 +181,7 @@ Value io_file_exists (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     FILE* file = fopen(AS_STRING(arg), "r");
     if (file == NULL) {
@@ -230,15 +201,8 @@ Value io_move_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     int result = rename(AS_STRING(arg1), AS_STRING(arg2));
     if (result != 0) {
@@ -260,15 +224,8 @@ Value io_copy_file (ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    int cast_result = castValue(&arg1, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
-
-    cast_result = castValue(&arg2, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     FILE* file1 = fopen(AS_STRING(arg1), "r");
     if (file1 == NULL) {

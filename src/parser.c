@@ -621,13 +621,14 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (i == start) {
                 PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
             }
-            if (i == end - 1) {
-                PRINT_ERROR(i, E_EXPECTED_COLON_OPERATOR);
+            if (i == end) { // { key } will be: { key: value at key }
+                write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION, file_name));
+                write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION, file_name));
+                break;
+            } else {
+                write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION, file_name));
+                write_NodeList(&root.body, parse(source, length, i + 1, end, tokens, NODE_EXPRESSION, file_name));
             }
-
-            
-            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_EXPRESSION, file_name));
-            write_NodeList(&root.body, parse(source, length, i + 1, end, tokens, NODE_EXPRESSION, file_name));
             break;
         }
 
@@ -684,6 +685,10 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     root.type = tokens.tokens[new_start].carry == 0 ? NODE_FALSE : NODE_TRUE;
                 } else if (tokens.tokens[new_start].type == TOKEN_NULL_KEYWORD) {
                     root.type = NODE_NULL_KEYWORD;
+                } else if (tokens.tokens[new_start].type == TOKEN_INFINITY_KEYWORD) {
+                    root.type = NODE_INFINITY_KEYWORD;
+                } else if (tokens.tokens[new_start].type == TOKEN_NAN_KEYWORD) {
+                    root.type = NODE_NAN_KEYWORD;
                 } else if (tokens.tokens[new_start].type == TOKEN_TEMPLATE_END) {
                     root.type = NODE_TEMPLATE_LITERAL;
                     write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_TEMPLATE_STRING_PART, file_name));

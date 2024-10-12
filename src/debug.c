@@ -265,6 +265,14 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_PUSH_MINUS_ONE:
             printf("OP_PUSH_MINUS_ONE");
             break;
+        case OP_PUSH_INFINITY:
+            printf("OP_PUSH_INFINITY");
+            break;
+        case OP_PUSH_NAN:
+            printf("OP_PUSH_NAN");
+            break;
+
+
         case OP_CLEAR_EXCEPTION:
             printf("OP_CLEAR_EXCEPTION");
             break;
