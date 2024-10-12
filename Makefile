@@ -5,7 +5,7 @@ INCDIR = include
 BUILDDIR = build
 TEMPDIR = temp
 TARGET = $(BUILDDIR)/dosato
-LIB_TARGET = $(BUILDDIR)/dosato_lib
+LIB_TARGET = $(BUILDDIR)/libdosato
 
 ifeq ($(OS),Windows_NT)
 CURRENT_DATE := $(shell powershell -Command "Get-Date -Format 'dd/MM/yyyy'")
