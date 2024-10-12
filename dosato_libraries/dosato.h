@@ -35,6 +35,13 @@ extern "C" {
         } \
     } while (0)
 
+#define CAST_TO_STRING(value) \
+    do { \
+        if (value.type == TYPE_STRING) break; \
+        char* str = valueToString(value, false); \
+        value = BUILD_STRING(str); \
+    } while (0)
+
 /// error.h
 /// Error enum.
 
@@ -212,12 +219,6 @@ typedef struct {
 #define AS_CHAR(value) ((value).as.charValue)
 
 /**
- * @brief Destroys a value and frees the entire object safely.
- * The value may not be used after this function is called.
- */
-extern void destroyValue(Value* value);
-
-/**
  * @brief Prints the value to the console.
  * @param value The value to print.
  * @param extensive If true, prints the value in an extensive format. (e.g. strings are printed with quotes)
@@ -225,14 +226,9 @@ extern void destroyValue(Value* value);
 extern void printValue(Value value, bool extensive);
 
 /**
- * @brief Returns a hard copy of the value, this means you will have to destroy the value after you are done with it.
- */
-extern Value hardCopyValue(Value value);
-
-/**
  * @brief Casts a value to a specific type, if possible. The value will be destroyed and replaced with the new value, so make sure you have a copy of the value if you need it.
  * @param value The value to cast.
- * @param type The type to cast to.
+ * @param type The type to cast to, must be a value type, if you want to cast to a string, use the CAST_TO_STRING macro.
  * @return An error code, 0 if successful. if you get an error code, make sure to handle it accordingly.
  */
 extern ErrorType castValue(Value* value, DataType type);
