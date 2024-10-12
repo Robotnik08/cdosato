@@ -566,6 +566,16 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_INFINITY_KEYWORD: {
+            writeByteCode(ci, OP_PUSH_INFINITY, node.start);
+            break;
+        }
+
+        case NODE_NAN_KEYWORD: {
+            writeByteCode(ci, OP_PUSH_NAN, node.start);
+            break;
+        }
+
         case NODE_TEMPLATE_LITERAL: {
             // the sum of all the parts
             for (int i = 0; i < node.body.count; i++) {
@@ -643,7 +653,21 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_OBJECT_ENTRY: {
-            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            if (node.body.nodes[0].type == NODE_IDENTIFIER && ast->tokens.tokens[node.start].type == TOKEN_IDENTIFIER) {
+                // add identifier as a constant string
+                char* val = getTokenString(ast->tokens.tokens[node.body.nodes[0].start]);
+                int id = -1;
+                if (hasName(&vm->constants_map, val)) {
+                    id = getName(&vm->constants_map, val);
+                    free(val);
+                } else {
+                    id = addName(&vm->constants_map, val);
+                    write_ValueArray(&vm->constants, BUILD_STRING(val, false));
+                }
+                writeInstruction(ci, node.body.nodes[0].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
+            } else {
+                compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            }
             compileNode(vm, ci, node.body.nodes[1], ast, scope);
             break;
         }

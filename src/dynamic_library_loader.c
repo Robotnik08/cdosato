@@ -44,7 +44,7 @@ DynamicLibrary loadLib (const char* path) {
     strcat(full_path, ".dll");
     lib.handle = LoadLibraryA(full_path);
     if (!lib.handle) {
-        printf("Error loading library (or library was not found) or interpreter is missing dll file: %s\n", full_path);
+        printf("Error loading library '%s': Error code: %d\n", full_path, GetLastError());
         exit(1);
     }
     
@@ -74,7 +74,7 @@ DynamicLibrary loadLib (const char* path) {
     lib.handle = dlopen(full_path, RTLD_LAZY);
 
     if (!lib.handle) {
-        printf("Error loading library (or library was not found) or interpreter is missing so file: %s\n", full_path);
+        printf("Error loading library '%s': %s\n", full_path, dlerror());
         exit(1);
     }
 

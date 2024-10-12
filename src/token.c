@@ -59,6 +59,10 @@ char* getTokenEnumString (LexTokenType type) {
             return "BOOLEAN";
         case TOKEN_NULL_KEYWORD:
             return "NULL_KEYWORD";
+        case TOKEN_INFINITY_KEYWORD:
+            return "INFINITY_KEYWORD";
+        case TOKEN_NAN_KEYWORD:
+            return "NAN_KEYWORD";
         case TOKEN_RESERVED_KEYWORD:
             return "RESERVED_KEYWORD";
         case TOKEN_TEMPLATE:

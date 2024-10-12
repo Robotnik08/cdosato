@@ -20,12 +20,9 @@ Value io_end (ValueArray args, bool debug) {
 
     if (args.count == 1) {
         Value arg = GET_ARG(args, 0);
-        int cast_result = castValue(&arg, TYPE_LONG);
-        if (cast_result != 0) {
-            return BUILD_EXCEPTION(cast_result);
-        }
+        CAST_SAFE(arg, TYPE_LONG);
 
-        return BUILD_HLT(arg.as.longValue);
+        return BUILD_HLT(AS_LONG(arg));
     }
 
     return BUILD_HLT(0);
@@ -48,10 +45,7 @@ Value io_system (ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_result = castValue(&arg, TYPE_STRING);
-    if (cast_result != 0) {
-        return BUILD_EXCEPTION(cast_result);
-    }
+    CAST_SAFE(arg, TYPE_STRING);
 
     int result = system(AS_STRING(arg));
 

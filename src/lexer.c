@@ -500,6 +500,62 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
 
     REFRESH_LIST()
 
+    // get INFINITY tokens
+    const char* infinitytokens[] = INFINITY_KEYWORDS;
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        for (int j = 0; j < sizeof(infinitytokens)/sizeof(char*); j++) {
+            // check if the previous char is not alphanumeric
+            if (i > 0) {
+                if (isAlphaNumeric(full_code[i-1])) break;
+                // check if the next char is not alphanameric
+                if (i + strlen(infinitytokens[j]) < code_length) {
+                    if (isAlphaNameric(full_code[i + strlen(infinitytokens[j])])) continue; // not a break, since the next type could differ in length
+                }
+            }
+            char* next_word = getWord(full_code, i);
+            toUpper(next_word);
+            if (!strcmp(next_word, infinitytokens[j])) {
+                free(next_word);
+                DOSATO_ADD_TOKEN(list, TOKEN_INFINITY_KEYWORD, full_code + i, strlen(infinitytokens[j]) - 1, j);
+                i += strlen(infinitytokens[j]) - 1;
+                break;
+            } else {
+                free(next_word);
+            }
+        }
+    }
+
+    REFRESH_LIST()
+
+    // get NAN tokens
+    const char* nantokens[] = NAN_KEYWORDS;
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        for (int j = 0; j < sizeof(nantokens)/sizeof(char*); j++) {
+            // check if the previous char is not alphanumeric
+            if (i > 0) {
+                if (isAlphaNumeric(full_code[i-1])) break;
+                // check if the next char is not alphanameric
+                if (i + strlen(nantokens[j]) < code_length) {
+                    if (isAlphaNameric(full_code[i + strlen(nantokens[j])])) continue; // not a break, since the next type could differ in length
+                }
+            }
+            char* next_word = getWord(full_code, i);
+            toUpper(next_word);
+            if (!strcmp(next_word, nantokens[j])) {
+                free(next_word);
+                DOSATO_ADD_TOKEN(list, TOKEN_NAN_KEYWORD, full_code + i, strlen(nantokens[j]) - 1, j);
+                i += strlen(nantokens[j]) - 1;
+                break;
+            } else {
+                free(next_word);
+            }
+        }
+    }
+
+    REFRESH_LIST()
+
     // get reserved keywords
     const char* reservedtokens[] = RESERVED_KEYWORDS;
     for (int i = 0; i < code_length; i++) {

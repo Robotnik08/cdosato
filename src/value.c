@@ -648,24 +648,54 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
             break;
         }
         case TYPE_FLOAT: {
+            if (isnan(value.as.floatValue)) {
+                string = realloc(string, 8);
+                sprintf(string, "NaN");
+                break;
+            } else if (isinf(value.as.floatValue)) {
+                if (value.as.floatValue < 0) {
+                    string = realloc(string, 4);
+                    sprintf(string, "-infinity");
+                } else {
+                    string = realloc(string, 3);
+                    sprintf(string, "infinity");
+                }
+                break;
+            }
+
             string = realloc(string, 32);
             sprintf(string, "%f", value.as.floatValue);
             break;
         }
         case TYPE_DOUBLE: {
+            if (isnan(value.as.doubleValue)) {
+                string = realloc(string, 8);
+                sprintf(string, "NaN");
+                break;
+            } else if (isinf(value.as.doubleValue)) {
+                if (value.as.doubleValue < 0) {
+                    string = realloc(string, 4);
+                    sprintf(string, "-infinity");
+                } else {
+                    string = realloc(string, 3);
+                    sprintf(string, "infinity");
+                }
+                break;
+            }
+
             string = realloc(string, 32);
             sprintf(string, "%lf", value.as.doubleValue);
             break;
         }
         case TYPE_BOOL: {
             string = realloc(string, 6);
-            sprintf(string, "%s", value.as.boolValue ? "TRUE" : "FALSE");
+            sprintf(string, "%s", value.as.boolValue ? "true" : "false");
             break;
         }
 
         case D_NULL: {
             string = realloc(string, 6);
-            sprintf(string, "NULL");
+            sprintf(string, "null");
             break;
         }
 

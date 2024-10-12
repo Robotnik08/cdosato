@@ -12,13 +12,13 @@ int compareValues (const void* a, const void* b) {
         castValue(&a_value, TYPE_DOUBLE);
         castValue(&b_value, TYPE_DOUBLE);
 
-        return a_value.as.doubleValue - b_value.as.doubleValue;
+        return AS_DOUBLE(a_value) - AS_DOUBLE(b_value);
     } else if (ISINTTYPE(a_value.type) && ISINTTYPE(b_value.type)) {
         // an int to int cast always succeeds
         castValue(&a_value, TYPE_LONG);
         castValue(&b_value, TYPE_LONG);
 
-        return a_value.as.longValue - b_value.as.longValue;
+        return AS_LONG(a_value) - AS_LONG(b_value);
     } else {
         // if the types are not compatible, return 0
         return 0;
@@ -31,7 +31,7 @@ Value dosato_quick_sort (ValueArray* array, int left, int right, size_t function
         if (pivot_value.type == TYPE_EXCEPTION || pivot_value.type == TYPE_HLT) {
             return pivot_value;
         }
-        int pivot = pivot_value.as.longValue;
+        int pivot = AS_LONG(pivot_value);
         Value val1 = dosato_quick_sort(array, left, pivot - 1, function);
         if (val1.type == TYPE_EXCEPTION || val1.type == TYPE_HLT) {
             return val1;
@@ -65,7 +65,7 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
         
         if (ISINTTYPE(result.type)) {
             castValue(&result, TYPE_LONG);
-            if (result.as.longValue < 0) {
+            if (AS_LONG(result) < 0) {
                 i++;
                 Value temp = array->values[i];
                 array->values[i] = array->values[j];
@@ -75,7 +75,7 @@ Value dosato_partition (ValueArray* array, int left, int right, size_t function)
 
         if (ISFLOATTYPE(result.type)) {
             castValue(&result, TYPE_DOUBLE);
-            if (result.as.doubleValue < 0) {
+            if (AS_DOUBLE(result) < 0) {
                 i++;
                 Value temp = array->values[i];
                 array->values[i] = array->values[j];
@@ -107,7 +107,7 @@ Value array_sort(ValueArray args, bool debug) {
         if (arg2.type != TYPE_FUNCTION) {
             return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
         }
-        Value res = dosato_quick_sort(AS_ARRAY(arg), 0, AS_ARRAY(arg)->count - 1, arg2.as.longValue);
+        Value res = dosato_quick_sort(AS_ARRAY(arg), 0, AS_ARRAY(arg)->count - 1, AS_LONG(arg2));
 
         if (res.type == TYPE_EXCEPTION || res.type == TYPE_HLT) {
             return res;
@@ -213,30 +213,24 @@ Value array_slice (ValueArray args, bool debug) {
     }
 
     Value start = GET_ARG(args, 1);
-    int cast_error = castValue(&start, TYPE_LONG);
-    if (cast_error != E_NULL) {
-        return BUILD_EXCEPTION(cast_error);
-    }
+    CAST_SAFE(start, TYPE_LONG);
 
     Value end;
     if (args.count == 3) {
         end = GET_ARG(args, 2);
-        cast_error = castValue(&end, TYPE_LONG);
-        if (cast_error != E_NULL) {
-            return BUILD_EXCEPTION(cast_error);
-        }
+        CAST_SAFE(end, TYPE_LONG);
     } else {
         end = BUILD_LONG((AS_ARRAY(arg))->count);
     }
 
-    if (start.as.longValue < 0 || start.as.longValue >= (AS_ARRAY(arg))->count || end.as.longValue < 0 || end.as.longValue > (AS_ARRAY(arg))->count) {
+    if (AS_LONG(start) < 0 || AS_LONG(start) >= (AS_ARRAY(arg))->count || AS_LONG(end) < 0 || AS_LONG(end) > (AS_ARRAY(arg))->count) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
     ValueArray* obj = AS_ARRAY(arg);
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (int i = start.as.longValue; i < end.as.longValue; i++) {
+    for (int i = AS_LONG(start); i < AS_LONG(end); i++) {
         write_ValueArray(new_array, obj->values[i]);
     }
 
@@ -254,33 +248,27 @@ Value array_splice (ValueArray args, bool debug) {
     }
 
     Value start = GET_ARG(args, 1);
-    int cast_error = castValue(&start, TYPE_LONG);
-    if (cast_error != E_NULL) {
-        return BUILD_EXCEPTION(cast_error);
-    }
+    CAST_SAFE(start, TYPE_LONG);
 
     Value delete_count;
     if (args.count > 2) {
         delete_count = GET_ARG(args, 2);
-        cast_error = castValue(&delete_count, TYPE_LONG);
-        if (cast_error != E_NULL) {
-            return BUILD_EXCEPTION(cast_error);
-        }
+        CAST_SAFE(delete_count, TYPE_LONG);
     } else {
-        delete_count = BUILD_LONG((AS_ARRAY(arg))->count - start.as.longValue);
+        delete_count = BUILD_LONG((AS_ARRAY(arg))->count - AS_LONG(start));
     }
 
     ValueArray* obj = AS_ARRAY(arg);
-    if (start.as.longValue < 0 || start.as.longValue >= obj->count || delete_count.as.longValue < 0 || start.as.longValue + delete_count.as.longValue > obj->count) {
+    if (AS_LONG(start) < 0 || AS_LONG(start) >= obj->count || AS_LONG(delete_count) < 0 || AS_LONG(start) + AS_LONG(delete_count) > obj->count) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (int i = 0; i < start.as.longValue; i++) {
+    for (int i = 0; i < AS_LONG(start); i++) {
         write_ValueArray(new_array, obj->values[i]);
     }
-    for (int i = start.as.longValue + delete_count.as.longValue; i < obj->count; i++) {
+    for (int i = AS_LONG(start) + AS_LONG(delete_count); i < obj->count; i++) {
         write_ValueArray(new_array, obj->values[i]);
     }
 
@@ -366,7 +354,7 @@ Value array_fill (ValueArray args, bool debug) {
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (int i = 0; i < count.as.longValue; i++) {
+    for (int i = 0; i < AS_LONG(count); i++) {
         write_ValueArray(new_array, value);
     }
 
@@ -380,41 +368,32 @@ Value array_range (ValueArray args, bool debug) {
     }
 
     Value start = GET_ARG(args, 0);
-    int cast_error = castValue(&start, TYPE_LONG);
-    if (cast_error != E_NULL) {
-        return BUILD_EXCEPTION(cast_error);
-    }
+    CAST_SAFE(start, TYPE_LONG);
 
     Value end;
     if (args.count > 1) {
         end = GET_ARG(args, 1);
-        cast_error = castValue(&end, TYPE_LONG);
-        if (cast_error != E_NULL) {
-            return BUILD_EXCEPTION(cast_error);
-        }
+        CAST_SAFE(end, TYPE_LONG);
     } else {
-        end = BUILD_LONG(start.as.longValue);
+        end = BUILD_LONG(AS_LONG(start));
         start = BUILD_LONG(0);
     }
 
     Value step;
     if (args.count > 2) {
         step = GET_ARG(args, 2);
-        cast_error = castValue(&step, TYPE_LONG);
-        if (cast_error != E_NULL) {
-            return BUILD_EXCEPTION(cast_error);
-        }
+        CAST_SAFE(step, TYPE_LONG);
     } else {
         step = BUILD_LONG(1);
     }
 
-    if (step.as.longValue == 0) {
+    if (AS_LONG(step) == 0) {
         return BUILD_EXCEPTION(E_CANNOT_BE_ZERO);
     }
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (int i = start.as.longValue; (step.as.longValue > 0 && i < end.as.longValue) || (step.as.longValue < 0 && i > end.as.longValue); i += step.as.longValue) {
+    for (int i = AS_LONG(start); (AS_LONG(step) > 0 && i < AS_LONG(end)) || (AS_LONG(step) < 0 && i > AS_LONG(end)); i += AS_LONG(step)) {
         write_ValueArray(new_array, BUILD_LONG(i));
     }
 
@@ -427,41 +406,32 @@ Value array_rangef (ValueArray args, bool debug) {
     }
 
     Value start = GET_ARG(args, 0);
-    int cast_error = castValue(&start, TYPE_DOUBLE);
-    if (cast_error != E_NULL) {
-        return BUILD_EXCEPTION(cast_error);
-    }
+    CAST_SAFE(start, TYPE_DOUBLE);
 
     Value end;
     if (args.count > 1) {
         end = GET_ARG(args, 1);
-        cast_error = castValue(&end, TYPE_DOUBLE);
-        if (cast_error != E_NULL) {
-            return BUILD_EXCEPTION(cast_error);
-        }
+        CAST_SAFE(end, TYPE_DOUBLE);
     } else {
-        end = BUILD_DOUBLE(start.as.doubleValue);
+        end = BUILD_DOUBLE(AS_DOUBLE(start));
         start = BUILD_DOUBLE(0);
     }
 
     Value step;
     if (args.count > 2) {
         step = GET_ARG(args, 2);
-        cast_error = castValue(&step, TYPE_DOUBLE);
-        if (cast_error != E_NULL) {
-            return BUILD_EXCEPTION(cast_error);
-        }
+        CAST_SAFE(step, TYPE_DOUBLE);
     } else {
         step = BUILD_DOUBLE(1);
     }
 
-    if (step.as.doubleValue == 0) {
+    if (AS_DOUBLE(step) == 0) {
         return BUILD_EXCEPTION(E_CANNOT_BE_ZERO);
     }
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (double i = start.as.doubleValue; (step.as.doubleValue > 0 && i < end.as.doubleValue) || (step.as.doubleValue < 0 && i > end.as.doubleValue); i += step.as.doubleValue) {
+    for (double i = AS_DOUBLE(start); (AS_DOUBLE(step) > 0 && i < AS_DOUBLE(end)) || (AS_DOUBLE(step) < 0 && i > AS_DOUBLE(end)); i += AS_DOUBLE(step)) {
         write_ValueArray(new_array, BUILD_DOUBLE(i));
     }
 
@@ -484,12 +454,9 @@ Value array_set_counter(ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    int cast_error = castValue(&arg, TYPE_LONG);
-    if (cast_error != E_NULL) {
-        return BUILD_EXCEPTION(cast_error);
-    }
-
-    counter = arg.as.longValue;
+    CAST_SAFE(arg, TYPE_LONG);
+    
+    counter = AS_LONG(arg);
 
     return BUILD_LONG(counter++);
 }
