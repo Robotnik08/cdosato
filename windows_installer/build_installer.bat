@@ -28,7 +28,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 
 :: Create installer zip
-winrar a -r -ep1 -ibck -m5 -sfx -z"build_installer.sfx" "dosato_installer" "../build/dosato.exe" "../build/libdosato.dll" "../dosato_libraries/dosato.h"
+winrar a -r -ep1 -ibck -m5 -sfx -z"build_installer.sfx" "dosato_installer" "../build/dosato.exe" "../build/libdosato.dll" "../dosato_libraries/dosato.h" "../README.txt"
 
 if %ERRORLEVEL% NEQ 0 (
     echo Build failed. Please fix the build errors and try again.
