@@ -1,8 +1,0 @@
-define double compare (double a, double b) {
-    return b - a
-}
-
-make array unsorted = [23,23,432,5566,54642,4,3,654,67456,4.3,5,6.656,345,-35663,-0.456,0.011]
-
-do sayln ("sorted: " + sort(unsorted))
-do sayln ("reverse sorted: ", sort(unsorted, compare))

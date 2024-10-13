@@ -1,0 +1,49 @@
+include "0_assert.to"
+
+define string switchCase (var i) {
+    make string result = ""
+    switch i => {
+        0 => {
+            set result += "Nothing"
+            break
+        }
+        1 => {
+            set result += "One"
+            break
+        }
+        2 => {
+            set result += "Two"
+            break
+        }
+        3 => {
+            set result += "Three"
+        }
+        4 => {
+            set result += "Four or Three"
+            break
+        }
+        5, 6 => {
+            set result += "Five or Six"
+            break
+        }
+        "Hello world" => {
+            set result += "Hello world"
+            break
+        }
+        other => {
+            set result += "Other"
+            break
+        }
+    }
+    return result
+}
+
+do assert(switchCase(0), "Nothing")
+do assert(switchCase(1), "One")
+do assert(switchCase(2), "Two")
+do assert(switchCase(3), "ThreeFour or Three")
+do assert(switchCase(4), "Four or Three")
+do assert(switchCase(5), "Five or Six")
+do assert(switchCase(6), "Five or Six")
+do assert(switchCase(7), "Other")
+do assert(switchCase("Hello world"), "Hello world")

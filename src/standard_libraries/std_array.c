@@ -3,24 +3,36 @@
 int compareValues (const void* a, const void* b) {
     Value a_value = *(Value*)a;
     Value b_value = *(Value*)b;
-    if (a_value.type == TYPE_STRING || b_value.type == TYPE_STRING || a_value.type == TYPE_ARRAY || b_value.type == TYPE_ARRAY || a_value.type == TYPE_OBJECT || b_value.type == TYPE_OBJECT || a_value.type == TYPE_FUNCTION || b_value.type == TYPE_FUNCTION) {
+
+    // if either value is a string, array, object, or function, return 0 (cannot compare)
+    if (a_value.type == TYPE_STRING || b_value.type == TYPE_STRING ||
+        a_value.type == TYPE_ARRAY || b_value.type == TYPE_ARRAY ||
+        a_value.type == TYPE_OBJECT || b_value.type == TYPE_OBJECT ||
+        a_value.type == TYPE_FUNCTION || b_value.type == TYPE_FUNCTION) {
         return 0;
     }
 
+    // if either value is double, cast both to double and compare
     if (a_value.type == TYPE_DOUBLE || b_value.type == TYPE_DOUBLE) {
-        // a float to double cast always succeeds
         castValue(&a_value, TYPE_DOUBLE);
         castValue(&b_value, TYPE_DOUBLE);
 
-        return AS_DOUBLE(a_value) - AS_DOUBLE(b_value);
-    } else if (ISINTTYPE(a_value.type) && ISINTTYPE(b_value.type)) {
-        // an int to int cast always succeeds
+        double diff = AS_DOUBLE(a_value) - AS_DOUBLE(b_value);
+        if (diff < 0) return -1;
+        if (diff > 0) return 1;
+        return 0;
+    }
+    // if both values are integers, cast them to long and compare
+    else if (ISINTTYPE(a_value.type) && ISINTTYPE(b_value.type)) {
         castValue(&a_value, TYPE_LONG);
         castValue(&b_value, TYPE_LONG);
 
-        return AS_LONG(a_value) - AS_LONG(b_value);
-    } else {
-        // if the types are not compatible, return 0
+        if (AS_LONG(a_value) < AS_LONG(b_value)) return -1;
+        if (AS_LONG(a_value) > AS_LONG(b_value)) return 1;
+        return 0;
+    }
+    // if types are incompatible, return 0
+    else {
         return 0;
     }
 }

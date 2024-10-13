@@ -1,0 +1,23 @@
+include "0_assert.to"
+
+make array arr = []
+
+set arr = [1, 2, 3, 4, 5]
+
+do assert (arr, [1, 2, 3, 4, 5])
+
+do assert (arr#1, 2)
+
+set arr#1 *= 2
+
+do assert (arr#1, 4)
+
+do assert (arr, [1, 4, 3, 4, 5])
+
+set arr += [6, 7, 8, 9, 10]
+
+do assert (arr, [1, 4, 3, 4, 5, 6, 7, 8, 9, 10])
+
+set arr -= 8
+
+do assert (arr, [1, 4])

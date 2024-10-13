@@ -149,8 +149,8 @@ int main (int argc, char** argv) {
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);
         printf("Stack size: %d (%s)\n", vm->stack.count, vm->stack.count == 0 ? "passed" : "failed");
-        if (vm->stack.count > 0) {
-            printf("Left over stack: ");
+        if ((int)vm->stack.count > 0) {
+            printf("Left over stack:\n");
             for (int i = 0; i < vm->stack.count; i++) {
                 printf("%d: ", i);
                 printValue(vm->stack.values[i], true);

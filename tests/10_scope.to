@@ -1,0 +1,15 @@
+include "0_assert.to"
+
+make int a = 1
+
+do {
+    make int b = 2
+    do assert(a + b, 3)
+    do {
+        make int c = 3
+        do assert(a + b + c, 6)
+    }
+    make int a = 4
+    do assert(a + b, 6)
+}
+do assert(a, 1)

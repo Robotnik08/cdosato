@@ -1,3 +1,0 @@
-make string username = "robotnik"
-make string password = "123"
-do sayln (username == "robotnik" ? password == "123" ? "pass" : "invalid password" : "invalid username")

@@ -151,10 +151,12 @@ bool valueEquals (Value* a, Value* b) {
         }
 
         for (size_t i = 0; i < aObject->count; i++) {
-            if (strcmp(aObject->keys[i], bObject->keys[i]) != 0) {
+            char* key = aObject->keys[i];
+            if (!hasKey(bObject, key)) {
                 return false;
             }
-            if (!valueEquals(&aObject->values[i], &bObject->values[i])) {
+            Value* val = getValueAtKey(bObject, key);
+            if (!valueEquals(&aObject->values[i], val)) {
                 return false;
             }
         }
@@ -649,42 +651,71 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
         }
         case TYPE_FLOAT: {
             if (isnan(value.as.floatValue)) {
-                string = realloc(string, 8);
+                string = realloc(string, 4);
                 sprintf(string, "NaN");
                 break;
             } else if (isinf(value.as.floatValue)) {
                 if (value.as.floatValue < 0) {
-                    string = realloc(string, 4);
+                    string = realloc(string, 10);
                     sprintf(string, "-infinity");
                 } else {
-                    string = realloc(string, 3);
+                    string = realloc(string, 9);
                     sprintf(string, "infinity");
                 }
                 break;
             }
 
-            string = realloc(string, 32);
-            sprintf(string, "%f", value.as.floatValue);
+            char buffer[64];
+            snprintf(buffer, sizeof(buffer), "%.15f", value.as.floatValue);
+            
+            char *dot = strchr(buffer, '.');
+            if (dot != NULL) {
+                char *end = dot + strlen(dot) - 1;
+                while (end > dot && *end == '0') {
+                    *end-- = '\0';
+                }
+                if (*end == '.') {
+                    *end = '\0';
+                }
+            }
+
+            string = realloc(string, strlen(buffer) + 1);
+            strcpy(string, buffer);
             break;
         }
         case TYPE_DOUBLE: {
             if (isnan(value.as.doubleValue)) {
-                string = realloc(string, 8);
+                string = realloc(string, 4);
                 sprintf(string, "NaN");
                 break;
             } else if (isinf(value.as.doubleValue)) {
                 if (value.as.doubleValue < 0) {
-                    string = realloc(string, 4);
+                    string = realloc(string, 10);
                     sprintf(string, "-infinity");
                 } else {
-                    string = realloc(string, 3);
+                    string = realloc(string, 9); 
                     sprintf(string, "infinity");
                 }
                 break;
             }
 
-            string = realloc(string, 32);
-            sprintf(string, "%lf", value.as.doubleValue);
+            char buffer[64];
+            snprintf(buffer, sizeof(buffer), "%.15f", value.as.doubleValue);
+            
+            char *dot = strchr(buffer, '.');
+            if (dot != NULL) {
+                char *end = dot + strlen(dot) - 1;
+                while (end > dot && *end == '0') {
+                    *end-- = '\0';
+                }
+                if (*end == '.') {
+                    *end = '\0';
+                }
+            }
+
+            string = realloc(string, strlen(buffer) + 1);
+            strcpy(string, buffer);
+            
             break;
         }
         case TYPE_BOOL: {

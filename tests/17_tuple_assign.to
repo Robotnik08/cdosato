@@ -1,0 +1,46 @@
+include "0_assert.to"
+
+make a, b = 10, 20
+
+do assert(a, 10)
+do assert(b, 20)
+
+set a, b = b, a
+
+do assert(a, 20)
+do assert(b, 10)
+
+set a, b ++
+
+do assert(a, 21)
+do assert(b, 11)
+
+set a, b --
+
+do assert(a, 20)
+do assert(b, 10)
+
+set a, b += 10
+
+do assert(a, 30)
+do assert(b, 20)
+
+set a, b -= 10
+
+do assert(a, 20)
+do assert(b, 10)
+
+set a, b = "String", "Other string"
+
+do assert(a, "String")
+do assert(b, "Other string")
+
+set a, b = b, a
+
+do assert(a, "Other string")
+do assert(b, "String")
+
+set a, b = 123
+
+do assert(a, 123)
+do assert(b, 123)

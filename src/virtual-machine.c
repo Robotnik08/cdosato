@@ -343,6 +343,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     }
                     if (return_val.type == TYPE_HLT) {
                         halt = true;
+                        exit(return_val.as.longValue);
                         return return_val.as.longValue;
                     }
                     pushValue(&vm->stack, return_val);
@@ -504,7 +505,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             }
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                Value value = POP_VALUE();
+                Value value = PEEK_VALUE();
 
                 if (vm->stack.values[index].is_constant) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
@@ -607,7 +608,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             }
             case OP_STORE: {
                 uint16_t index = NEXT_SHORT();
-                Value value = POP_VALUE();
+                Value value = PEEK_VALUE();
                 if (!vm->globals.values[index].defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
@@ -637,7 +638,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
             case OP_DEFINE: {
                 uint16_t index = NEXT_SHORT();
-                Value value = POP_VALUE();
+                Value value = PEEK_VALUE();
                 if (vm->globals.values[index].defined) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
@@ -651,7 +652,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_STORE_SUBSCR: {
                 Value index = POP_VALUE();
                 Value list = POP_VALUE();
-                Value value = POP_VALUE();
+                Value value = PEEK_VALUE();
                 if (list.type != TYPE_ARRAY && list.type != TYPE_STRING) {
                     PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
@@ -698,7 +699,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_STORE_OBJ: {
                 Value key = POP_VALUE();
                 Value object = POP_VALUE();
-                Value value = POP_VALUE();
+                Value value = PEEK_VALUE();
 
                 if (object.type != TYPE_OBJECT) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);

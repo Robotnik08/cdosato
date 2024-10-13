@@ -1,0 +1,3 @@
+include "0_assert.to"
+
+do assert(false, true) when (0) else assert(true, true)

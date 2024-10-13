@@ -61,6 +61,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expected STRING type",
     "Expected number",
     "Cannot reassign constant",
+    "Mismatch in tuple expression",
 
     "File not found",
     "File already exists",
@@ -108,6 +109,8 @@ void printError (const char* full_code, const int pos, const char* file_name, co
     for (int i = pos; i < pos + token_size; i++) {
         printf("^");
     }
+
+    printf("\n");
 
     #ifdef _WIN32
     _fcloseall(); // close all files if any were opened

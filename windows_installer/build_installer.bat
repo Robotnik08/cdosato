@@ -8,10 +8,6 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 make -C ../ clean
-if %ERRORLEVEL% NEQ 0 (
-    echo Clean failed. Please fix the build errors and try again.
-    exit /b 1
-)
 make -C ../
 if %ERRORLEVEL% NEQ 0 (
     echo Build failed. Please fix the build errors and try again.
