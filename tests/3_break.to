@@ -1,3 +1,5 @@
+include "0_assert.to"
+
 define int r () {
     make int i = 0
     do {
@@ -9,7 +11,7 @@ define int r () {
     return i
 }
 
-do sayln (r()) // 5
+do assert (r(), 5)
 
 make int i = 0
 do {
@@ -18,22 +20,21 @@ do {
         break when (i >= j)
     }
 } for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i)
-do sayln (i) // 5
+do assert (i, 5) // 5
 
 make int j = 0
 break when (j >= 5) for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j)
-do sayln (j) // 5
+do assert (j, 5) // 5
 
 // continue
 set i = 0
-do sayln ("")
 do {
     do {
         continue when (i % 2 != 0)
-        do sayln (i)
+        do assert (i == 2 || i == 4 || i == 6 || i == 8 || i == 10, true)
     }
 } for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => i)
 
 set j = 0
-continue when (true) for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j)
-do sayln("j: " +  j) // 10
+continue when true for ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] => j)
+do assert("j: " +  j, "j: 10")

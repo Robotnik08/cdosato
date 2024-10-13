@@ -1,0 +1,130 @@
+include "0_assert.to"
+
+/// std_io
+// do say("say") // expect "say" (no newline)
+// do sayln("sayln") // expect "sayln" (newline)
+
+// listen input is not used to avoid blocking the test
+// do listen ()
+
+// do sayln(read("hello_world.to")) // expect <file content of hello_world.to>
+
+// write and append are not used to avoid modifying the test
+// do write ("std_lib.to", "write")
+// do append ("std_lib.to", "append")
+
+// clear is not used to avoid modifying the test
+// do clear ()
+
+// pause is not used to avoid blocking the test
+// do pause ()
+
+// do system("echo system") // expect "system"
+
+// end is not used to avoid stopping the test
+// do end ()
+
+
+/// std_math
+do assert(abs(-1), 1)
+do assert(ceil(1.5), 2)
+do assert(floor(1.5), 1)
+do assert(round(1.5), 2)
+do assert(max(1, 2), 2)
+do assert(min(1, 2), 1)
+do assert(pow(2, 3), 8)
+do assert(sqrt(4), 2)
+do assert(log(10, 100), 2)
+do assert(log10(100), 2)
+do assert(log2(8), 3)
+do assert(exp(1), 2.7182818284590450908)
+do assert(sin(1), 0.84147098480789650488)
+do assert(cos(1), 0.54030230586813976501)
+do assert(tan(1), 1.55740772465490229237)
+do assert(asin(1), 1.570796326794896558)
+do assert(acos(1), 0)
+do assert(atan(1), 0.785398163397448279)
+do assert(atan2(1, 1), 0.785398163397448279)
+do assert(clamp(0, 1, 2), 1)
+
+// /// std_str
+do assert(split("hello my name is dosato and i am a test string", " "), ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"])
+do assert(lower("Hello"), "hello")
+do assert(upper("Hello"), "HELLO")
+do assert(stringlength("hello"), 5)
+do assert(substring("hello", 1, 2), "el")
+do assert(stringindexof("hello", "e"), 1)
+do assert(stringlastindexof("hello", "l"), 3)
+do assert(replace("hello", "l", "r"), "herro")
+do assert(trim("  hello  "), "hello")
+do assert(startswith("hello", "h"), true)
+do assert(endswith("hello", "o"), true)
+do assert(stringcontains("hello", "e"), true)
+do assert(stringreverse("hello"), "olleh")
+do assert(stringremove("hello", "ell"), "ho")
+do assert(stringinsert("hello", 1, "e"), "heello")
+do assert(stringtoint("1"), 1)
+do assert(stringtodouble("1.5"), 1.5)
+do assert(stringcount("hello", "l"), 2)
+do assert(join(["hello", "world"], " "), "hello world")
+
+/// std_array
+make array a = [1, 2, 3]
+
+do assert(sort(a), [1, 2, 3])
+define long compare (long a, long b) {
+    return b - a
+}
+do assert(sort(a, compare), [3, 2, 1])
+set a = [1, 2, 3]
+do assert(push(a, 4), [1, 2, 3, 4])
+do assert(pop(a), 4)
+do assert(unshift(a, 0), [0, 1, 2, 3])
+do assert(shift(a), 0)
+do assert(splice(a, 1, 1), [1, 3])
+do assert(slice(a, 1, 2), [2])
+do assert(indexof(a, 2), 1)
+do assert(range(10), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+do assert(range(1, 10), [1, 2, 3, 4, 5, 6, 7, 8, 9])
+do assert(range(1, 10, 2), [1, 3, 5, 7, 9])
+do assert(range(10, 1, -1), [10, 9, 8, 7, 6, 5, 4, 3, 2])
+do assert(rangef(0, 10, 0.5), [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5])
+
+/// std_random
+// do srandom(1) // seed random number generator
+// do assert(random(), 0.5635853144932401193)
+// do assert(randomint(), 18467)
+// do assert(randomrange(1, 10), 5)
+// do assert(randombool(), false)
+
+/// std_time
+// do assert(time(), "current time in seconds")
+// do assert(datetime(), "current date formatted")
+
+// we don't sleep to avoid blocking the test
+// do sleep(1)
+
+
+/// std_type
+do assert(typeof(1), "ulong")
+do assert(typeof(1.5), "double")
+do assert(typeof("hello"), "string")
+do assert(typeof([1, 2, 3]), "array")
+do assert(typeof({}), "object")
+do assert(typeof(true), "bool")
+do assert(typeof(null), "<unknown type>")
+
+do assert(typeintof(1), 13)
+do assert(typeintof(1.5), 4)
+do assert(typeintof("hello"), 2)
+do assert(typeintof([1, 2, 3]), 10)
+
+do assert(isnull(null), true)
+do assert(isnull(false), false)
+
+do assert(isnan(1), false)
+do assert(isnan(NaN), true)
+do assert(isnan(1.5), false)
+do assert(isnan(Infinity), false)
+do assert(isnan(-Infinity), false)
+do assert(isnan("hello"), true)

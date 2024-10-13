@@ -1,3 +1,0 @@
-include "func.to"
-
-do sayln (add (10, 20))

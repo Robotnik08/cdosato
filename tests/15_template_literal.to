@@ -1,0 +1,13 @@
+include "0_assert.to"
+
+do assert (`1 + 1 = {1 + 1}`, "1 + 1 = 2")
+
+define long add (long a, long b) {
+    return a + b
+}
+
+do assert (`add(5,3) = {add(5, 3)}`, "add(5,3) = 8") 
+
+do assert (`Hello {123 + `DDD {10 * 5}` + "EEE"}`, "Hello 123DDD 50EEE")
+
+do assert (`My object: {{"a": 1, b: 2}}`, "My object: {\"a\": 1, \"b\": 2}")

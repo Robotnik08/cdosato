@@ -186,24 +186,71 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                     PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
                 }
-                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
-                if (tokens.tokens[i + 1].type != TOKEN_OPERATOR || tokens.tokens[i + 1].carry != OPERATOR_ASSIGN) {
-                    PRINT_ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
+                
+                while (i < end) {
+                    if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
+                        PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
+                    }
+                    write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
+                    
+                    i++;
+                    
+                    if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
+                        i++; // skip the comma
+                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                        PRINT_ERROR(i, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
+                    } else {
+                        break;
+                    }
                 }
-                write_NodeList(&root.body, parse(source, length, i + 2, end, tokens, NODE_EXPRESSION, file_name));
+
+                // write operator node
+                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_OPERATOR, file_name));
+                i++;
+                // parse each expression split by commas
+                for (int j = i; j < end; j++) {
+                    SKIP_BLOCK(j);
+                    if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_COMMA) {
+                        write_NodeList(&root.body, parse(source, length, i, j, tokens, NODE_EXPRESSION, file_name));
+                        i = j + 1;
+                    }
+                }
+                write_NodeList(&root.body, parse(source, length, i, end, tokens, NODE_EXPRESSION, file_name));
             } else if (tokens.tokens[start].type == TOKEN_IDENTIFIER) {
                 // the variable is var type
                 if (tokens.tokens[start].type != TOKEN_IDENTIFIER) {
                     PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
                 }
 
-                if (tokens.tokens[start + 1].type != TOKEN_OPERATOR || tokens.tokens[start + 1].carry != OPERATOR_ASSIGN) {
-                    PRINT_ERROR(start + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
+                int i = start;
+                while (i < end) {
+                    if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
+                        PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
+                    }
+                    write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
+                    
+                    i++;
+                    
+                    if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
+                        i++; // skip the comma
+                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                        PRINT_ERROR(i, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
+                    } else {
+                        break;
+                    }
                 }
-
-                write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_IDENTIFIER, file_name));
-
-                write_NodeList(&root.body, parse(source, length, start + 2, end, tokens, NODE_EXPRESSION, file_name));
+                // write operator node
+                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_OPERATOR, file_name));
+                i++;
+                // parse each expression split by commas
+                for (int j = i; j < end; j++) {
+                    SKIP_BLOCK(j);
+                    if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_COMMA) {
+                        write_NodeList(&root.body, parse(source, length, i, j, tokens, NODE_EXPRESSION, file_name));
+                        i = j + 1;
+                    }
+                }
+                write_NodeList(&root.body, parse(source, length, i, end, tokens, NODE_EXPRESSION, file_name));
             } else {
                 PRINT_ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
             }
@@ -213,6 +260,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_SET_BODY: {
             // setting a variable
             int j = start;
+            int s = start;
             // get the variable (everything before the first operator assigmnet operator)
             for (j = start; j < end; j++) {
                 SKIP_BLOCK(j);
@@ -220,6 +268,11 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     j++;
                     break;
                 }
+                if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_COMMA) {
+                    write_NodeList(&root.body, parse(source, length, s, j, tokens, NODE_SUBSCRIPT_EXPRESSION, file_name));
+                    s = j + 1;
+                }
+
                 if (j == end - 1) {
                     PRINT_ERROR(j, E_EXPECTED_ASSIGNMENT_OPERATOR);
                 }
@@ -227,7 +280,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             if (j == start) {
                 PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, start, j - 1, tokens, NODE_SUBSCRIPT_EXPRESSION, file_name));
+            write_NodeList(&root.body, parse(source, length, s, j - 1, tokens, NODE_SUBSCRIPT_EXPRESSION, file_name));
             write_NodeList(&root.body, parse(source, length, j - 1, j, tokens, NODE_OPERATOR, file_name));
             if (tokens.tokens[j - 1].carry == OPERATOR_INCREMENT || tokens.tokens[j - 1].carry == OPERATOR_DECREMENT) {
                 if (j != end) {
@@ -235,7 +288,16 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 }
                 break;
             }
-            write_NodeList(&root.body, parse(source, length, j, end, tokens, NODE_EXPRESSION, file_name));
+
+            // split expressions based on the commas
+            for (s = j; j < end; j++) {
+                SKIP_BLOCK(j);
+                if (tokens.tokens[j].type == TOKEN_OPERATOR && tokens.tokens[j].carry == OPERATOR_COMMA) {
+                    write_NodeList(&root.body, parse(source, length, s, j, tokens, NODE_EXPRESSION, file_name));
+                    s = j + 1;
+                }
+            }
+            write_NodeList(&root.body, parse(source, length, s, end, tokens, NODE_EXPRESSION, file_name));
             break;
         }
 
@@ -670,7 +732,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
 
             if (new_start == new_end) {
-                PRINT_ERROR(new_start, E_EMPTY_EXPRESSION);
+                PRINT_ERROR(new_start - 1, E_EMPTY_EXPRESSION);
             }
 
             if (new_start == new_end - 1) {

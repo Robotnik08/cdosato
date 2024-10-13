@@ -1,8 +1,10 @@
+include "0_assert.to"
+
 make int i = 0
 do {
     set i++
 } while (i < 10)
-do sayln (i) // 10
+do assert (i, 10) // 10
 
 make int j = 0
 do {
@@ -13,7 +15,7 @@ do {
     set j++
 } while (j < 10)
 
-do sayln (j) // 5
+do assert (j, 5) // 5
 
 make int l = 0
 do {
@@ -21,6 +23,6 @@ do {
     do {
         make int m = 5
         continue when (l % 2 != 0)
-        do sayln (l)
+        do assert (l == 2 || l == 4 || l == 6 || l == 8 || l == 10, true)
     }
 } while (l < 10)
