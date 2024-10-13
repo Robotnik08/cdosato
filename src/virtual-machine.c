@@ -175,6 +175,8 @@ void pushValue(ValueArray* array, Value value) {
         } \
         vm->ip = jump.error_jump_loc; \
         vm->globals.values[0].as.longValue = e_code; \
+        ip_stack_count = jump.error_active_index_count; \
+        active_instance = active_stack[ip_stack_count]; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
         printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code, ((AST*)active_instance->ast)->tokens.tokens[token_index].length);\
@@ -202,7 +204,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
     while (!halt) {
         OpCode instruction = NEXT_BYTE();
-        
+        printf("Instruction: %d at %x\n", instruction, vm->ip - active_instance->code - 1);
         switch (instruction) {
             
             default: {
@@ -275,7 +277,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             case OP_JUMP_IF_EXCEPTION: {
                 uint16_t offset = NEXT_SHORT();
                 size_t stack_count = vm->stack.count;
-                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count });
+                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count, .error_active_index_count = ip_stack_count });
                 break;
             }
 
