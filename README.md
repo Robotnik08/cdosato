@@ -1,4 +1,6 @@
-![CDosato Logo](assets/dosato_logo_wide.png){ width=100% }
+<p align="center">
+  <img src="assets/dosato_logo_wide.png">
+</p>
 
 # CDosato version 0.4.2
 
