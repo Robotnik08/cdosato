@@ -1,0 +1,16 @@
+; WinRAR SFX configuration file
+
+Overwrite=1
+Title=Dosato Installer
+BeginPrompt=Welcome to the Dosato installer.
+ExtractDialogText=Extracting files...
+ExtractTitle=Dosato Installation - Select Destination
+ExtractText=Please choose the installation location and click "Install" to begin.
+Path=%ProgramFiles%\Dosato
+FinishMessage=Installation complete. Press OK to exit.
+Text
+{
+    <h1>Dosato Installer 0.4.2</h1>
+    This installer will install or update Dosato on your computer. <br>
+    Click "Install" to begin.
+}
