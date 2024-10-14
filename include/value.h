@@ -132,6 +132,7 @@ typedef struct {
 typedef struct {
     uint8_t* error_jump_loc;
     size_t error_stack_count;
+    size_t error_active_index_count;
 } ErrorJump;
 
 typedef struct {
