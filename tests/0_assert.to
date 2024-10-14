@@ -14,14 +14,11 @@ With error code: {_}`
 }
 
 define void expectError (var func, int code) {
-    // do func()
-    do func() then {
-        do sayln(`Assertion failed
+    do func() then sayln(`Assertion failed
 Expected error code {code}, it ran without errors`)
-        // do end(1)
-    } catch { do if (_ != code) then {
-        do sayln(`Assertion failed
+        then end(1) catch if (_ != code) then {
+            do sayln(`Assertion failed
 Expected error code {code}, got {_}`)
-        do end(_)
-    }}
+            then end(_)
+        }
 }

@@ -176,12 +176,15 @@ void pushValue(ValueArray* array, Value value) {
         vm->ip = jump.error_jump_loc; \
         vm->globals.values[0].as.longValue = e_code; \
         ip_stack_count = jump.error_active_index_count; \
-        active_instance = active_stack[ip_stack_count]; \
+        if (jump.error_active_index_count > 0) { \
+            active_instance = active_stack[ip_stack_count - 1]; \
+        } \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
         printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code, ((AST*)active_instance->ast)->tokens.tokens[token_index].length);\
     } \
-} while(0)
+} while(0); \
+break;
 
 int runVirtualMachine (VirtualMachine* vm, int debug) {
     if (debug) printf("Running virtual machine\n");
@@ -204,7 +207,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
     while (!halt) {
         OpCode instruction = NEXT_BYTE();
-        printf("Instruction: %d at %x\n", instruction, vm->ip - active_instance->code - 1);
         switch (instruction) {
             
             default: {
