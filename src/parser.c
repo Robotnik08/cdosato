@@ -79,6 +79,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             int ext_start = start;
             NodeList temp_body; // used to temporarily store the body, so we can reorganize it later
             init_NodeList(&temp_body);
+            bool if_body_found = false;
             for (int i = start; i < end; i++) {
                 SKIP_BLOCK(i);
                 if (tokens.tokens[i].type == TOKEN_EXT) {
@@ -89,9 +90,11 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                             write_NodeList(&temp_body, parse(source, length, start, i, tokens, NODE_MASTER_DO_BODY + tokens.tokens[start - 1].carry, file_name));
                             body_parsed = true;
                         }
-                    } else if (ext_type == EXT_IF && tokens.tokens[i].carry == EXT_THEN) {
+                    } else if (ext_type == EXT_IF && tokens.tokens[i].carry == EXT_THEN && !if_body_found) {
+                        if_body_found = true;
                         continue;
                     } else {
+                        if_body_found = false;
                         write_NodeList(&temp_body, parse(source, length, ext_start, i, tokens, NODE_WHEN_BODY + ext_type, file_name));
                         ext_type = tokens.tokens[i].carry;
                         ext_start = i + 1;
