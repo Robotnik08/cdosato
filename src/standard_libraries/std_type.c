@@ -42,3 +42,18 @@ Value type_isnan(ValueArray args, bool debug) {
         return BUILD_BOOL(true); // not a number
     }
 }
+
+Value type_throw(ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value exception = GET_ARG(args, 0);
+    if (exception.type == TYPE_STRING) {
+        printf("ERROR: \n%s\n", AS_STRING(exception));
+        return BUILD_EXCEPTION(E_EMPTY_MESSAGE);
+    }
+
+    CAST_SAFE(exception, TYPE_LONG);
+    return BUILD_EXCEPTION(exception.as.longValue);
+}
