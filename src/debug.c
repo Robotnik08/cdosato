@@ -141,6 +141,24 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_BINARY_LOGICAL_OR:
             printf("OP_BINARY_LOGICAL_OR");
             break;
+        case OP_BINARY_NULL_COALESCE:
+            printf("OP_BINARY_NULL_COALESCE");
+            break;
+        case OP_BINARY_RANGE_UP:
+            printf("OP_BINARY_RANGE_UP");
+            break;
+        case OP_BINARY_RANGE_DOWN:
+            printf("OP_BINARY_RANGE_DOWN");
+            break;
+        case OP_BINARY_RANGE_UP_INCLUSIVE:
+            printf("OP_BINARY_RANGE_UP_INCLUSIVE");
+            break;
+        case OP_BINARY_RANGE_DOWN_INCLUSIVE:
+            printf("OP_BINARY_RANGE_DOWN_INCLUSIVE");
+            break;
+        case OP_GETOBJECT_SAFE:
+            printf("OP_GETOBJECT_SAFE");
+            break;
 
         case OP_UNARY_NEGATE:
             printf("OP_UNARY_NEGATE");

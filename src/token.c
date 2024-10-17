@@ -111,6 +111,8 @@ int isAssignmentOperator (OperatorType operator) {
         case OPERATOR_MAX_ASSIGN:
         case OPERATOR_INCREMENT:
         case OPERATOR_DECREMENT:
+        case OPERATOR_NULL_COALESCE_ASSIGN:
+        case OPERATOR_ROOT_ASSIGN:
             return true;
         default:
             return false;

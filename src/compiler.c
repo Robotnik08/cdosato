@@ -474,7 +474,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                             writeInstruction(ci, left.body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[left.body.nodes[0].start].carry));
                         }
                     }
-
                     if (ast->tokens.tokens[left.body.nodes[1].start].carry == OPERATOR_ARROW && left.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[left.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
                         // add identifier as a constant string
                         char* val = getTokenString(ast->tokens.tokens[left.body.nodes[2].start]);
@@ -529,11 +528,26 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             OperatorType operator = ast->tokens.tokens[node.body.nodes[1].start].carry;
 
-            compileNode(vm, ci, node.body.nodes[2], ast, scope);
-
             if (ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_HASH && ast->tokens.tokens[node.body.nodes[1].start].carry != OPERATOR_ARROW) {
                 PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
             }
+
+            if (ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_ARROW && node.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
+                // add identifier as a constant string
+                char* val = getTokenString(ast->tokens.tokens[node.body.nodes[2].start]);
+                int id = -1;
+                if (hasName(&vm->constants_map, val)) {
+                    id = getName(&vm->constants_map, val);
+                    free(val);
+                } else {
+                    id = addName(&vm->constants_map, val);
+                    write_ValueArray(&vm->constants, BUILD_STRING(val, false));
+                }
+                writeInstruction(ci, node.body.nodes[2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
+            } else {
+                compileNode(vm, ci, node.body.nodes[2], ast, scope);
+            }
+
             writeByteCode(ci, operator == OPERATOR_HASH ? OP_GETLIST : OP_GETOBJECT, node.body.nodes[1].start);
             break;
         }
@@ -1127,6 +1141,7 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             writeByteCode(ci, OP_BINARY_POWER, token_index);
             break;
         }
+        case OPERATOR_ROOT_ASSIGN:
         case OPERATOR_ROOT: {
             writeByteCode(ci, OP_BINARY_ROOT, token_index);
             break;
@@ -1153,6 +1168,16 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
         }
         case OPERATOR_ARROW: {
             writeByteCode(ci, OP_GETOBJECT, token_index);
+            break;
+        }
+        case OPERATOR_NULL_COALESCE_ACCESS: {
+            writeByteCode(ci, OP_GETOBJECT_SAFE, token_index);
+            break;
+        }
+
+        case OPERATOR_NULL_COALESCE_ASSIGN:
+        case OPERATOR_NULL_COALESCE: {
+            writeByteCode(ci, OP_BINARY_NULL_COALESCE, token_index);
             break;
         }
         
