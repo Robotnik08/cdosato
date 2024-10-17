@@ -1200,6 +1200,11 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             writeByteCode(ci, OP_BINARY_RANGE_DOWN_INCLUSIVE, token_index);
             break;
         }
+
+        case OPERATOR_PIPE: {
+            writeInstruction(ci, token_index, OP_CALL, 1);
+            break;
+        }
         
         default: {
             return -1;
