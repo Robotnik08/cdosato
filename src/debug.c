@@ -114,6 +114,9 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_BINARY_ROOT:
             printf("OP_BINARY_ROOT");
             break;
+        case OP_BINARY_ROOT_REVERSE:
+            printf("OP_BINARY_ROOT_REVERSE");
+            break;
         case OP_BINARY_SHIFT_LEFT:
             printf("OP_BINARY_SHIFT_LEFT");
             break;

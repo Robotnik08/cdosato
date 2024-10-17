@@ -532,7 +532,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, node.body.nodes[1].start);
             }
 
-            if (ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_ARROW && node.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
+            if ((ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_ARROW || ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_NULL_COALESCE_ACCESS) && node.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
                 // add identifier as a constant string
                 char* val = getTokenString(ast->tokens.tokens[node.body.nodes[2].start]);
                 int id = -1;
@@ -579,7 +579,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 compileNode(vm, ci, node.body.nodes[0], ast, scope);
             }
 
-            if (ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_ARROW && node.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
+            if ((ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_ARROW || ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_NULL_COALESCE_ACCESS) && node.body.nodes[2].type == NODE_IDENTIFIER && ast->tokens.tokens[node.body.nodes[1].start + 1].type == TOKEN_IDENTIFIER) {
                 // add identifier as a constant string
                 char* val = getTokenString(ast->tokens.tokens[node.body.nodes[2].start]);
                 int id = -1;
@@ -1141,7 +1141,10 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             writeByteCode(ci, OP_BINARY_POWER, token_index);
             break;
         }
-        case OPERATOR_ROOT_ASSIGN:
+        case OPERATOR_ROOT_ASSIGN: {
+            writeByteCode(ci, OP_BINARY_ROOT_REVERSE, token_index);
+            break;
+        }
         case OPERATOR_ROOT: {
             writeByteCode(ci, OP_BINARY_ROOT, token_index);
             break;
@@ -1178,6 +1181,23 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
         case OPERATOR_NULL_COALESCE_ASSIGN:
         case OPERATOR_NULL_COALESCE: {
             writeByteCode(ci, OP_BINARY_NULL_COALESCE, token_index);
+            break;
+        }
+
+        case OPERATOR_RANGE_UP: {
+            writeByteCode(ci, OP_BINARY_RANGE_UP, token_index);
+            break;
+        }
+        case OPERATOR_RANGE_DOWN: {
+            writeByteCode(ci, OP_BINARY_RANGE_DOWN, token_index);
+            break;
+        }
+        case OPERATOR_RANGE_UP_INCLUSIVE: {
+            writeByteCode(ci, OP_BINARY_RANGE_UP_INCLUSIVE, token_index);
+            break;
+        }
+        case OPERATOR_RANGE_DOWN_INCLUSIVE: {
+            writeByteCode(ci, OP_BINARY_RANGE_DOWN_INCLUSIVE, token_index);
             break;
         }
         

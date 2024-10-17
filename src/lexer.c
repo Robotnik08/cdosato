@@ -428,7 +428,6 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(operatortokens)/sizeof(char*); j++) {
             if (i + 1 >= code_length) break;
             char bigoperator[3] = { full_code[i], full_code[i+1 < code_length ? i+1 : 0], '\0' };
-            printf("%s", operatortokens[j]);
             if (!strcmp(bigoperator, operatortokens[j])) {
                 DOSATO_ADD_TOKEN(list, TOKEN_OPERATOR, full_code + i, strlen(operatortokens[j]) - 1, j);
                 i += 2;
