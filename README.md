@@ -12,6 +12,8 @@ CDosato is the official implementation of the DOSATO programming language.<br>
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
+- [Demo](#demo)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -58,6 +60,14 @@ dosato hello_world.to
 
 I have build a downloadable documentation for Dosato, you can download it [here](https://github.com/Robotnik08/Dosato-docs).<br>
 This documentation is also available online [here](https://robotnik08.github.io/Dosato-docs/).<br>
+
+## Demo
+
+If you want to see what you can do with dosato, check out the demos directory. <br>
+
+## Testing
+
+Navigate to the tests directory and run rununittests.bat (for windows) or rununittests.sh (for unix) <br>
 
 ## Contributing
 
