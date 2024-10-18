@@ -13,12 +13,14 @@
 #define RESERVED_KEYWORDS {"OTHER"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
-                   "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";"}
-// operator precedence is borrowed from C
+                   "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";", ":>",":<",":>=",":<=","??",\
+                   "?\?=","?->","^/=","|>"}
+// operator precedence is mostly borrowed from C, lower means higher precedence
 #define OPERATOR_PRECEDENCE \
                   { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  1,   15,  1,   \
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
-                    2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13}
+                    2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13,  13,  13,  13,   13,   12,\
+                    14,    1,    14,   12}
 
 #define BRACKETS {"()", "{}", "[]"}
 
@@ -103,6 +105,15 @@ typedef enum {
     OPERATOR_MAX_ASSIGN,
     OPERATOR_MIN_ASSIGN,
     OPERATOR_SEMICOLON,
+    OPERATOR_RANGE_UP,
+    OPERATOR_RANGE_DOWN,
+    OPERATOR_RANGE_UP_INCLUSIVE,
+    OPERATOR_RANGE_DOWN_INCLUSIVE,
+    OPERATOR_NULL_COALESCE,
+    OPERATOR_NULL_COALESCE_ASSIGN,
+    OPERATOR_NULL_COALESCE_ACCESS,
+    OPERATOR_ROOT_ASSIGN,
+    OPERATOR_PIPE
 } OperatorType;
 
 typedef enum {

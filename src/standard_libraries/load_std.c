@@ -71,6 +71,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"STRINGCOUNT", string_count},
         {"JOIN", string_join},
         {"FORMAT", string_format},
+        {"TO_STRING", string_to_string},
 
         {"SORT", array_sort},
         {"PUSH", array_push},
@@ -164,6 +165,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"stringcount", string_count},
         {"join", string_join},
         {"format", string_format},
+        {"to_string", string_to_string},
 
         {"sort", array_sort},
         {"push", array_push},

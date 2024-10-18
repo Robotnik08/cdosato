@@ -516,3 +516,14 @@ Value string_format(ValueArray args, bool debug) {
 
     return BUILD_STRING(result, true);
 }
+
+Value string_to_string(ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    CAST_SAFE(arg, TYPE_STRING);
+
+    return arg;
+}
