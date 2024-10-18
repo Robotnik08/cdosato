@@ -498,7 +498,37 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 break;
             }
+            
+            case OP_GETOBJECT_SAFE: {
+                Value key = POP_VALUE();
+                Value object = POP_VALUE();
+                if (object.type != TYPE_OBJECT) {
+                    // push NULL
+                    pushValue(&vm->stack, UNDEFINED_VALUE);
+                    break;
+                }
 
+                // cast key to string
+                if (key.type != TYPE_STRING) {
+                    ErrorType code = castValue(&key, TYPE_STRING);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                }
+
+                ValueObject* obj = AS_OBJECT(object);
+                if (!hasKey(obj, AS_STRING(key))) {
+                    // push NULL
+                    pushValue(&vm->stack, UNDEFINED_VALUE);
+                    break;
+                }
+
+                Value value = *getValueAtKey(obj, AS_STRING(key));
+
+                pushValue(&vm->stack, value);
+
+                break;
+            }
 
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
@@ -1510,6 +1540,28 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 pushValue(&vm->stack, BUILD_DOUBLE(result));
                 break;
             }
+            case OP_BINARY_ROOT_REVERSE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_DOUBLE);
+                if (code != E_NULL) {
+                    PRINT_ERROR(code);
+                }
+                code = castValue(&b, TYPE_DOUBLE);
+                if (code != E_NULL) {
+                    PRINT_ERROR(code);
+                }
+                if (a.as.doubleValue < 0) {
+                    PRINT_ERROR(E_MATH_DOMAIN_ERROR);
+                }
+                double result = 0;
+                if (a.as.doubleValue > 0) {
+                    result = powl(a.as.doubleValue, 1.0 / b.as.doubleValue);
+                }
+                pushValue(&vm->stack, BUILD_DOUBLE(result));
+                break;
+            }
             case OP_BINARY_SHIFT_LEFT: {
                 Value b = POP_VALUE();
                 Value a = POP_VALUE();
@@ -1645,6 +1697,125 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     }
                     long long int result = a.as.longValue > b.as.longValue ? a.as.longValue : b.as.longValue;
                     pushValue(&vm->stack, BUILD_DOUBLE(result));
+                }
+                break;
+            }
+            case OP_BINARY_RANGE_UP: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                int cast_a = castValue(&a, TYPE_LONG);
+                if (cast_a != E_NULL) {
+                    PRINT_ERROR(cast_a);
+                }
+                int cast_b = castValue(&b, TYPE_LONG);
+                if (cast_b != E_NULL) {
+                    PRINT_ERROR(cast_b);
+                }
+
+                long long int start = a.as.longValue;
+
+                long long int end = b.as.longValue;
+
+                ValueArray* list = malloc(sizeof(ValueArray));
+                init_ValueArray(list);
+                for (long long int i = start; i < end; i++) {
+                    write_ValueArray(list, BUILD_LONG(i));
+                }
+
+                pushValue(&vm->stack, BUILD_ARRAY(list, true));
+
+                break;
+            }
+            case OP_BINARY_RANGE_DOWN: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                int cast_a = castValue(&a, TYPE_LONG);
+                if (cast_a != E_NULL) {
+                    PRINT_ERROR(cast_a);
+                }
+                int cast_b = castValue(&b, TYPE_LONG);
+                if (cast_b != E_NULL) {
+                    PRINT_ERROR(cast_b);
+                }
+
+                long long int start = a.as.longValue;
+
+                long long int end = b.as.longValue;
+
+                ValueArray* list = malloc(sizeof(ValueArray));
+                init_ValueArray(list);
+                for (long long int i = start; i > end; i--) {
+                    write_ValueArray(list, BUILD_LONG(i));
+                }
+
+                pushValue(&vm->stack, BUILD_ARRAY(list, true));
+
+                break;
+            }
+            case OP_BINARY_RANGE_UP_INCLUSIVE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                int cast_a = castValue(&a, TYPE_LONG);
+                if (cast_a != E_NULL) {
+                    PRINT_ERROR(cast_a);
+                }
+                int cast_b = castValue(&b, TYPE_LONG);
+                if (cast_b != E_NULL) {
+                    PRINT_ERROR(cast_b);
+                }
+
+                long long int start = a.as.longValue;
+
+                long long int end = b.as.longValue;
+
+                ValueArray* list = malloc(sizeof(ValueArray));
+                init_ValueArray(list);
+                for (long long int i = start; i <= end; i++) {
+                    write_ValueArray(list, BUILD_LONG(i));
+                }
+
+                pushValue(&vm->stack, BUILD_ARRAY(list, true));
+
+                break;
+            }
+            case OP_BINARY_RANGE_DOWN_INCLUSIVE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                int cast_a = castValue(&a, TYPE_LONG);
+                if (cast_a != E_NULL) {
+                    PRINT_ERROR(cast_a);
+                }
+                int cast_b = castValue(&b, TYPE_LONG);
+                if (cast_b != E_NULL) {
+                    PRINT_ERROR(cast_b);
+                }
+
+                long long int start = a.as.longValue;
+
+                long long int end = b.as.longValue;
+
+                ValueArray* list = malloc(sizeof(ValueArray));
+                init_ValueArray(list);
+                for (long long int i = start; i >= end; i--) {
+                    write_ValueArray(list, BUILD_LONG(i));
+                }
+
+                pushValue(&vm->stack, BUILD_ARRAY(list, true));
+
+                break;
+            }
+            case OP_BINARY_NULL_COALESCE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (a.type == D_NULL) {
+                    pushValue(&vm->stack, b);
+                } else {
+                    pushValue(&vm->stack, a);
                 }
                 break;
             }
