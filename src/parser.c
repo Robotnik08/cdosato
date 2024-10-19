@@ -307,46 +307,43 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_DEFINE_BODY: {
             // defining a function
             
-            // first must be a return type
-            if (tokens.tokens[start].type == TOKEN_VAR_TYPE) {
-                // parse the TYPE
-                int i = start;
-                while (tokens.tokens[i++].type == TOKEN_VAR_TYPE) {}
-                i--;
+            // parse the TYPE
+            int i = start;
+            while (tokens.tokens[i++].type == TOKEN_VAR_TYPE) {}
+            i--;
+            if (i != start) {
                 write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_TYPE, file_name));
-                
-                // next the function name
-                if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
-                    PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
-                }
-                write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
+            }
+            
+            // next the function name
+            if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
+                PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
+            }
+            write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
 
-                // parameters
-                if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_ROUND)) {
-                    PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_ROUND);
-                }
-                // get end of parameters
-                int j = getEndOfBlock(tokens, i + 1);
-                if (j == -1) {
-                    PRINT_ERROR(i + 1, E_MISSING_CLOSING_PARENTHESIS);
-                }
-                write_NodeList(&root.body, parse(source, length, i + 2, j, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+            // parameters
+            if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_ROUND)) {
+                PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_ROUND);
+            }
+            // get end of parameters
+            int j = getEndOfBlock(tokens, i + 1);
+            if (j == -1) {
+                PRINT_ERROR(i + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+            write_NodeList(&root.body, parse(source, length, i + 2, j, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
 
-                // function body
-                if (tokens.tokens[j + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[j + 1].carry, BRACKET_CURLY)) {
-                    PRINT_ERROR(j + 1, E_EXPECTED_BRACKET_CURLY);
-                }
-                // get end of block
-                int k = getEndOfBlock(tokens, j + 1);
-                if (k == -1) {
-                    PRINT_ERROR(j + 1, E_MISSING_CLOSING_PARENTHESIS);
-                }
-                write_NodeList(&root.body, parse(source, length, j + 2, k, tokens, NODE_BLOCK, file_name));
-                if (k + 1 != end) {
-                    PRINT_ERROR(k + 1, E_UNEXPECTED_TOKEN);
-                }
-            } else {
-                PRINT_ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
+            // function body
+            if (tokens.tokens[j + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[j + 1].carry, BRACKET_CURLY)) {
+                PRINT_ERROR(j + 1, E_EXPECTED_BRACKET_CURLY);
+            }
+            // get end of block
+            int k = getEndOfBlock(tokens, j + 1);
+            if (k == -1) {
+                PRINT_ERROR(j + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+            write_NodeList(&root.body, parse(source, length, j + 2, k, tokens, NODE_BLOCK, file_name));
+            if (k + 1 != end) {
+                PRINT_ERROR(k + 1, E_UNEXPECTED_TOKEN);
             }
             break;
         }
@@ -523,13 +520,15 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
         case NODE_FUNCTION_DEFINITION_ARGUMENT: {
             if (start == end) {
-                PRINT_ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
+                PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
             }
             // type
             int i = start;
             while (tokens.tokens[i++].type == TOKEN_VAR_TYPE) {}
             i--;
-            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_TYPE, file_name));
+            if (i != start) {
+                write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_TYPE, file_name));
+            }
             // identifier
             if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                 PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
