@@ -4,8 +4,8 @@ define void printBoard () {
     make i = 0
     do {
         do say(board#i ? (board#i == 1 ? "X" : "O") : i)
-        do if (i % 3 == 2) then say("\n")
-    } for (range(9) => i)
+        do if i % 3 == 2 then say("\n")
+    } for range(9) => i
     do say("\n")
 }
 
@@ -32,23 +32,23 @@ define int playGame () {
         do {
             do sayln("Enter position (0-8): ")
             set pos = stringtoint(listen()) % 9
-        } while (board#pos != 0)
+        } while board#pos != 0
 
         set board#pos = player == 1 ? 1 : -1
 
-        return player when (checkWin(player))
+        return player when checkWin(player)
         
         set player = -player
-    } for (range(9) => _)
+    } for range(9) => _
 
     return 0
 }
 
 make int winner = playGame()
 
-set winner = 2 when (winner == -1)
+set winner = 2 when winner == -1
 
 do printBoard()
-do if (winner == 0) then 
+do if winner == 0 then 
     sayln("It's a draw!") else
     sayln(`Player {winner} wins!`)

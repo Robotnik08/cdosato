@@ -2,16 +2,16 @@ make int size = 10
 make array board = *([[0] * size] * size)
 
 define void printBoard () {
-    make var i = 0
+    make i = 0
     do {
         make var j = 0
-        do say(j ? "#" : ".") for (i => j)
+        do say(j ? "#" : ".") for i => j
         do say("\n")
-    } for (board => i)
+    } for board => i
 }
 
 define bool getFrom (int x, int y) {
-    return board#x#y when (x >= 0 && x < size && y >= 0 && y < size)
+    return board#x#y when x >= 0 && x < size && y >= 0 && y < size
     return false
 }
 
@@ -35,8 +35,8 @@ define void nextGen () {
         make int j = 0
         do {
             set newBoard#i#j = getAlive(i, j)
-        } for (range(board#i) => j)
-    } for (range(board) => i)
+        } for range(board#i) => j
+    } for range(board) => i
     
     set board = newBoard
 }
@@ -52,7 +52,9 @@ set board#3#3 = 1
 make int max_iteration = 25
 make int i = 0
 do {
+    do clear()
     do sayln("Generation " + i)
     do printBoard()
     do nextGen()
-} for (range(max_iteration) => i)
+    do sleep(0.5)
+} for range(max_iteration) => i
