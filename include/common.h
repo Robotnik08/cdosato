@@ -21,7 +21,7 @@
 #include <unistd.h>
 #endif
 
-#define DOSATO_VERSION "0.4.6"
+#define DOSATO_VERSION "0.4.7"
 #ifndef DOSATO_DATE
     #define DOSATO_DATE "Unknown date"
 #endif
