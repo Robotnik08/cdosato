@@ -337,7 +337,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
         if (full_code[i] == '0' && (full_code[i+1] == 'x' || full_code[i+1] == 'X')) {
-            if (IS_ALPHANUMERIC(full_code[i-1]) || (IS_ALPHANAMERIC(full_code[i+2]) && !IS_HEXADECIMAL(full_code[i+2]))) {
+            if (IS_ALPHANUMERIC(full_code[i-1]) || full_code[i-1] == '.' || (IS_ALPHANAMERIC(full_code[i+2]) && !IS_HEXADECIMAL(full_code[i+2]))) {
                 continue;
             }
             int start = i;
@@ -371,7 +371,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
         if (full_code[i] == '0' && (IS_OCTAL(full_code[i+1]) || full_code[i+1] == 'o' || full_code[i+1] == 'O')) {
-            if (IS_ALPHANUMERIC(full_code[i-1]) || IS_ALPHANAMERIC(full_code[i+2])) {
+            if (IS_ALPHANUMERIC(full_code[i-1]) || full_code[i-1] == '.' || IS_ALPHANAMERIC(full_code[i+2])) {
                 continue;
             }
             int start = i;
@@ -412,7 +412,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
         if (full_code[i] == '0' && (full_code[i+1] == 'b' || full_code[i+1] == 'B')) {
-            if (IS_ALPHANUMERIC(full_code[i-1]) || IS_ALPHANAMERIC(full_code[i+2])) {
+            if (IS_ALPHANUMERIC(full_code[i-1]) || full_code[i-1] == '.' || IS_ALPHANAMERIC(full_code[i+2])) {
                 continue;
             }
             int start = i;
