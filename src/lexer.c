@@ -222,10 +222,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(mastertokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(mastertokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(mastertokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(mastertokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -250,10 +250,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(var_typetokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(var_typetokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(var_typetokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(var_typetokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -278,10 +278,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(extension_tokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(extension_tokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(extension_tokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(extension_tokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -331,13 +331,124 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     REFRESH_LIST()
 
     int numberCount = 0;
-    // getNumber tokens
+
+    // get hex number tokens
+
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
-        if (isFloateric(full_code[i])) {
-            if (!(isNumeric(full_code[i]) || full_code[i] == '.') || isAlphaNameric(full_code[i-1]) || isAlphaNameric(full_code[i+1])) {
-                if (isAlphaNameric(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, file_name, E_INVALID_NUMBER_LITERAL, 1);
-                for (int k = i; k < code_length && isFloateric(full_code[i]); k++) {
+        if (full_code[i] == '0' && (full_code[i+1] == 'x' || full_code[i+1] == 'X')) {
+            if (IS_ALPHANUMERIC(full_code[i-1]) || full_code[i-1] == '.' || (IS_ALPHANAMERIC(full_code[i+2]) && !IS_HEXADECIMAL(full_code[i+2]))) {
+                continue;
+            }
+            int start = i;
+            int end = i;
+            for (int j = i + 2; j < code_length; j++) {
+                if (!IS_HEXADECIMAL(full_code[j])) {
+                    end = j - 1;
+                    break;
+                }
+                end = j;
+            }
+            int id = 0;
+            char* lit = malloc(end - start + 2);
+            memcpy(lit, full_code + start, end - start + 2);
+            lit[end - start + 1] = '\0';
+            if (hasName(&vm->constants_map, lit)) {
+                id = getName(&vm->constants_map, lit);
+            } else {
+                id = addName(&vm->constants_map, lit);
+                numberCount++;
+            }
+            DOSATO_ADD_TOKEN(list, TOKEN_NUMBER_HEX, full_code + start, end - start, id);
+            free(lit);
+            i = end;
+        }
+    }
+
+    REFRESH_LIST()
+
+    // get octal number tokens
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        if (full_code[i] == '0' && (IS_OCTAL(full_code[i+1]) || full_code[i+1] == 'o' || full_code[i+1] == 'O')) {
+            if (IS_ALPHANUMERIC(full_code[i-1]) || full_code[i-1] == '.' || IS_ALPHANAMERIC(full_code[i+2])) {
+                continue;
+            }
+            int start = i;
+            int end = i;
+            bool invalid = false;
+            for (int j = i + 2; j < code_length; j++) {
+                if (!IS_OCTAL(full_code[j])) {
+                    end = j - 1;
+                    if (full_code[j] == '8' || full_code[j] == '9') {
+                        invalid = true;
+                    }
+                    break;
+                }
+                end = j;
+            }
+            if (invalid) {
+                continue;
+            }
+            int id = 0;
+            char* lit = malloc(end - start + 2);
+            memcpy(lit, full_code + start, end - start + 2);
+            lit[end - start + 1] = '\0';
+            if (hasName(&vm->constants_map, lit)) {
+                id = getName(&vm->constants_map, lit);
+            } else {
+                id = addName(&vm->constants_map, lit);
+                numberCount++;
+            }
+            DOSATO_ADD_TOKEN(list, TOKEN_NUMBER_OCTAL, full_code + start, end - start, id);
+            free(lit);
+            i = end;
+        }
+    }
+
+    REFRESH_LIST()
+
+    // get binary number tokens
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        if (full_code[i] == '0' && (full_code[i+1] == 'b' || full_code[i+1] == 'B')) {
+            if (IS_ALPHANUMERIC(full_code[i-1]) || full_code[i-1] == '.' || IS_ALPHANAMERIC(full_code[i+2])) {
+                continue;
+            }
+            int start = i;
+            int end = i;
+            for (int j = i + 2; j < code_length; j++) {
+                if (!IS_BINARY(full_code[j])) {
+                    end = j - 1;
+                    break;
+                }
+                end = j;
+            }
+            int id = 0;
+            char* lit = malloc(end - start + 2);
+            memcpy(lit, full_code + start, end - start + 2);
+            lit[end - start + 1] = '\0';
+            if (hasName(&vm->constants_map, lit)) {
+                id = getName(&vm->constants_map, lit);
+            } else {
+                id = addName(&vm->constants_map, lit);
+                numberCount++;
+            }
+            DOSATO_ADD_TOKEN(list, TOKEN_NUMBER_BINARY, full_code + start, end - start, id);
+            free(lit);
+            i = end;
+        }
+    }
+    
+    REFRESH_LIST()
+
+    // get number tokens
+    for (int i = 0; i < code_length; i++) {
+        SKIP_TOKEN()
+        if (IS_FLOATERIC(full_code[i])) {
+            if (!(IS_NUMERIC(full_code[i]) || full_code[i] == '.') || IS_ALPHANAMERIC(full_code[i-1]) || IS_ALPHANAMERIC(full_code[i+1])) {
+                if (IS_ALPHANAMERIC(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, file_name, E_INVALID_NUMBER_LITERAL, 1);
+                for (int k = i; k < code_length && IS_FLOATERIC(full_code[i]); k++) {
                     i = k;
                 }
                 continue;
@@ -348,9 +459,9 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
 
             bool invalid = false;
             for (int j = i; j < code_length; j++) {
-                if (isAlphaNameric(full_code[j-1]) && !isFloateric(full_code[j])) {
+                if (IS_ALPHANAMERIC(full_code[j-1]) && !IS_FLOATERIC(full_code[j])) {
                     invalid = true;
-                    for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
+                    for (int k = j; k < code_length && IS_FLOATERIC(full_code[k]); k++) {
                         end = k;
                     }
                     printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
@@ -358,30 +469,30 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 if (full_code[j] == '.') {
                     if (foundDot) {
                         invalid = true;
-                        for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
+                        for (int k = j; k < code_length && IS_FLOATERIC(full_code[k]); k++) {
                             end = k;
                         }
                         printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                     }
                     foundDot = true;
-                    if (!isNumeric(full_code[j+1])) {
+                    if (!IS_NUMERIC(full_code[j+1])) {
                         invalid = true;
-                        for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
+                        for (int k = j; k < code_length && IS_FLOATERIC(full_code[k]); k++) {
                             end = k;
                         }
                         printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                     }
                 }
-                if (isFloateric(full_code[j])) {
+                if (IS_FLOATERIC(full_code[j])) {
                     if (full_code[j] == 'F') {
-                        if (isAlphaNumeric(full_code[j+1])) {
+                        if (IS_ALPHANUMERIC(full_code[j+1])) {
                             invalid = true;
-                            for (int k = j; k < code_length && isFloateric(full_code[k]); k++) {
+                            for (int k = j; k < code_length && IS_FLOATERIC(full_code[k]); k++) {
                                 end = k;
                             }
                             printError(full_code, start, file_name, E_INVALID_NUMBER_LITERAL, 1);
                         }
-                        if (isNumeric(full_code[j-1])) {
+                        if (IS_NUMERIC(full_code[j-1])) {
                             end = j;
                             break;
                         }
@@ -451,10 +562,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(booltokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(booltokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(booltokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(booltokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -479,10 +590,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(nulltokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(nulltokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(nulltokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(nulltokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -507,10 +618,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(infinitytokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(infinitytokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(infinitytokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(infinitytokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -535,10 +646,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(nantokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(nantokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(nantokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(nantokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -563,10 +674,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         for (int j = 0; j < sizeof(reservedtokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
-                if (isAlphaNumeric(full_code[i-1])) break;
+                if (IS_ALPHANUMERIC(full_code[i-1])) break;
                 // check if the next char is not alphanameric
                 if (i + strlen(reservedtokens[j]) < code_length) {
-                    if (isAlphaNameric(full_code[i + strlen(reservedtokens[j])])) continue; // not a break, since the next type could differ in length
+                    if (IS_ALPHANAMERIC(full_code[i + strlen(reservedtokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
             char* next_word = getWord(full_code, i);
@@ -592,7 +703,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     // get identifier tokens (variables, functions, etc.)
     for (int i = 0; i < code_length; i++) {
         SKIP_TOKEN()
-        if (isAlphaNumeric(full_code[i])) {
+        if (IS_ALPHANUMERIC(full_code[i])) {
             char* word = getWord(full_code, i);
             if (strlen(word) > 0) {
                 int id = 0;
@@ -723,17 +834,46 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     for (int i = 0; i < numberCount; i++) {
         char* lit = vm->constants_map.names[i + vm->constants_map.count - numberCount];
         bool isInt = true;
-        for (int j = 0; j < strlen(lit); j++) {
-            if (lit[j] == '.' || lit[j] == 'F') {
-                if (lit[strlen(lit) - 1] == 'F') {
-                    write_ValueArray(&vm->constants, BUILD_FLOAT(atof(lit)));
-                } else {
-                    write_ValueArray(&vm->constants, BUILD_DOUBLE(atof(lit)));
+
+        // Check for hexadecimal
+        if (strlen(lit) > 2 && lit[0] == '0' && (lit[1] == 'x' || lit[1] == 'X')) {
+            write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit + 2, NULL, 16)));
+            isInt = false;
+        }
+        // Check for octal
+        else if (strlen(lit) > 1 && lit[0] == '0' && (IS_OCTAL(lit[1]) || lit[1] == 'o' || lit[1] == 'O')) {
+            bool invalid = false;
+            for (int j = (IS_OCTAL(lit[1]) ? 1 : 2); j < strlen(lit); j++) {
+                if (lit[j] == '8' || lit[j] == '9') {
+                    invalid = true;
+                    break;
                 }
+            }
+            if (!invalid) {
+                write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit + (IS_OCTAL(lit[1]) ? 1 : 2), NULL, 8)));
                 isInt = false;
-                break;
             }
         }
+        // Check for binary
+        else if (strlen(lit) > 2 && lit[0] == '0' && (lit[1] == 'b' || lit[1] == 'B')) {
+            write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit + 2, NULL, 2)));
+            isInt = false;
+        }
+        // Check for float or double
+        else {
+            for (int j = 0; j < strlen(lit); j++) {
+                if (lit[j] == '.' || lit[j] == 'F') {
+                    if (lit[strlen(lit) - 1] == 'F') {
+                        write_ValueArray(&vm->constants, BUILD_FLOAT(atof(lit)));
+                    } else {
+                        write_ValueArray(&vm->constants, BUILD_DOUBLE(atof(lit)));
+                    }
+                    isInt = false;
+                    break;
+                }
+            }
+        }
+        // Default to unsigned long if it's an integer
         if (isInt) {
             write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit, NULL, 10)));
         }

@@ -6,11 +6,13 @@ Expected: {expected}
 Got: {value}`
             ) then end(1)
         }
-    } catch sayln(`Assertion failed
+    } catch {
+        do sayln(`Assertion failed
 Expected: {expected}
 Got: {value}
 With error code: {_}`
         ) then end(_)
+    }
 }
 
 define void expectError (var func, int code) {

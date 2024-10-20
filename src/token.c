@@ -41,6 +41,12 @@ char* getTokenEnumString (LexTokenType type) {
             return "STRING";
         case TOKEN_NUMBER:
             return "NUMBER";
+        case TOKEN_NUMBER_HEX:
+            return "NUMBER_HEX";
+        case TOKEN_NUMBER_BINARY:
+            return "NUMBER_BINARY";
+        case TOKEN_NUMBER_OCTAL:
+            return "NUMBER_OCTAL";
         case TOKEN_OPERATOR:
             return "OPERATOR";
         case TOKEN_MASTER_KEYWORD:

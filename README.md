@@ -2,7 +2,7 @@
   <img src="assets/dosato_logo_wide.png">
 </p>
 
-# CDosato version 0.4.6
+# CDosato version 0.4.7
 
 CDosato is the official implementation of the DOSATO programming language.<br>
 
@@ -22,6 +22,8 @@ CDosato is the official implementation of the DOSATO programming language.<br>
 
 Dosato is a general purpose interpreted programming language that is designed to be simple and easy to use. It is a dynamically typed language that supports static typing as well.<br>
 The language is pretty simple and easy to learn. It is designed to be beginner friendly and is a great language to start with if you are new to programming.<br>
+Dosato allows for syntax that is easy and straightforward to understand and at the same time allows for complex and compact code.<br>
+Theres no wrong way to write dosato code, it allows nearly any style of programming.<br>
 
 
 ## Installation
