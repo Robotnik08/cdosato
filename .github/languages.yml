@@ -1,0 +1,6 @@
+Dosato:
+  type: programming
+  extensions:
+    - .to
+  color: "#ff69b4"
+  tm_scope: source.dosato
