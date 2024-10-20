@@ -4,56 +4,17 @@
 #include "common.h"
 
 #define IS_SPACE(c) (c == ' ' || c == '\n' || c == '\t' || c == '\0')
+#define IS_NUMERIC(c) (c >= '0' && c <= '9')
+#define IS_ALPHA(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+#define IS_ALPHANUMERIC(c) (IS_NUMERIC(c) || IS_ALPHA(c) || c == '_')
+#define IS_ALPHANAMERIC(c) (IS_ALPHA(c) || c == '_')
+#define IS_HEXADECIMAL(c) (IS_NUMERIC(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+#define IS_OCTAL(c) (c >= '0' && c <= '7')
+#define IS_BINARY(c) (c == '0' || c == '1')
+#define IS_FLOATERIC(c) (IS_NUMERIC(c) || c == '.' || c == 'F')
 
-/**
- * @brief Check if a character is numeric
- * @param c The character to check
-*/
-int isNumeric (char c);
-/**
- * @brief Check if a character is alphabetic
- * @param c The character to check
-*/
-int isAlpha (char c);
-/**
- * @brief Check if a character is a space, new line, or tab, or even a \0
- * @param c The character to check
-*/
-int isTrueEmpty (char c);
-/**
- * @brief Check if a character is empty
- * @param c The character to check
-*/
-int isEmpty (char c);
-/**
- * @brief Check if a character is alphanumeric
- * @param c The character to check
-*/
-int isAlphaNumeric (char c);
-/**
- * @brief Check if a character is Alpha or has an underscore
- * @param c The character to check
-*/
-int isAlphaNameric (char c);
-/**
- * @brief Check if a character is a number or a period
- * @param c The character to check
-*/
-int isFloateric (char c);
-/**
- * @brief Split a string into an array of strings, make sure to free the result
- * @param input The string to split
- * @param separator The separator to split by
-*/
-char** strspl(const char* input, const char* separator);
-/**
- * @brief Replace all instances of a string with another string
- * @param in The string to replace in
- * @param selector The string to replace
- * @param replacement The string to replace with
- * @return The amount of times the string was replaced
-*/
-int strrep(char *in, const char *selector, const char *replacement);
+
+
 /**
  * @brief Get the Next Word in a String
  * @param text The text to get the word from
@@ -73,31 +34,6 @@ int getLine (const char* text, int pos);
  * @param pos The index of the character to get the column number of
 */
 int getLineCol (const char* text, int pos);
-
-/**
- * @brief Remove the first and last character of a string
- * @param test The string to remove the first and last character of
- * @param amount The amount of characters to remove
- * @return The new string (don't forget to free it)
-*/
-char* removeLastAndFirstChar(const char* str, int amount);
-
-/**
- * @brief Check if a string starts and ends with a character
- * @param str The string to check
- * @param character The character to check
- * @warning The buffer is 1024 x the size of the string, so don't use this for large strings or large replacements
-*/
-int strsur (const char* str, const char character);
-
-/**
- * @brief Count the amount of times a character appears in a string
- * @param str The string to check
- * @param character The character to check
- * @return The amount of times the character appears in the string
-*/
-int strchl (const char* str, const char character);
-
 
 /**
  * @brief Convert a string to uppercase

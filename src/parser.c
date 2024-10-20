@@ -741,7 +741,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 // single expression
                 if (tokens.tokens[new_start].type == TOKEN_IDENTIFIER) {
                     root.type = NODE_IDENTIFIER;
-                } else if (tokens.tokens[new_start].type == TOKEN_NUMBER) {
+                } else if (tokens.tokens[new_start].type == TOKEN_NUMBER || tokens.tokens[new_start].type == TOKEN_STRING || tokens.tokens[new_start].type == TOKEN_NUMBER_BINARY || tokens.tokens[new_start].type == TOKEN_NUMBER_OCTAL || tokens.tokens[new_start].type == TOKEN_NUMBER_HEX) {
                     root.type = NODE_NUMBER_LITERAL;
                 } else if (tokens.tokens[new_start].type == TOKEN_STRING) {
                     root.type = NODE_STRING_LITERAL;
