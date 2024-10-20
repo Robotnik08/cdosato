@@ -735,7 +735,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
         }
         if (isInt) {
-            write_ValueArray(&vm->constants, BUILD_ULONG(atol(lit)));
+            write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit, NULL, 10)));
         }
     }
 
