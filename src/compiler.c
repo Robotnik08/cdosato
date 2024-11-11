@@ -126,8 +126,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_MASTER_DEFINE_BODY: {
-            // compile function
-
             if (scope != NULL) { 
                 PRINT_ERROR(E_MUST_BE_GLOBAL, node.start - 1);
             }
@@ -782,6 +780,67 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 compileNode(vm, ci, node.body.nodes[0], ast, scope);
             }
             compileNode(vm, ci, node.body.nodes[1], ast, scope);
+            break;
+        }
+
+        case NODE_LAMBDA_EXPRESSION: {
+            DataType type = ast->tokens.tokens[node.body.nodes[0].start].carry;
+
+            char* name = COPY_STRING("lambda");
+            size_t name_index = -1;
+
+            CodeInstance* instance = malloc(sizeof(CodeInstance));
+            initCodeInstance(instance);
+            instance->ast = ast;
+            ScopeData* new_scope = malloc(sizeof(ScopeData));
+            initScopeData(new_scope);
+
+            int arity = node.body.nodes[1].body.count;
+            int* hash_map = malloc(sizeof(int) * arity);
+            for (int i = 0; i < arity; i++) {
+                Node arg = node.body.nodes[1].body.nodes[i];
+                int carry = ast->tokens.tokens[arg.body.nodes[arg.body.count - 1].start].carry;
+                for (int j = 0; j < i; j++) {
+                    if (hash_map[j] == carry) {
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[arg.body.count - 1].start);
+                    }
+                }
+                hash_map[i] = carry;
+                pushScopeData(new_scope, carry);
+            }
+            free(hash_map);
+            new_scope->return_type = type;
+
+            compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
+
+            freeScopeData(new_scope);
+            free(new_scope);
+
+            for (int i = 0; i < arity; i++) {
+                writeByteCode(instance, OP_POP, node.body.nodes[1].body.nodes[i].end);
+            }
+            writeByteCode(instance, OP_END_FUNC, node.body.nodes[2].end);
+
+            size_t* name_indexs = malloc(sizeof(size_t) * arity); 
+            DataType* types = malloc(sizeof(DataType) * arity);
+            for (int i = 0; i < arity; i++) {
+                NodeList list = node.body.nodes[1].body.nodes[i].body;
+                name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
+                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+            }          
+
+            Function func;
+            init_Function(&func);
+            func.name = name;
+            func.name_index = name_index;
+            func.argv = name_indexs;
+            func.argt = types;
+            func.arity = node.body.nodes[1].body.count;
+            func.instance = instance;
+            func.return_type = type;
+
+            write_FunctionList(&vm->functions, func);
+
             break;
         }
 

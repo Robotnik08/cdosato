@@ -59,7 +59,9 @@ void sweepObjects (VirtualMachine* vm) {
                 free_ValueObject((ValueObject*)object->body);
             }
 
-            free(object->body);
+            if (object->type != TYPE_FUNCTION) {
+                free(object->body);
+            }
             free(object);
             
             for (size_t j = i; j < vm->allocated_objects_count - 1; j++) {
@@ -91,6 +93,9 @@ void markValue(Value* value) {
             markValue(&objectList->values[i]);
         }
     } else if (value->type == TYPE_STRING) {
+        DosatoObject* object = value->as.objectValue;
+        object->marked = true;
+    } else if (value->type == TYPE_FUNCTION) {
         DosatoObject* object = value->as.objectValue;
         object->marked = true;
     }
@@ -201,8 +206,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
     // set all functions to globals
     for (size_t i = 0; i < vm->functions.count; i++) {
-        Value func = (Value){ TYPE_FUNCTION, .as.longValue = i, .defined = true, .is_variable_type = false, .is_constant = true };
-        vm->globals.values[vm->functions.funcs[i].name_index] = func;
+        Value func = BUILD_FUNCTION(&vm->functions.funcs[i], false);
+        func.defined = true;
+        func.is_constant = true;
+        if (vm->functions.funcs[i].name_index != -1) {
+            vm->globals.values[vm->functions.funcs[i].name_index] = func;
+        }
     }
 
     while (!halt) {
@@ -326,7 +335,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 if (func.type != TYPE_FUNCTION) {
                     PRINT_ERROR(E_NOT_A_FUNCTION);
                 }
-                Function* function = &vm->functions.funcs[func.as.longValue];
+                Function* function = AS_FUNCTION(func);
                 if (function->is_compiled) {
                     // call the compiled function
                     ValueArray args;
