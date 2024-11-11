@@ -15,7 +15,7 @@ int debug = 0b0;
 #define DEBUG_PARSE 0b1000
 #define DEBUG_COMPILE 0b10000
 
-#define PRINT_USAGE printf("Usage: dosato <source file> \n");
+#define PRINT_USAGE printf("Usage: dosato <source file> <args> \n");
 
 int main (int argc, char** argv) {
     if (argc < 2) {
@@ -26,6 +26,17 @@ int main (int argc, char** argv) {
     if (argc == 2) {
         if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
             PRINT_USAGE
+            printf("Options:\n");
+            printf("  -h, --help: Show this help message\n");
+            printf("  -v, --version: Show version information\n");
+            printf("  -d, --debug: Enable debug mode (after the source file)\n");
+            printf("     Debug options (prefix with -d):\n");
+            printf("     -s, --source: Debug source code\n");
+            printf("     -l, --lexer: Debug lexer\n");
+            printf("     -p, --parser: Debug parser\n");
+            printf("     -c, --compiler: Debug compiler\n");
+            printf("     -a, --all: Debug all\n");
+            printf("     -n, --none: Debug none\n");
             return 0;
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
             printf("Dosato version %s, compiled on %s\n", DOSATO_VERSION, DOSATO_DATE);
@@ -45,9 +56,9 @@ int main (int argc, char** argv) {
             debug |= DEBUG_SOURCE;
         } else if (strcmp(argv[3], "-l") == 0 || strcmp(argv[3], "--lexer") == 0) {
             debug |= DEBUG_LEX;
-        } else if (strcmp(argv[3], "-p") == 0 || strcmp(argv[3], "--parse") == 0) {
+        } else if (strcmp(argv[3], "-p") == 0 || strcmp(argv[3], "--parser") == 0) {
             debug |= DEBUG_PARSE;
-        } else if (strcmp(argv[3], "-c") == 0 || strcmp(argv[3], "--compile") == 0) {
+        } else if (strcmp(argv[3], "-c") == 0 || strcmp(argv[3], "--compiler") == 0) {
             debug |= DEBUG_COMPILE;
         } else if (strcmp(argv[3], "-a") == 0 || strcmp(argv[3], "--all") == 0) {
             debug |= DEBUG_SOURCE | DEBUG_LEX | DEBUG_PARSE | DEBUG_COMPILE;

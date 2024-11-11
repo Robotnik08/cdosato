@@ -340,12 +340,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_MAKE_BODY: {
 
             int identifier_index = 0;
-            DataType type = TYPE_VAR;
+            DataType date_type = TYPE_VAR;
             if (node.body.nodes[0].type == NODE_TYPE) {
                 if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
                 }
-                type = ast->tokens.tokens[node.body.nodes[0].start].carry;
+                date_type = ast->tokens.tokens[node.body.nodes[0].start].carry;
                 identifier_index = 1;
             }
 
