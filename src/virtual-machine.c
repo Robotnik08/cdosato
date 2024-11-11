@@ -336,6 +336,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     PRINT_ERROR(E_NOT_A_FUNCTION);
                 }
                 Function* function = AS_FUNCTION(func);
+
                 if (function->is_compiled) {
                     // call the compiled function
                     ValueArray args;
@@ -379,6 +380,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 
                 // push new frame
                 PUSH_STACK(vm->stack.count - arity);
+                
+                // push captured variables
+                for (int i = 0; i < function->captured_count; i++) {
+                    pushValue(&vm->stack, function->captured->values[i]);
+                }
 
                 // ip stack
                 active_stack[ip_stack_count] = active_instance;
@@ -813,6 +819,30 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 break;
             }
 
+            case OP_LOAD_LAMBDA: {
+                // load lambda function
+                uint16_t index = NEXT_SHORT();
+
+                Function lambda = vm->functions.funcs[index];
+
+                // capture the stack
+                if (lambda.captured_count > 0) {
+                    lambda.captured = malloc(sizeof(ValueArray));
+                    init_ValueArray(lambda.captured);
+                    int stack_offset = PEEK_STACK();
+                    for (size_t i = 0; i < lambda.captured_count; i++) {
+                        Value value = vm->stack.values[stack_offset + lambda.captured_indices[i]];
+                        pushValue(lambda.captured, value);
+                    }
+                }
+
+                Function* lambda_ptr = malloc(sizeof(Function));
+                *lambda_ptr = lambda;
+
+                pushValue(&vm->stack, BUILD_FUNCTION(lambda_ptr, false));
+                break;
+            }
+
 
             case OP_INCREMENT: {
                 uint16_t index = NEXT_SHORT();
@@ -997,13 +1027,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
             }
 
             
-            case OP_PRINT: {
-                Value value = POP_VALUE();
-
-                printValue(value, false);
-                printf("\n");
-                break;
-            }
             case OP_POP: {
                 POP_VALUE();
                 break;

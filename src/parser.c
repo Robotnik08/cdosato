@@ -543,7 +543,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_FUNCTION_CALL: {
             // get the function expression
             int i = start;
-            for (int j = start; j < end; j++) {
+            for (int j = end - 1; j >= start; j--) {
                 if (tokens.tokens[j].type == TOKEN_PARENTHESIS_OPEN) {
                     i = j;
                     break;

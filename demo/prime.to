@@ -10,7 +10,7 @@ define bool isPrime (long number) {
 
     
     // check if number is divisible by any number from 3 to sqrt(number)
-    make i = null
+    make i = 0
     return false when number % i == 0 for range(3, ^/number, 2) => i
     return true
 }
