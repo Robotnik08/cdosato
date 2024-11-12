@@ -20,6 +20,7 @@ int debug = 0b0;
 int main (int argc, char** argv) {
     if (argc < 2) {
         PRINT_USAGE
+        printf("Type 'dosato -h' for help\n");
         return 1;
     }
 
@@ -34,12 +35,12 @@ int main (int argc, char** argv) {
             printf("  -c, --cin: Cin mode\n");
             printf("  -d, --debug: Enable debug mode (after the source file)\n");
             printf("     Debug options (prefix with -d):\n");
-            printf("     -s, --source: Debug source code\n");
-            printf("     -l, --lexer: Debug lexer\n");
-            printf("     -p, --parser: Debug parser\n");
-            printf("     -c, --compiler: Debug compiler\n");
-            printf("     -a, --all: Debug all\n");
-            printf("     -n, --none: Debug none\n");
+            printf("     -s, --source: Show source code\n");
+            printf("     -l, --lexer: Show tokens\n");
+            printf("     -p, --parser: Show AST\n");
+            printf("     -c, --compiler: Show bytecode\n");
+            printf("     -a, --all: Show all of the above\n");
+            printf("     -n, --none: Show none\n");
             return 0;
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
             printf("Dosato version %s, compiled on %s\n", DOSATO_VERSION, DOSATO_DATE);
