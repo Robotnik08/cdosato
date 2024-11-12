@@ -38,3 +38,43 @@ long long int getFileSize(FILE *file) {
 
     return size;
 }
+
+char* readStdin(long long int* length) {
+    char* str = malloc(1);
+    if (str == NULL) {
+        return NULL;
+    }
+    str[0] = '\0';
+
+    long long int size = 0;
+
+    printf(">>> ");
+
+    while (1) {
+        char* new_str = realloc(str, size + 2);
+        if (new_str == NULL) {
+            free(str);
+            return NULL;
+        }
+        str = new_str;
+
+        char ch = getchar();
+        if (ch == '\n' && str[size - 1] != '\\') {
+            break;
+        }
+
+        if (ch == '\n') {
+            size--;
+            printf(">>> ");
+        }
+        
+        str[size] = ch;
+        size++;
+    }
+
+    str[size] = '\0';
+
+    *length = size;
+
+    return str;
+}

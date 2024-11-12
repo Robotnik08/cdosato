@@ -16,8 +16,11 @@ for %%f in (*.to) do (
     )
 )
 
+set end=%time%
 
 echo All unit tests passed
+echo Start: %start%
+echo End: %end%
 
 :end
 

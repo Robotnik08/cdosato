@@ -198,6 +198,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             func.captured_count = 0;
 
+            func.captured = NULL;
+            func.captured_indices = NULL;
+
             write_FunctionList(&vm->functions, func);
 
             break;
@@ -834,22 +837,18 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 }
             }
 
-            // each return must get added the pop amount
-            for (int i = 0; i < instance->count; i += getOffset(instance->code[i])) {
-                if (instance->code[i] == OP_RETURN) {
-                    size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
-                    instance->code[i + 1] = (index + capture_index_count) & 0xFF;
-                    instance->code[i + 2] = (index + capture_index_count) >> 8;
-                }
-            }
 
             // each OP_LOAD_FAST must be offset by the capture_index_count and OP_TEMP must be changed to OP_LOAD_FAST
             for (int i = 0; i < instance->count; i += getOffset(instance->code[i])) {
-                if (instance->code[i] == OP_LOAD_FAST) {
+                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST) {
                     size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
                     if (index < arity) {
                         continue;
                     }
+                    instance->code[i + 1] = (index + capture_index_count) & 0xFF;
+                    instance->code[i + 2] = (index + capture_index_count) >> 8;
+                } else if (instance->code[i] == OP_RETURN) {
+                    size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
                     instance->code[i + 1] = (index + capture_index_count) & 0xFF;
                     instance->code[i + 2] = (index + capture_index_count) >> 8;
                 } else if (instance->code[i] == OP_TEMP) {
@@ -886,6 +885,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             func.captured_count = capture_index_count;
             func.captured_indices = capture_indexs;
+
+            func.captured = NULL;
 
             write_FunctionList(&vm->functions, func);
 

@@ -50,6 +50,7 @@ void markObjects (VirtualMachine* vm) {
 }
 
 void sweepObjects (VirtualMachine* vm) {
+    int function_count = 0;
     for (size_t i = 0; i < vm->allocated_objects_count; i++) {
         DosatoObject* object = vm->allocated_objects[i];
         if (!object->marked) {
@@ -57,11 +58,16 @@ void sweepObjects (VirtualMachine* vm) {
                 free_ValueArray((ValueArray*)object->body);
             } else if (object->type == TYPE_OBJECT) {
                 free_ValueObject((ValueObject*)object->body);
+            } else if (object->type == TYPE_FUNCTION) {
+                if (((Function*)object->body)->captured_count > 0 && !((Function*)object->body)->is_compiled) {
+                    if (((Function*)object->body)->captured != NULL) {
+                        free_ValueArray(((Function*)object->body)->captured);
+                        free(((Function*)object->body)->captured);
+                    }
+                }
             }
 
-            if (object->type != TYPE_FUNCTION) {
-                free(object->body);
-            }
+            free(object->body);
             free(object);
             
             for (size_t j = i; j < vm->allocated_objects_count - 1; j++) {
@@ -97,7 +103,19 @@ void markValue(Value* value) {
         object->marked = true;
     } else if (value->type == TYPE_FUNCTION) {
         DosatoObject* object = value->as.objectValue;
+        if (object->marked) return; // already marked
         object->marked = true;
+        Function* func = AS_FUNCTION(*value);
+
+        if (func->is_compiled) {
+            return;
+        }
+
+        if (func->captured_count > 0) {
+            for (size_t i = 0; i < func->captured_count; i++) {
+                markValue(&func->captured->values[i]);
+            }
+        }
     }
 }
 
@@ -108,6 +126,7 @@ void destroy_Function(Function* func) {
         free(func->argt);
         freeCodeInstanceWeak(func->instance);
         free(func->instance);
+        free(func->captured_indices);
     }
 }
 
@@ -127,6 +146,9 @@ void init_Function(Function* func) {
     func->return_type = TYPE_VOID;
     func->is_compiled = false;
     func->func_ptr = NULL;
+    func->captured = NULL;
+    func->captured_indices = NULL;
+    func->captured_count = 0;
 }
 
 void initVirtualMachine(VirtualMachine* vm) {
@@ -191,7 +213,7 @@ void pushValue(ValueArray* array, Value value) {
 } while(0); \
 break;
 
-int runVirtualMachine (VirtualMachine* vm, int debug) {
+int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
     if (debug) printf("Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
@@ -204,13 +226,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
     Value zero = BUILD_LONG(0);
     vm->globals.values[0] = zero;
 
-    // set all functions to globals
-    for (size_t i = 0; i < vm->functions.count; i++) {
-        Value func = BUILD_FUNCTION(&vm->functions.funcs[i], false);
-        func.defined = true;
-        func.is_constant = true;
-        if (vm->functions.funcs[i].name_index != -1) {
-            vm->globals.values[vm->functions.funcs[i].name_index] = func;
+    if (is_main) {
+        // set all functions to globals
+        for (size_t i = 0; i < vm->functions.count; i++) {
+            Function* func_ptr = malloc(sizeof(Function));
+            *func_ptr = vm->functions.funcs[i];
+            Value func = BUILD_FUNCTION(func_ptr, false);
+            func.defined = true;
+            func.is_constant = true;
+            if (vm->functions.funcs[i].name_index != -1) {
+                vm->globals.values[vm->functions.funcs[i].name_index] = func;
+            }
         }
     }
 
@@ -464,6 +490,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 long long int i = index.as.longValue;
                 if (list.type == TYPE_ARRAY) {
                     ValueArray* array = AS_ARRAY(list);
+                    if (i < 0) {
+                        i += array->count;
+                    }
+
                     if (i < 0 || i >= array->count) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
@@ -473,6 +503,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                     pushValue(&vm->stack, value);
                 } else if (list.type == TYPE_STRING) {
                     char* string = AS_STRING(list);
+                    if (i < 0) {
+                        i += strlen(string);
+                    }
+
                     if (i < 0 || i >= strlen(string)) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
@@ -717,7 +751,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
                 long long int i = index.as.longValue;
                 if (list.type == TYPE_ARRAY) {
+                    
                     ValueArray* array = AS_ARRAY(list);
+                    if (i < 0) {
+                        i += array->count;
+                    }
+
                     if (i < 0 || i >= array->count) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
@@ -729,6 +768,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                         PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                     }
                     char* string = AS_STRING(list);
+                    if (i < 0) {
+                        i += strlen(string);
+                    }
+
                     if (i < 0 || i >= strlen(string)) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
@@ -907,6 +950,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 // TO DO type checking
                 int i = index.as.longValue;
                 ValueArray* array = AS_ARRAY(list);
+                if (i < 0) {
+                    i += array->count;
+                }
+
                 if (i < 0 || i >= array->count) {
                     PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
@@ -932,6 +979,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
                 // TO DO type checking
                 int i = index.as.longValue;
                 ValueArray* array = AS_ARRAY(list);
+
+                if (i < 0) {
+                    i += array->count;
+                }
+
                 if (i < 0 || i >= array->count) {
                     PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
@@ -1925,19 +1977,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug) {
 
 #undef PRINT_ERROR
 
-Value callExternalFunction(size_t index, ValueArray args, bool debug) {
-    Function function = main_vm->functions.funcs[index];
-
-    if (function.is_compiled) {
-        Value return_val = ((DosatoFunction)function.func_ptr)(args, debug);
+Value callExternalFunction(Function* function, ValueArray args, bool debug) {
+    if (function->is_compiled) {
+        Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
         return return_val;
     } else {
-        if (args.count != function.arity) {
+        if (args.count != function->arity) {
             return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
         }
         // cast arguments
         for (int i = 0; i < args.count; i++) {
-            ErrorType code = castValue(&args.values[i], function.argt[i]);
+            ErrorType code = castValue(&args.values[i], function->argt[i]);
             if (code != E_NULL) {
                 return BUILD_EXCEPTION(code);
             }
@@ -1946,15 +1996,22 @@ Value callExternalFunction(size_t index, ValueArray args, bool debug) {
 
         CodeInstance* old = main_vm->instance;
 
-        main_vm->instance = function.instance;
+        main_vm->instance = function->instance;
 
         write_StackFrames(&main_vm->stack_frames, main_vm->stack.count);
         // push arguments
         for (int i = 0; i < args.count; i++) {
             pushValue(&main_vm->stack, args.values[i]);
         }
+        
+        // push captured variables
+        if (function->captured_count > 0) {
+            for (int i = 0; i < function->captured_count; i++) {
+                pushValue(&main_vm->stack, function->captured->values[i]);
+            }
+        }
 
-        runVirtualMachine(main_vm, debug);
+        runVirtualMachine(main_vm, debug, false);
 
         main_vm->instance = old;
 

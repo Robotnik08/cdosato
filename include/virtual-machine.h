@@ -65,7 +65,7 @@ void freeVirtualMachine(VirtualMachine* vm);
 
 void pushValue(ValueArray* array, Value value);
 
-int runVirtualMachine(VirtualMachine* vm, int debug);
+int runVirtualMachine(VirtualMachine* vm, int debug, bool is_main);
 
 void init_FunctionList(FunctionList* list);
 void write_FunctionList(FunctionList* list, Function func);
@@ -76,7 +76,7 @@ void destroy_FunctionList(FunctionList* list);
 
 void init_Function(Function* func);
 
-Value callExternalFunction(size_t index, ValueArray args, bool debug);
+Value callExternalFunction(Function* function, ValueArray args, bool debug);
 
 DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
 void markObjects (VirtualMachine* vm);

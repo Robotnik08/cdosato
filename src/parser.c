@@ -544,8 +544,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             // get the function expression
             int i = start;
             for (int j = end - 1; j >= start; j--) {
-                if (tokens.tokens[j].type == TOKEN_PARENTHESIS_OPEN) {
-                    i = j;
+                if (tokens.tokens[j].type == TOKEN_PARENTHESIS_CLOSED) {
+                    i = getStartOfBlock(tokens, j);
                     break;
                 }
             }
@@ -877,13 +877,13 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         }
                         all_type = all_type && startofblock + 1 != i - 1;
 
-                        if (2 >= highest && all_type) {
+                        if (UNARY_PRECEDENCE >= highest && all_type) {
                             if (is_unary) {
                                 continue;
                             }
                             is_unary = false;
                             is_turnary = false;
-                            highest = 2;
+                            highest = UNARY_PRECEDENCE;
                             highest_index = type_cast ? highest_index : startofblock;
                             func_call = false;
                             type_cast = true;
@@ -899,7 +899,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     bool temp_unary = false;
                     if (i == new_start || tokens.tokens[i - 1].type == TOKEN_OPERATOR || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN || (tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_CLOSED && tokens.tokens[i - 2].type == TOKEN_VAR_TYPE && tokens.tokens[i - 3].type == TOKEN_PARENTHESIS_OPEN)) {
                         if (tokens.tokens[i].type == TOKEN_OPERATOR && isUnaryOperator(tokens.tokens[i].carry)) {
-                            precedence = 2; // unary operator precedence
+                            precedence = UNARY_PRECEDENCE; // unary operator precedence
                             temp_unary = true;
                         } else {
                             PRINT_ERROR(i, E_NON_UNARY_OPERATOR);
