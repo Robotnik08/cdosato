@@ -76,7 +76,7 @@ void destroy_FunctionList(FunctionList* list);
 
 void init_Function(Function* func);
 
-Value callExternalFunction(Function* function, ValueArray args, bool debug);
+Value callExternalFunction(Value function, ValueArray args, bool debug);
 
 DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
 void markObjects (VirtualMachine* vm);
