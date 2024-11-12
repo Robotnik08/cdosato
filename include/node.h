@@ -68,7 +68,8 @@ typedef enum {
     NODE_SWITCH_CASE,
     NODE_OTHER,
     NODE_TEMPLATE_LITERAL,
-    NODE_TEMPLATE_STRING_PART
+    NODE_TEMPLATE_STRING_PART,
+    NODE_LAMBDA_EXPRESSION
 } NodeType;
 
 typedef struct Node Node;

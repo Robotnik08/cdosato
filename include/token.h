@@ -10,7 +10,9 @@
 #define NULL_KEYWORDS {"NULL"}
 #define INFINITY_KEYWORDS {"INFINITY"}
 #define NAN_KEYWORDS {"NAN"}
-#define RESERVED_KEYWORDS {"OTHER"}
+#define RESERVED_KEYWORDS {"OTHER", "AS"}
+
+#define BRACKETS {"()", "{}", "[]"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
                    "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";", ":>",":<",":>=",":<=","??",\
@@ -21,8 +23,7 @@
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
                     2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13,  13,  13,  13,   13,   12,\
                     14,    1,    14,   12}
-
-#define BRACKETS {"()", "{}", "[]"}
+#define UNARY_PRECEDENCE 0
 
 typedef enum {
     TOKEN_NULL = -2,
@@ -101,7 +102,7 @@ typedef enum {
     OPERATOR_MAX,
     OPERATOR_MIN,
     OPERATOR_ABSOLUTE,
-    OPERATOR_AS,
+    OPERATOR_FAT_ARROW,
     OPERATOR_SHIFT_RIGHT_ASSIGN,
     OPERATOR_SHIFT_LEFT_ASSIGN,
     OPERATOR_POWER_ASSIGN,
@@ -149,6 +150,7 @@ typedef enum {
 
 typedef enum {
     KEYWORD_OTHER,
+    KEYWORD_AS
 } ReservedKeywordType;
 
 typedef struct {

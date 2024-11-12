@@ -51,6 +51,11 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
+        case OP_LOAD_LAMBDA:
+            printf("OP_LOAD_LAMBDA");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
 
         case OP_DEFINE:
             printf("OP_DEFINE");
@@ -276,10 +281,6 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x)", address);
             break;
 
-        case OP_PRINT:
-            printf("OP_PRINT");
-            break;
-
         case OP_PUSH_NULL:
             printf("OP_PUSH_NULL");
             break;
@@ -345,6 +346,10 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_NOP:
             printf("OP_NOP");
+            break;
+
+        case OP_TEMP:
+            printf("OP_TEMP");
             break;
 
         default:

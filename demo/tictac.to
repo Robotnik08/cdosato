@@ -5,7 +5,7 @@ define void printBoard () {
     do {
         do say(board#i ? (board#i == 1 ? "X" : "O") : i)
         do if i % 3 == 2 then say("\n")
-    } for range(9) => i
+    } for range(9) as i
     do say("\n")
 }
 
@@ -39,7 +39,7 @@ define int playGame () {
         return player when checkWin(player)
         
         set player = -player
-    } for range(9) => _
+    } for range(9) as _
 
     return 0
 }

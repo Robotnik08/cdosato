@@ -63,6 +63,7 @@ typedef struct {
 #define AS_STRING(value) ((char*)(value).as.objectValue->body)
 #define AS_ARRAY(value) ((ValueArray*)(value).as.objectValue->body)
 #define AS_OBJECT(value) ((ValueObject*)(value).as.objectValue->body)
+#define AS_FUNCTION(value) ((Function*)(value).as.objectValue->body)
 
 #define UNDEFINED_VALUE (Value){ D_NULL, .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_EXCEPTION(e_code) (Value){ TYPE_EXCEPTION, .as.longValue = e_code, .is_variable_type = false, .defined = true, .is_constant = false }

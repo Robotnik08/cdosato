@@ -37,7 +37,7 @@ int compareValues (const void* a, const void* b) {
     }
 }
 
-Value dosato_quick_sort (ValueArray* array, int left, int right, size_t function) {
+Value dosato_quick_sort (ValueArray* array, int left, int right, Function* function) {
     if (left < right) {
         Value pivot_value = dosato_partition(array, left, right, function);
         if (pivot_value.type == TYPE_EXCEPTION || pivot_value.type == TYPE_HLT) {
@@ -56,7 +56,7 @@ Value dosato_quick_sort (ValueArray* array, int left, int right, size_t function
     return UNDEFINED_VALUE;
 }
 
-Value dosato_partition (ValueArray* array, int left, int right, size_t function) {
+Value dosato_partition (ValueArray* array, int left, int right, Function* function) {
     Value pivot = array->values[right];
     int i = left - 1;
 
@@ -119,7 +119,7 @@ Value array_sort(ValueArray args, bool debug) {
         if (arg2.type != TYPE_FUNCTION) {
             return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
         }
-        Value res = dosato_quick_sort(AS_ARRAY(arg), 0, AS_ARRAY(arg)->count - 1, AS_LONG(arg2));
+        Value res = dosato_quick_sort(AS_ARRAY(arg), 0, AS_ARRAY(arg)->count - 1, AS_FUNCTION(arg2));
 
         if (res.type == TYPE_EXCEPTION || res.type == TYPE_HLT) {
             return res;

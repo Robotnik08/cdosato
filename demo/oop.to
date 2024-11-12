@@ -1,0 +1,17 @@
+define object playerMaker (string name, string position, int number) {
+    const player = {
+        name, position, number
+    }
+
+    set player->greet = void () => {
+        do sayln(`Hello, I'm {player->name} and I play as {player->position} ({player->number})`)
+    }
+
+    return player
+}
+
+make object player1 = playerMaker("Bib", "Attacker", 10)
+make object player2 = playerMaker("Bob", "Defender", 5)
+
+do player1->greet()
+do player2->greet()

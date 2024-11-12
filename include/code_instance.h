@@ -20,7 +20,7 @@ typedef enum {
     OP_STORE,
     OP_STORE_SUBSCR, // store to list or object
     OP_STORE_OBJ, // store to object
-
+    OP_LOAD_LAMBDA,
 
     OP_DEFINE, // define a global variable
 
@@ -110,7 +110,7 @@ typedef enum {
 
     OP_END_FUNC,
 
-    OP_PRINT // print the top of the stack, this is a debug instruction to be removed
+    OP_TEMP // temporary opcode for swapping
 
 } OpCode;
 

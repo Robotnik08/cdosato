@@ -5,4 +5,6 @@
 
 long long int getFileSize(FILE *file);
 
+char* readStdin(long long int* length);
+
 #endif // dosato_filetools_h
