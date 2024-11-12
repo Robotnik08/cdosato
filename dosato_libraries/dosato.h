@@ -25,8 +25,11 @@ extern "C" {
 #include <time.h>
 #include <math.h>
 
+// Get function arguments
 #define GET_ARG(args, index) (args.values[args.count - index - 1])
 
+// Get function arguments with type checking, throws an exception if the type is not correct
+// Do not cast to STRING, use CAST_TO_STRING instead
 #define CAST_SAFE(value, type) \
     do { \
         ErrorType cast_result_##value = castValue(&value, type); \
@@ -35,6 +38,7 @@ extern "C" {
         } \
     } while (0)
 
+// Casting to a string if the value is not a string
 #define CAST_TO_STRING(value) \
     do { \
         if (value.type == TYPE_STRING) break; \
@@ -106,6 +110,7 @@ typedef enum {
     E_EXPECTED_STRING_TYPE,
     E_EXPECTED_NUMBER,
     E_CANNOT_ASSIGN_TO_CONSTANT,
+    E_INVALID_AMOUNT_SET_EXPRESSION,
 
     // standard library errors
     E_FILE_NOT_FOUND,

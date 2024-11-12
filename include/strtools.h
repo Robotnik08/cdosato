@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define IS_SPACE(c) (c == ' ' || c == '\n' || c == '\t' || c == '\0')
+#define IS_SPACE(c) (c == ' ' || c == '\n' || c == '\t' || c == '\0' || c == '\r')
 #define IS_NUMERIC(c) (c >= '0' && c <= '9')
 #define IS_ALPHA(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 #define IS_ALPHANUMERIC(c) (IS_NUMERIC(c) || IS_ALPHA(c) || c == '_')

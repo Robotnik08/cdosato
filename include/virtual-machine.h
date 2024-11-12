@@ -17,6 +17,10 @@ typedef struct {
     size_t arity;
     uint8_t* ip;
 
+    ValueArray* captured;
+    size_t* captured_indices;
+    size_t captured_count;
+
     bool is_compiled; // compiled or imported by external library
     void* func_ptr;
 } Function;
@@ -61,7 +65,7 @@ void freeVirtualMachine(VirtualMachine* vm);
 
 void pushValue(ValueArray* array, Value value);
 
-int runVirtualMachine(VirtualMachine* vm, int debug);
+int runVirtualMachine(VirtualMachine* vm, int debug, bool is_main);
 
 void init_FunctionList(FunctionList* list);
 void write_FunctionList(FunctionList* list, Function func);
@@ -72,7 +76,7 @@ void destroy_FunctionList(FunctionList* list);
 
 void init_Function(Function* func);
 
-Value callExternalFunction(size_t index, ValueArray args, bool debug);
+Value callExternalFunction(Function* function, ValueArray args, bool debug);
 
 DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
 void markObjects (VirtualMachine* vm);
@@ -81,6 +85,7 @@ void markValue(Value* value);
 #define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_OBJECT(value, trigger_sweep) (Value){ TYPE_OBJECT, .as.objectValue = buildDosatoObject(value, TYPE_OBJECT, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
+#define BUILD_FUNCTION(value, trigger_sweep) (Value){ TYPE_FUNCTION, .as.objectValue = buildDosatoObject(value, TYPE_FUNCTION, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 
 #define NEXT_BYTE() (*vm->ip++)
 #define NEXT_SHORT() ((*vm->ip++) | (*vm->ip++ << 8))

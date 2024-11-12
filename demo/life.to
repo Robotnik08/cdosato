@@ -5,9 +5,9 @@ define void printBoard () {
     make i = 0
     do {
         make var j = 0
-        do say(j ? "#" : ".") for i => j
+        do say(j ? "#" : ".") for i as j
         do say("\n")
-    } for board => i
+    } for board as i
 }
 
 define bool getFrom (int x, int y) {
@@ -35,8 +35,8 @@ define void nextGen () {
         make int j = 0
         do {
             set newBoard#i#j = getAlive(i, j)
-        } for range(board#i) => j
-    } for range(board) => i
+        } for range(board#i) as j
+    } for range(board) as i
     
     set board = newBoard
 }
@@ -57,4 +57,4 @@ do {
     do printBoard()
     do nextGen()
     do sleep(0.5)
-} for range(max_iteration) => i
+} for range(max_iteration) as i

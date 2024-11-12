@@ -7,6 +7,6 @@ make array result = []
 make var i = 0
 do {
     set result += [(ulong)i]
-} for (arr => i)
+} for arr as i
 
 do assert (result, [5, 2, 4, 2, 6, 3, 1, 2, 1, 4, 6])

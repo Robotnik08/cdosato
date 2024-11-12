@@ -20,8 +20,11 @@ int debug = 0b0;
 int main (int argc, char** argv) {
     if (argc < 2) {
         PRINT_USAGE
+        printf("Type 'dosato -h' for help\n");
         return 1;
     }
+
+    bool cin_mode = false;
 
     if (argc == 2) {
         if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
@@ -29,19 +32,23 @@ int main (int argc, char** argv) {
             printf("Options:\n");
             printf("  -h, --help: Show this help message\n");
             printf("  -v, --version: Show version information\n");
+            printf("  -c, --cin: Cin mode\n");
             printf("  -d, --debug: Enable debug mode (after the source file)\n");
             printf("     Debug options (prefix with -d):\n");
-            printf("     -s, --source: Debug source code\n");
-            printf("     -l, --lexer: Debug lexer\n");
-            printf("     -p, --parser: Debug parser\n");
-            printf("     -c, --compiler: Debug compiler\n");
-            printf("     -a, --all: Debug all\n");
-            printf("     -n, --none: Debug none\n");
+            printf("     -s, --source: Show source code\n");
+            printf("     -l, --lexer: Show tokens\n");
+            printf("     -p, --parser: Show AST\n");
+            printf("     -c, --compiler: Show bytecode\n");
+            printf("     -a, --all: Show all of the above\n");
+            printf("     -n, --none: Show none\n");
             return 0;
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
             printf("Dosato version %s, compiled on %s\n", DOSATO_VERSION, DOSATO_DATE);
             printf("Type 'dosato -h' for help\n");
             return 0;
+        } else if (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--cin") == 0) {
+            // cin mode
+            cin_mode = true;
         }
     }
 
@@ -70,37 +77,47 @@ int main (int argc, char** argv) {
         }
     }
 
-    FILE* file = fopen(argv[1], "r");
-    if (file == NULL) {
-        printf("Could not open file '%s'\n", argv[1]);
-        return 1;
+    char* source = NULL;
+    long long int length = 0;
+
+    if (!cin_mode) {
+        FILE* file = fopen(argv[1], "r");
+        if (file == NULL) {
+            printf("Could not open file '%s'\n", argv[1]);
+            return 1;
+        }
+
+        char* argument_dir = malloc(strlen(argv[1]) + 1);
+        strcpy(argument_dir, argv[1]);
+        char* index = strrchr(argument_dir, '/');
+        if (index == NULL) {
+            index = strrchr(argument_dir, '\\');
+        }
+        if (index != NULL) {
+            *index = '\0';
+        }
+
+        chdir(argument_dir);
+
+        free (argument_dir);
+
+        length = getFileSize(file);
+
+        source = malloc(length + 1);
+        if (source == NULL) {
+            printf("Could not allocate memory for source\n");
+            return 1;
+        }
+
+        // read into source
+        fread(source, 1, length, file);
+        source[length] = '\0';
+
+        fclose(file);
+    } else {
+        printf("Enter source code:\n");
+        source = readStdin(&length);
     }
-
-    char* argument_dir = malloc(strlen(argv[1]) + 1);
-    strcpy(argument_dir, argv[1]);
-    char* index = strrchr(argument_dir, '/');
-    if (index == NULL) {
-        index = strrchr(argument_dir, '\\');
-    }
-    if (index != NULL) {
-        *index = '\0';
-    }
-
-    chdir(argument_dir);
-
-    free (argument_dir);
-
-    long long int length = getFileSize(file);
-
-    char* source = malloc(length + 1);
-    if (source == NULL) {
-        printf("Could not allocate memory for source\n");
-        return 1;
-    }
-
-    // read into source
-    fread(source, 1, length, file);
-    source[length] = '\0';
 
     if (debug & DEBUG_SOURCE) printf ("==== Source: (%d) ====\n%s\n", length, source);
     
@@ -111,8 +128,7 @@ int main (int argc, char** argv) {
 
     AST* main_ast = malloc(sizeof(AST));
     init_AST(main_ast);
-    char* name = malloc(strlen(argv[1]) + 1);
-    strcpy(name, argv[1]);
+    char* name = cin_mode ? COPY_STRING("stdin") : COPY_STRING(argv[1]);
     load_AST(main_ast, source, length, name, debug, vm);
 
     if (debug & DEBUG_PARSE) {
@@ -151,11 +167,11 @@ int main (int argc, char** argv) {
     write_StackFrames(&vm->stack_frames, 0);
 
     if (!debug) {
-        exit_code = runVirtualMachine(vm, debug);
+        exit_code = runVirtualMachine(vm, debug, true);
     } else {
         // time it
         clock_t start = clock();
-        exit_code = runVirtualMachine(vm, debug);
+        exit_code = runVirtualMachine(vm, debug, true);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
         printf("\nExecution time: %f\n", time);

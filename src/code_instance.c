@@ -103,6 +103,8 @@ int getOffset(OpCode instruction) {
             return 3; // 2 bytes for address
         case OP_STORE_FAST:
             return 3; // 2 bytes for address
+        case OP_LOAD_LAMBDA:
+            return 3; // 2 bytes for address
 
         case OP_DEFINE:
             return 3; // 2 bytes for address
