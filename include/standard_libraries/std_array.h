@@ -3,8 +3,8 @@
 
 #include "common_std.h"
 
-Value dosato_quick_sort (ValueArray* array, int left, int right, Function* function);
-Value dosato_partition (ValueArray* array, int left, int right, Function* function);
+Value dosato_quick_sort (ValueArray* array, int left, int right, Value function);
+Value dosato_partition (ValueArray* array, int left, int right, Value function);
 
 Value array_sort(ValueArray args, bool debug);
 Value array_push(ValueArray args, bool debug);

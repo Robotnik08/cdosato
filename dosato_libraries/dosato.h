@@ -231,7 +231,7 @@ typedef struct {
 extern void printValue(Value value, bool extensive);
 
 /**
- * @brief Casts a value to a specific type, if possible. The value will be destroyed and replaced with the new value, so make sure you have a copy of the value if you need it.
+ * @brief Casts a value to a specific type, if possible. 
  * @param value The value to cast.
  * @param type The type to cast to, must be a value type, if you want to cast to a string, use the CAST_TO_STRING macro.
  * @return An error code, 0 if successful. if you get an error code, make sure to handle it accordingly.
@@ -335,6 +335,14 @@ extern void removeFromKey(ValueObject* object, char* key);
  * @brief Don't call this function, use the BUILD_STRING, BUILD_ARRAY, BUILD_OBJECT macros instead.
  */
 extern DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
+
+/**
+ * @brief Calls the function with the given arguments.
+ * @param function The function to call, must be of type 'TYPE_FUNCTION', returns an exception if not.
+ * @param args The arguments to pass to the function.
+ * @param debug If true, prints debug information.
+ */
+extern Value callExternalFunction(Value function, ValueArray args, bool debug);
 
 #define BUILD_STRING(value) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, false, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_ARRAY(value) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, false, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }

@@ -1977,7 +1977,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
 #undef PRINT_ERROR
 
-Value callExternalFunction(Function* function, ValueArray args, bool debug) {
+Value callExternalFunction(Value func, ValueArray args, bool debug) {
+    if (func.type != TYPE_FUNCTION) {
+        return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
+    }
+
+    Function* function = AS_FUNCTION(func);
+
     if (function->is_compiled) {
         Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
         return return_val;
