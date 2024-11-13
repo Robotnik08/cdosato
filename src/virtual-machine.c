@@ -145,6 +145,7 @@ void init_Function(Function* func) {
     func->arity = 0;
     func->return_type = TYPE_VOID;
     func->is_compiled = false;
+    func->is_class = false;
     func->func_ptr = NULL;
     func->captured = NULL;
     func->captured_indices = NULL;

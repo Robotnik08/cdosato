@@ -699,6 +699,11 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     if (!hasName(&vm->mappings, "_")) {
         addName(&vm->mappings, "_");
     }
+
+    // add the self to the map
+    if (!hasName(&vm->mappings, "self")) {
+        addName(&vm->mappings, "self");
+    }
     
     // get identifier tokens (variables, functions, etc.)
     for (int i = 0; i < code_length; i++) {

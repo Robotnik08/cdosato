@@ -32,7 +32,7 @@ static const char* ERROR_MESSAGES[] = {
     "Invalid Type",
     "Master keyword must be global (DEFINE, IMPORT, INCLUDE)",
     "Can't return outside of function",
-    "Master keyword can't have extensions (MAKE, DEFINE, IMPORT, INCLUDE, CONST)",
+    "Master keyword can't have extensions (MAKE, DEFINE, IMPORT, INCLUDE, CONST, CLASS, METHOD)",
     "Else keyword must come directly after an if or when keyword",
     "If keyword expects Then keyword",
     "Break keyword can only be used inside a loop",
@@ -62,6 +62,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expected number",
     "Cannot reassign constant",
     "Mismatch in tuple expression",
+    "Identifier cannot be used in this context",
 
     "File not found",
     "File already exists",
