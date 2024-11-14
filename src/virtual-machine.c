@@ -9,6 +9,7 @@
 VirtualMachine* main_vm = NULL;
 
 DOSATO_LIST_FUNC_GEN(FunctionList, Function, funcs)
+DOSATO_LIST_FUNC_GEN(EnumList, Enum, enums)
 
 
 DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm) {
@@ -137,6 +138,17 @@ void destroy_FunctionList(FunctionList* list) {
     free_FunctionList(list);
 }
 
+void destroy_Enum(Enum* en) {
+    free(en->name);
+}
+
+void destroy_EnumList(EnumList* list) {
+    for (size_t i = 0; i < list->count; i++) {
+        destroy_Enum(&list->enums[i]);
+    }
+    free_EnumList(list);
+}
+
 void init_Function(Function* func) {
     func->name = NULL;
     func->name_index = 0;
@@ -152,6 +164,11 @@ void init_Function(Function* func) {
     func->captured_count = 0;
 }
 
+void init_Enum(Enum* en) {
+    en->name = NULL;
+    en->name_index = 0;
+}
+
 void initVirtualMachine(VirtualMachine* vm) {
     vm->instance = malloc(sizeof(CodeInstance));
     initCodeInstance(vm->instance);
@@ -160,6 +177,7 @@ void initVirtualMachine(VirtualMachine* vm) {
     init_ValueArray(&vm->globals);
     init_StackFrames(&vm->stack_frames);
     init_FunctionList(&vm->functions);
+    init_EnumList(&vm->enums);
     init_NameMap(&vm->mappings);
     init_NameMap(&vm->constants_map);
     init_ErrorJumps(&vm->error_jumps);
@@ -176,6 +194,7 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free(vm->instance);
     free_StackFrames(&vm->stack_frames);
     destroy_FunctionList(&vm->functions);
+    destroy_EnumList(&vm->enums);
     free_NameMap(&vm->mappings);
     free_NameMap(&vm->constants_map);
     free_ErrorJumps(&vm->error_jumps);
@@ -237,6 +256,16 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             func.is_constant = true;
             if (vm->functions.funcs[i].name_index != -1) {
                 vm->globals.values[vm->functions.funcs[i].name_index] = func;
+            }
+        }
+
+        // set all enums to globals
+        for (size_t i = 0; i < vm->enums.count; i++) {
+            Value enum_val = BUILD_OBJECT(vm->enums.enums[i].object, false);
+            enum_val.defined = true;
+            enum_val.is_constant = true;
+            if (vm->enums.enums[i].name_index != -1) {
+                vm->globals.values[vm->enums.enums[i].name_index] = enum_val;
             }
         }
     }

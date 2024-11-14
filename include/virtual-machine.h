@@ -34,6 +34,18 @@ typedef struct {
 } FunctionList;
 
 typedef struct {
+    ValueObject* object;
+    char* name;
+    size_t name_index;
+} Enum;
+
+typedef struct {
+    Enum* enums;
+    size_t count;
+    size_t capacity;
+} EnumList;
+
+typedef struct {
     CodeInstance* instance;
     ValueArray constants;
     ValueArray globals;
@@ -41,6 +53,7 @@ typedef struct {
     uint8_t* ip;
 
     FunctionList functions;
+    EnumList enums;
 
     StackFrames stack_frames;
     ValueArray stack;
@@ -73,10 +86,19 @@ void init_FunctionList(FunctionList* list);
 void write_FunctionList(FunctionList* list, Function func);
 void free_FunctionList(FunctionList* list);
 
+void init_EnumList(EnumList* list);
+void write_EnumList(EnumList* list, Enum en);
+void free_EnumList(EnumList* list);
+
+
 void destroy_Function(Function* func);
 void destroy_FunctionList(FunctionList* list);
 
+void destroy_Enum(Enum* en);
+void destroy_EnumList(EnumList* list);
+
 void init_Function(Function* func);
+void init_Enum(Enum* en);
 
 Value callExternalFunction(Value function, ValueArray args, bool debug);
 
