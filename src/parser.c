@@ -1011,7 +1011,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 } else if ((tokens.tokens[new_start].type == TOKEN_TEMPLATE || tokens.tokens[new_start].type == TOKEN_TEMPLATE_END) && (tokens.tokens[new_end - 1].type == TOKEN_TEMPLATE_END && tokens.tokens[new_end - 1].carry == tokens.tokens[new_start].carry)) {
                     write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_TEMPLATE_LITERAL, file_name));
                 } else {
-                    PRINT_ERROR(new_start, E_UNEXPECTED_TOKEN);
+                    PRINT_ERROR(new_start + 1, E_UNEXPECTED_TOKEN);
                 }
             } else {
                 if (is_unary) {

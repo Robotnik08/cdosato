@@ -31,7 +31,7 @@ void trimComments (TokenList* list) {
     list->count = tokenCount;
 }
 
-#define MAX_TEMPLETE_RECURSION 255
+#define MAX_TEMPLATE_RECURSION 255
 
 int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMachine* vm, const char* file_name) {
     int tokenCount = list->count;
@@ -55,9 +55,9 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
     int stringCount = 0;
 
     bool in_template = false;
-    int template_start_positions[MAX_TEMPLETE_RECURSION];
-    int template_bracket_depths[MAX_TEMPLETE_RECURSION];
-    int template_ids[MAX_TEMPLETE_RECURSION];
+    int template_start_positions[MAX_TEMPLATE_RECURSION];
+    int template_bracket_depths[MAX_TEMPLATE_RECURSION];
+    int template_ids[MAX_TEMPLATE_RECURSION];
     int template_id = 0;
     int template_start_count = 0;
     int bracket_depth = 0;
@@ -111,7 +111,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
             if (full_code[i] == '`' && escapeCount % 2 == 0) {
                 in_template = true;
-                if (template_start_count >= MAX_TEMPLETE_RECURSION) {
+                if (template_start_count >= MAX_TEMPLATE_RECURSION) {
                     printError(full_code, start, file_name, E_TEMPLATE_RECURSION_LIMIT, 1);
                 }
                 template_bracket_depths[template_start_count] = bracket_depth;
@@ -783,8 +783,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
 
             write_ValueArray(&vm->constants, BUILD_CHAR(val));
-        }
-        if (quote == '"') {
+        } else {
             char* val = malloc(strlen(lit) - 1);
             memcpy(val, lit + 1, strlen(lit) - 2);
             val[strlen(lit) - 2] = '\0';
