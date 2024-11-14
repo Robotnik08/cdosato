@@ -65,7 +65,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
-        case NODE_MASTER_METHOD:
+        case NODE_MASTER_ENUM:
+        case NODE_MASTER_IMPLEMENT:
         case NODE_MASTER_CLASS:
         case NODE_MASTER_CONST:
         case NODE_MASTER_IMPORT:
@@ -73,10 +74,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_DEFINE:
         case NODE_MASTER_MAKE: {
             if (node.body.nodes[0].type != NODE_MASTER_DO_BODY + type - 1 || node.body.count > 1) {
-                PRINT_ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start);
+                PRINT_ERROR(E_MASTER_CANT_HAVE_EXTENSIONS, node.start - 1);
             }
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
-            break;      
+            break;
         }
 
         case NODE_MASTER_SWITCH:
@@ -149,6 +150,11 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[identifier_index].start);
                 }
             }
+            for (int i = 0; i < vm->enums.count; i++) {
+                if (strcmp(vm->enums.enums[i].name, name) == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[identifier_index].start);
+                }
+            }
 
             size_t name_index = ast->tokens.tokens[node.body.nodes[identifier_index].start].carry;
             CodeInstance* instance = malloc(sizeof(CodeInstance));
@@ -211,7 +217,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
-        case NODE_MASTER_METHOD_BODY: {
+        case NODE_MASTER_IMPLEMENT_BODY: {
             // a method is like a lambda, it assigns it to the self object after
 
             DataType data_type = TYPE_VAR;
@@ -354,6 +360,11 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // check if function is already in the function list
             for (int i = 0; i < vm->functions.count; i++) {
                 if (strcmp(vm->functions.funcs[i].name, name) == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+                }
+            } 
+            for (int i = 0; i < vm->enums.count; i++) {
+                if (strcmp(vm->enums.enums[i].name, name) == 0) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
                 }
             }
@@ -529,6 +540,11 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 // check if function is already in the function list
                 for (int j = 0; j < vm->functions.count; j++) {
                     if (strcmp(vm->functions.funcs[j].name, func.name) == 0) {
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+                    }
+                }
+                for (int i = 0; i < vm->enums.count; i++) {
+                    if (strcmp(vm->enums.enums[i].name, func.name) == 0) {
                         PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
                     }
                 }
@@ -1439,7 +1455,64 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->code[jump_end_index2 + 2] = ci->count >> 8;
             break;
         }
-        
+
+        case NODE_MASTER_ENUM_BODY: {
+            // compile the body
+            if (scope != NULL) {
+                PRINT_ERROR(E_MUST_BE_GLOBAL, node.start);
+            }
+
+            // get the name index
+            char* name = getTokenString(ast->tokens.tokens[node.body.nodes[0].start]);
+            // check if function is already in the function list
+            for (int i = 0; i < vm->functions.count; i++) {
+                if (strcmp(vm->functions.funcs[i].name, name) == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+                }
+            }
+            for (int i = 0; i < vm->enums.count; i++) {
+                if (strcmp(vm->enums.enums[i].name, name) == 0) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+                }
+            }
+
+            
+            size_t name_index = ast->tokens.tokens[node.body.nodes[0].start].carry;
+
+
+            // build the enum object
+            ValueObject* obj = malloc(sizeof(ValueObject));
+            init_ValueObject(obj);
+
+            u_int64 index = 0;
+            for (int i = 0; i < node.body.nodes[1].body.count; i++) {
+                Node enum_node = node.body.nodes[1].body.nodes[i];
+                if (enum_node.body.count != 0) {
+                    // get constant id
+                    Value constant = vm->constants.values[ast->tokens.tokens[enum_node.body.nodes[0].start].carry];
+                    if (constant.type != TYPE_ULONG) {
+                        PRINT_ERROR(E_INVALID_TYPE, enum_node.body.nodes[0].start);
+                    }
+                    index = AS_ULONG(constant);
+                }
+
+                // add the constant to the object
+                char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
+                write_ValueObject(obj, enum_name, BUILD_ULONG(index));
+                free(enum_name);
+
+                index++;
+            }
+
+            Enum en;
+            init_Enum(&en);
+            en.name = name;
+            en.name_index = name_index;
+            en.object = obj;
+
+            write_EnumList(&vm->enums, en);
+            break;
+        }
     }
 
 

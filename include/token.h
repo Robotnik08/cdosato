@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT"}
+#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM"}
 #define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "IF"}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR", "FUNCTION"}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
@@ -121,24 +121,6 @@ typedef enum {
 } OperatorType;
 
 typedef enum {
-    MASTER_DO,
-    MASTER_MAKE,
-    MASTER_SET,
-    MASTER_DEFINE,
-    MASTER_INCLUDE,
-    MASTER_IMPORT,
-    MASTER_RETURN,
-    MASTER_BREAK,
-    MASTER_CONTINUE,
-    MASTER_SWITCH,
-    MASTER_CONST,
-    MASTER_CLASS,
-    MASTER_METHOD,
-
-    M_NULL = -1
-} MasterKeywordType;
-
-typedef enum {
     EXT_WHEN,
     EXT_WHILE,
     EXT_ELSE,
@@ -161,14 +143,6 @@ typedef struct {
     LexTokenType type;
     int carry; // flags for token data
 } Token;
-
-typedef enum {
-    NEEDS_NULL,
-    NEEDS_BLOCK,
-    NEEDS_EXPRESSION,
-    NEEDS_FUNCTION,
-    NEEDS_IF_OR_FUNCTION
-} KeyWordFollowUpType;
 
 typedef struct {
     size_t count;
