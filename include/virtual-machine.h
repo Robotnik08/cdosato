@@ -21,6 +21,8 @@ typedef struct {
     size_t* captured_indices;
     size_t captured_count;
 
+    bool is_class;
+
     bool is_compiled; // compiled or imported by external library
     void* func_ptr;
 } Function;
