@@ -10,8 +10,7 @@ static const char* ERROR_MESSAGES[] = {
     "Unclosed String Literal",
     "Template Recursion Limit Exceeded",
 
-    "Expected Master Keyword as first token (DO, MAKE, SET, DEFINE, INCLUDE, IMPORT, RETURN, BREAK, CONTINUE, SWITCH, CONST)",
-    "Line is missing a seperator (;)",
+    "Expected Master Keyword as first token (DO, MAKE, SET, DEFINE, INCLUDE, IMPORT, RETURN, BREAK, CONTINUE, SWITCH, CONST, CLASS, IMPLEMENT)",
     "Line is missing a closing parenthesis (')', '}', ']')",
     "Line is missing an opening parenthesis ('(', '{', '[')",
     "Unexpected Token",
