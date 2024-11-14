@@ -75,7 +75,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_SWITCH:
         case NODE_MASTER_CONST:
         case NODE_MASTER_CLASS:
-        case NODE_MASTER_METHOD: {
+        case NODE_MASTER_IMPLEMENT:
+        case NODE_MASTER_ENUM: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = EXT_NULL;
             int ext_start = start;
@@ -307,7 +308,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         }
 
         case NODE_MASTER_DEFINE_BODY:
-        case NODE_MASTER_METHOD_BODY: {
+        case NODE_MASTER_IMPLEMENT_BODY: {
             // defining a function
             
             // parse the TYPE
@@ -533,6 +534,69 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
             if (j + 1 != end) {
                 PRINT_ERROR(j + 1, E_UNEXPECTED_TOKEN);
+            }
+            break;
+        }
+
+        case NODE_MASTER_ENUM_BODY: {
+            // first token is the enum name
+            if (tokens.tokens[start].type != TOKEN_IDENTIFIER) {
+                PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
+            }
+
+            write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_IDENTIFIER, file_name));
+
+            if (start + 1 == end) {
+                break;
+            }
+
+            // get the arguments
+            // get body of the enum
+            if (tokens.tokens[start + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[start + 1].carry, BRACKET_CURLY)) {
+                PRINT_ERROR(start + 1, E_EXPECTED_BRACKET_CURLY);
+            }
+
+            int i = getEndOfBlock(tokens, start + 1);
+
+            if (i == -1) {
+                PRINT_ERROR(start + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+
+            write_NodeList(&root.body, parse(source, length, start + 2, i, tokens, NODE_ENUM_BODY, file_name));
+
+            break;
+        }
+
+        case NODE_ENUM_BODY: {
+            // split on the commas
+            int j = start;
+            for (int i = start; i < end; i++) {
+                SKIP_BLOCK(i);
+                if (tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
+                    write_NodeList(&root.body, parse(source, length, j, i, tokens, NODE_ENUM_EXPRESSION, file_name));
+                    j = i + 1;
+                }
+            }
+            write_NodeList(&root.body, parse(source, length, j, end, tokens, NODE_ENUM_EXPRESSION, file_name));
+            break;
+        }
+
+        case NODE_ENUM_EXPRESSION: {
+            if (end - start == 1) {
+                // no value
+                break;
+            } else if (end - start == 3) {
+                // check if the second token is an assignment operator
+                if (tokens.tokens[start + 1].type != TOKEN_OPERATOR || tokens.tokens[start + 1].carry != OPERATOR_ASSIGN) {
+                    PRINT_ERROR(start + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
+                }
+                // check if the third token is a number
+                if (tokens.tokens[start + 2].type != TOKEN_NUMBER) {
+                    PRINT_ERROR(start + 2, E_EXPECTED_NUMBER);
+                }
+                write_NodeList(&root.body, parse(source, length, start + 2, start + 3, tokens, NODE_NUMBER_LITERAL, file_name));
+            } else {
+                PRINT_ERROR(start, E_UNEXPECTED_TOKEN);
             }
             break;
         }
