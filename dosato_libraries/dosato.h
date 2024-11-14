@@ -111,6 +111,7 @@ typedef enum {
     E_EXPECTED_NUMBER,
     E_CANNOT_ASSIGN_TO_CONSTANT,
     E_INVALID_AMOUNT_SET_EXPRESSION,
+    E_INVALID_IDENTIFIER,
 
     // standard library errors
     E_FILE_NOT_FOUND,

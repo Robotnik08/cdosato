@@ -13,6 +13,7 @@ typedef struct {
     size_t locals_count;
     size_t locals_capacity;
     DataType return_type;
+    bool is_class;
 } ScopeData;
 
 void compile(VirtualMachine* vm, AST* ast);

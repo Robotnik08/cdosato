@@ -580,7 +580,7 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
         }
 
         case TYPE_FUNCTION: {
-            string = realloc(string, strlen(string) + 8);
+            string = realloc(string, strlen(string) + 16);
             strcat(string, "<function>");
             break;
         }

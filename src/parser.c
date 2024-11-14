@@ -73,7 +73,9 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_BREAK:
         case NODE_MASTER_CONTINUE:
         case NODE_MASTER_SWITCH:
-        case NODE_MASTER_CONST: {
+        case NODE_MASTER_CONST:
+        case NODE_MASTER_CLASS:
+        case NODE_MASTER_METHOD: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = EXT_NULL;
             int ext_start = start;
@@ -304,7 +306,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
-        case NODE_MASTER_DEFINE_BODY: {
+        case NODE_MASTER_DEFINE_BODY:
+        case NODE_MASTER_METHOD_BODY: {
             // defining a function
             
             // parse the TYPE
@@ -496,6 +499,41 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
 
             write_NodeList(&root.body, parse(source, length, i + 2, k, tokens, NODE_BLOCK, file_name));
+            break;
+        }
+        
+        case NODE_MASTER_CLASS_BODY: {
+            // first token is the class name
+            if (tokens.tokens[start].type != TOKEN_IDENTIFIER) {
+                PRINT_ERROR(start, E_EXPECTED_IDENTIFIER);
+            }
+            write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_IDENTIFIER, file_name));
+            if (start + 1 == end) {
+                break;
+            }
+            // get the arguments
+            if (tokens.tokens[start + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[start + 1].carry, BRACKET_ROUND)) {
+                PRINT_ERROR(start + 1, E_EXPECTED_BRACKET_ROUND);
+            }
+            int i = getEndOfBlock(tokens, start + 1);
+            if (i == -1) {
+                PRINT_ERROR(start + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+            write_NodeList(&root.body, parse(source, length, start + 2, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+
+            // body
+            if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_CURLY)) {
+                PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_CURLY);
+            }
+            int j = getEndOfBlock(tokens, i + 1);
+            if (j == -1) {
+                PRINT_ERROR(i + 1, E_MISSING_CLOSING_PARENTHESIS);
+            }
+            write_NodeList(&root.body, parse(source, length, i + 2, j, tokens, NODE_BLOCK, file_name));
+
+            if (j + 1 != end) {
+                PRINT_ERROR(j + 1, E_UNEXPECTED_TOKEN);
+            }
             break;
         }
 
@@ -973,7 +1011,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 } else if ((tokens.tokens[new_start].type == TOKEN_TEMPLATE || tokens.tokens[new_start].type == TOKEN_TEMPLATE_END) && (tokens.tokens[new_end - 1].type == TOKEN_TEMPLATE_END && tokens.tokens[new_end - 1].carry == tokens.tokens[new_start].carry)) {
                     write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_TEMPLATE_LITERAL, file_name));
                 } else {
-                    PRINT_ERROR(new_start, E_UNEXPECTED_TOKEN);
+                    PRINT_ERROR(new_start + 1, E_UNEXPECTED_TOKEN);
                 }
             } else {
                 if (is_unary) {

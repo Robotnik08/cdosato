@@ -1,17 +1,27 @@
-define object playerMaker (string name, string position, int number) {
-    const player = {
-        name, position, number
-    }
+class Person (name, age) {
+    set self->name = name
+    set self->age = age
 
-    set player->greet = void () => {
-        do sayln(`Hello, I'm {player->name} and I play as {player->position} ({player->number})`)
+    implement greet () {
+        do sayln(`Hello, my name is {self->name}. I am {self->age} years old`)
     }
-
-    return player
 }
 
-make object player1 = playerMaker("Bib", "Attacker", 10)
-make object player2 = playerMaker("Bob", "Defender", 5)
+class Student (name, age, grade) {
+    set self += Person(name, age)
+    set self->grade = grade
 
-do player1->greet()
-do player2->greet()
+    implement sayGrade () {
+        do sayln(`My grade is {self->grade}`)
+    }
+}
+
+make student1 = Student("Bob", 20, "A")
+
+do student1->greet()
+do student1->sayGrade()
+
+make student2 = Student("Bib", 21, "B")
+
+do student2->greet()
+do student2->sayGrade()

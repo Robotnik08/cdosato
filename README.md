@@ -2,7 +2,7 @@
   <img src="assets/dosato_logo_wide.png">
 </p>
 
-# CDosato version 0.5
+# CDosato version 0.5.1
 
 CDosato is the official implementation of the DOSATO programming language.<br>
 
