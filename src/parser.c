@@ -76,9 +76,13 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_CONST:
         case NODE_MASTER_CLASS:
         case NODE_MASTER_IMPLEMENT:
-        case NODE_MASTER_ENUM: {
+        case NODE_MASTER_ENUM:
+        case NODE_MASTER_IF: {
             bool body_parsed = false;
-            ExtensionKeywordType ext_type = EXT_NULL;
+            ExtensionKeywordType ext_type = type == NODE_MASTER_IF ? EXT_IF : EXT_NULL;
+            if (type == NODE_MASTER_IF) {
+                body_parsed = true;
+            }
             int ext_start = start;
             NodeList temp_body; // used to temporarily store the body, so we can reorganize it later
             init_NodeList(&temp_body);
