@@ -80,6 +80,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_IF:
         case NODE_MASTER_SWITCH:
         case NODE_MASTER_CONTINUE:
         case NODE_MASTER_BREAK:
