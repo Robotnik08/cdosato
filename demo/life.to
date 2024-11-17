@@ -33,9 +33,7 @@ define void nextGen () {
     make int i = 0
     do {
         make int j = 0
-        do {
-            set newBoard#i#j = getAlive(i, j)
-        } for range(board#i) as j
+        set newBoard#i#j = getAlive(i, j) for range(board#i) as j
     } for range(board) as i
     
     set board = newBoard

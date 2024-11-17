@@ -10,7 +10,7 @@
 #define NULL_KEYWORDS {"NULL"}
 #define INFINITY_KEYWORDS {"INFINITY"}
 #define NAN_KEYWORDS {"NAN"}
-#define RESERVED_KEYWORDS {"OTHER", "AS"}
+#define RESERVED_KEYWORDS {"OTHER", "IN"}
 
 #define BRACKETS {"()", "{}", "[]"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
@@ -134,7 +134,7 @@ typedef enum {
 
 typedef enum {
     KEYWORD_OTHER,
-    KEYWORD_AS
+    KEYWORD_IN
 } ReservedKeywordType;
 
 typedef struct {

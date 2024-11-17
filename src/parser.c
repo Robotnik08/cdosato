@@ -767,6 +767,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 new_start++;
                 new_end--;
             }
+            new_end++;
 
             root.start = new_start;
             root.end = new_end;
@@ -775,22 +776,19 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             int i = new_start;
             for (i = new_start; i < new_end; i++) {
                 SKIP_BLOCK(i);
-                if (tokens.tokens[i].type == TOKEN_RESERVED_KEYWORD && tokens.tokens[i].carry == KEYWORD_AS) {
+                if (tokens.tokens[i].type == TOKEN_RESERVED_KEYWORD && tokens.tokens[i].carry == KEYWORD_IN) {
                     break;
                 }
             }
             if (i == new_start) {
-                PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
+                PRINT_ERROR(i, E_UNEXPECTED_TOKEN);
             }
-            write_NodeList(&root.body, parse(source, length, new_start, i, tokens, NODE_EXPRESSION, file_name));
-            // after the arrow must be an identifier
-            if (tokens.tokens[i + 1].type != TOKEN_IDENTIFIER) {
-                PRINT_ERROR(i + 1, E_EXPECTED_IDENTIFIER);
+            write_NodeList(&root.body, parse(source, length, new_start, i, tokens, NODE_IDENTIFIER, file_name));
+            // before the arrow must be an identifier
+            if (tokens.tokens[i - 1].type != TOKEN_IDENTIFIER) {
+                PRINT_ERROR(i - 1, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, i + 1, i + 2, tokens, NODE_IDENTIFIER, file_name));
-            if (i + 1 != new_end) {
-                PRINT_ERROR(i + 2, E_UNEXPECTED_TOKEN);
-            }
+            write_NodeList(&root.body, parse(source, length, i + 1, new_end, tokens, NODE_EXPRESSION, file_name));
             break;
         }
 

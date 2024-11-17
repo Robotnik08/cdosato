@@ -215,6 +215,7 @@ void pushValue(ValueArray* array, Value value) {
 }
 
 #define PRINT_ERROR(e_code) do { \
+    PRINT_STACK(); \
     if (vm->error_jumps.count > 0) { \
         ErrorJump jump = vm->error_jumps.jumps[--vm->error_jumps.count]; \
         while (vm->stack.count > jump.error_stack_count) { \
@@ -232,6 +233,16 @@ void pushValue(ValueArray* array, Value value) {
     } \
 } while(0); \
 break;
+
+
+#define PRINT_STACK() do { \
+    printf("Stack count: %d\n", vm->stack.count); \
+    for (int i = 0; i < vm->stack.count; i++) { \
+        printf("Stack value %d: ", i); \
+        printValue(vm->stack.values[i], true); \
+        printf("\n"); \
+    } \
+} while(0);
 
 int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
     if (debug) printf("Running virtual machine\n");
@@ -646,6 +657,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_FOR_ITER: {
                 uint16_t offset = NEXT_SHORT();
                 Value* index = &vm->stack.values[vm->stack.count - 1];
+                POP_VALUE(); // pop old iterator
                 Value list = PEEK_VALUE_TWO();
                 if (list.type != TYPE_ARRAY) {
                     PRINT_ERROR(E_NOT_AN_ARRAY);

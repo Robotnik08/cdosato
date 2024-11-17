@@ -591,9 +591,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             int identifier_index = 0;
             DataType data_type = TYPE_VAR;
             if (node.body.nodes[0].type == NODE_TYPE) {
-                if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
-                }
                 data_type = ast->tokens.tokens[node.body.nodes[0].start].carry;
                 identifier_index = 1;
             }
@@ -637,8 +634,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             if (scope == NULL) { // global scope
                 for (int i = identifier_index; i < operator_index; i++) {
-                    if (ast->tokens.tokens[node.body.nodes[i].start].carry == 0) {
-                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[i].start);
+                    if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
+                        PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
                     writeInstruction(ci, node.body.nodes[i].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
 
@@ -653,6 +650,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 for (int i = identifier_index; i < operator_index; i++) {
                     if (inScope(scope, ast->tokens.tokens[node.body.nodes[i].start].carry)) {
                         PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[i].start);
+                    }
+                    if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
+                        PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
                     writeInstruction(ci, node.body.nodes[i].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
@@ -1263,44 +1263,49 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
         case NODE_FOR_BODY: {
             // push the list to the stack
-            compileNode(vm, ci, node.body.nodes[0], ast, scope);
-            // push the index to the stack
-            writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
+            compileNode(vm, ci, node.body.nodes[1], ast, scope);
 
             bool is_local = scope != NULL;
-
             if (is_local) {
                 pushScopeData(scope, -1);
                 pushScopeData(scope, -1);
-            }
-
-            writeInstruction(ci, node.start, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
-            int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
-
-            // store the loop location data
-            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 2);
-
-            // store to iterator
-            if (ast->tokens.tokens[node.body.nodes[1].start].carry != 0) {
-                if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
-                    writeInstruction(ci, node.body.nodes[1].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)));
-                } else {
-                    writeInstruction(ci, node.body.nodes[1].start, OP_STORE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
-                }
-                writeByteCode(ci, OP_POP, node.body.nodes[1].end);
             } else {
-                // if underscore, don't store the value
-                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
-            }
-
-            // if global scope, the 2 locals must be added to the scope
-            if (!is_local) {
                 ScopeData new_scope;
                 initScopeData(&new_scope);
                 scope = &new_scope;
                 pushScopeData(scope, -1);
                 pushScopeData(scope, -1);
             }
+
+
+
+            // push the index to the stack
+            writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
+            if (ast->tokens.tokens[node.body.nodes[0].start].carry != 0) {
+                writeByteCode(ci, OP_PUSH_NULL, node.start);
+            }
+
+            writeInstruction(ci, node.start + 2, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
+            int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
+
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_index, scope->locals_count - 2);
+            int old_locals_count = scope->locals_count - 2;
+
+
+            // store to iterator
+            if (ast->tokens.tokens[node.body.nodes[0].start].carry != 0) {
+                if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+                }
+                pushScopeData(scope, ast->tokens.tokens[node.body.nodes[0].start].carry);
+                // writeInstruction(ci, node.body.nodes[0].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+                // writeByteCode(ci, OP_POP, node.body.nodes[0].end);
+            } else {
+                // if underscore, don't store the value
+                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
+            }
+
             // compile the body
             for (int i = 2; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
@@ -1318,7 +1323,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->code[jump_index + 2] = ci->count >> 8;
 
             if (is_local) {
-                scope->locals_count -= 2;
+                scope->locals_count = old_locals_count;
             }
 
             // pop the loop location data
