@@ -1,26 +1,17 @@
 define void assert (var value, var expected) {
     do {
-        do if (value != expected) then {
-            do sayln(`Assertion failed
-Expected: {expected}
-Got: {value}`
-            ) then end(1)
+        if (value != expected) then {
+            do sayln(`Assertion failed \nExpected: {expected} \nGot: {value}`) then end(1)
         }
     } catch {
-        do sayln(`Assertion failed
-Expected: {expected}
-Got: {value}
-With error code: {_}`
-        ) then end(_)
+        do sayln(`Assertion failed\n Expected: {expected}\n Got: {value}\n With error code: {_}`) then end(_)
     }
 }
 
 define void expectError (var func, int code) {
-    do func() then sayln(`Assertion failed
-Expected error code {code}, it ran without errors`)
-        then end(1) catch if (_ != code) then {
-            do sayln(`Assertion failed
-Expected error code {code}, got {_}`)
-            then end(_)
+    do func() then sayln(`Assertion failed \nExpected error code {code}, it ran without errors`) then end(1) catch {
+        if (_ != code) then {
+            do sayln(`Assertion failed \nExpected error code {code}, got {_}`) then end(_)
         }
+    }
 }

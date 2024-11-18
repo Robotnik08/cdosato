@@ -1263,7 +1263,18 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
         case NODE_FOR_BODY: {
             // push the list to the stack
-            compileNode(vm, ci, node.body.nodes[1], ast, scope);
+            Node expression = node.body.nodes[0];
+
+            bool is_discard = expression.body.count == 1;
+            int expression_index = is_discard ? 0 : 1;
+
+            if (!is_discard) {
+                if (ast->tokens.tokens[expression.body.nodes[0].start].carry <= 1) {
+                    PRINT_ERROR(E_INVALID_IDENTIFIER, expression.body.nodes[0].start);
+                }
+            }
+
+            compileNode(vm, ci, expression.body.nodes[expression_index], ast, scope);
 
             bool is_local = scope != NULL;
             if (is_local) {
@@ -1281,7 +1292,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // push the index to the stack
             writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
-            if (ast->tokens.tokens[node.body.nodes[0].start].carry != 0) {
+            if (!is_discard) {
                 writeByteCode(ci, OP_PUSH_NULL, node.start);
             }
 
@@ -1289,25 +1300,23 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
 
             // store the loop location data
-            write_LocationList(&ci->loop_jump_locations, jump_index, scope->locals_count - 2);
+            write_LocationList(&ci->loop_jump_locations, jump_index, scope->locals_count);
             int old_locals_count = scope->locals_count - 2;
 
 
             // store to iterator
-            if (ast->tokens.tokens[node.body.nodes[0].start].carry != 0) {
-                if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[0].start);
+            if (!is_discard) {
+                if (inScope(scope, ast->tokens.tokens[expression.body.nodes[0].start].carry)) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, expression.body.nodes[0].start);
                 }
-                pushScopeData(scope, ast->tokens.tokens[node.body.nodes[0].start].carry);
-                // writeInstruction(ci, node.body.nodes[0].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
-                // writeByteCode(ci, OP_POP, node.body.nodes[0].end);
+                pushScopeData(scope, ast->tokens.tokens[expression.body.nodes[0].start].carry);
             } else {
-                // if underscore, don't store the value
+                // if discard, don't store the value
                 ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
             }
 
             // compile the body
-            for (int i = 2; i < node.body.count; i++) {
+            for (int i = 1; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
             }
             // back to global scope
@@ -1422,8 +1431,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // top_stack_amount is the amount of locals in the loop, and the same for both the break and continue instruction
             size_t top_stack_amount = ci->loop_jump_locations.stack_count[ci->loop_jump_locations.count - 1];
+            bool is_for = ci->code[top_jump_index] == OP_FOR_ITER || ci->code[top_jump_index] == OP_FOR_DISCARD;
+            int offset = is_for ? (type == NODE_MASTER_CONTINUE_BODY ? (ci->code[top_jump_index] == OP_FOR_DISCARD ? 0 : -1) : 2) : 0;
             bool is_local = scope != NULL;
-            writeInstruction(ci, node.start, type == NODE_MASTER_BREAK_BODY ? OP_BREAK : OP_CONTINUE, DOSATO_SPLIT_SHORT(top_jump_index), DOSATO_SPLIT_SHORT((is_local ? scope->locals_count - top_stack_amount : 0)));
+            writeInstruction(ci, node.start, type == NODE_MASTER_BREAK_BODY ? OP_BREAK : OP_CONTINUE, DOSATO_SPLIT_SHORT(top_jump_index), DOSATO_SPLIT_SHORT((is_local ?  scope->locals_count - top_stack_amount + offset : 0)));
             break;
         }
 

@@ -772,23 +772,34 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             root.start = new_start;
             root.end = new_end;
 
-            // get the first expression (everything before the => operator)
-            int i = new_start;
-            for (i = new_start; i < new_end; i++) {
+            write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_FOR_EXPRESSION, file_name));
+            break;
+        }
+        case NODE_FOR_EXPRESSION: {
+            // get the first expression (everything before the in keyword)
+            int i = start;
+            for (i = start; i < end; i++) {
                 SKIP_BLOCK(i);
                 if (tokens.tokens[i].type == TOKEN_RESERVED_KEYWORD && tokens.tokens[i].carry == KEYWORD_IN) {
                     break;
                 }
             }
-            if (i == new_start) {
-                PRINT_ERROR(i, E_UNEXPECTED_TOKEN);
+            if (i == start) {
+                PRINT_ERROR(i - 1, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, new_start, i, tokens, NODE_IDENTIFIER, file_name));
-            // before the arrow must be an identifier
+
+            if (i == end) {
+                // no identifier
+                write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION, file_name));
+                
+                break;
+            }
+            write_NodeList(&root.body, parse(source, length, start, i, tokens, NODE_IDENTIFIER, file_name));
+            // before the in keyword must be an identifier
             if (tokens.tokens[i - 1].type != TOKEN_IDENTIFIER) {
                 PRINT_ERROR(i - 1, E_EXPECTED_IDENTIFIER);
             }
-            write_NodeList(&root.body, parse(source, length, i + 1, new_end, tokens, NODE_EXPRESSION, file_name));
+            write_NodeList(&root.body, parse(source, length, i + 1, end, tokens, NODE_EXPRESSION, file_name));
             break;
         }
 

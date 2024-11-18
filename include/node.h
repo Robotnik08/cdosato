@@ -79,7 +79,8 @@ typedef enum {
     NODE_TEMPLATE_STRING_PART,
     NODE_LAMBDA_EXPRESSION,
     NODE_ENUM_BODY,
-    NODE_ENUM_EXPRESSION
+    NODE_ENUM_EXPRESSION,
+    NODE_FOR_EXPRESSION,
 } NodeType;
 
 typedef struct Node Node;

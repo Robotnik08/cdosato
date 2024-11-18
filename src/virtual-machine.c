@@ -378,10 +378,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     POP_VALUE();
                 }
 
-                if (*vm->ip == OP_FOR_ITER) {
-                    // set the iterator to -2 (so the loop will end)
-                    vm->stack.values[vm->stack.count - 1].as.longValue = -2;
-                } else if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP)) { 
+                if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP) || (*vm->ip == OP_FOR_ITER) || (*vm->ip == OP_FOR_DISCARD)) { 
                     NEXT_BYTE(); // skip the offset
                     uint16_t offset = NEXT_SHORT();
                     vm->ip = offset + active_instance->code;
@@ -656,8 +653,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_FOR_ITER: {
                 uint16_t offset = NEXT_SHORT();
-                Value* index = &vm->stack.values[vm->stack.count - 1];
                 POP_VALUE(); // pop old iterator
+                Value* index = &vm->stack.values[vm->stack.count - 1];
                 Value list = PEEK_VALUE_TWO();
                 if (list.type != TYPE_ARRAY) {
                     PRINT_ERROR(E_NOT_AN_ARRAY);
