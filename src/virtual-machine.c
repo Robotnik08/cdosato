@@ -155,6 +155,7 @@ void init_Function(Function* func) {
     func->argv = NULL;
     func->argt = NULL;
     func->arity = 0;
+    func->default_count = 0;
     func->return_type = TYPE_VOID;
     func->is_compiled = false;
     func->is_class = false;
@@ -429,21 +430,28 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     break;
                 }
 
-                if (arity != function->arity && function->arity != -1) {
+                if (arity > function->arity || arity < function->arity - function->default_count) {
                     PRINT_ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
                 }
 
+                for (int i = arity; i < function->arity; i++) {
+                    pushValue(&vm->stack, UNDEFINED_VALUE);
+                }
+
                 // cast arguments
-                for (int i = 0; i < arity; i++) {
-                    Value* arg = &vm->stack.values[vm->stack.count - arity + i];
+                for (int i = 0; i < function->arity; i++) {
+                    Value* arg = &vm->stack.values[vm->stack.count - function->arity + i];
                     ErrorType code = castValue(arg, function->argt[i]);
+                    if (i < arity) {
+                        arg->defined = true;
+                    }
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
                 }
                 
                 // push new frame
-                PUSH_STACK(vm->stack.count - arity);
+                PUSH_STACK(vm->stack.count - function->arity);
                 
                 // push captured variables
                 for (int i = 0; i < function->captured_count; i++) {
@@ -647,6 +655,44 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
+
+                break;
+            }
+
+            case OP_JUMP_PEEK_IF_DEFINED: {
+                uint16_t offset = NEXT_SHORT();
+                uint16_t index = NEXT_BYTE() + PEEK_STACK();
+                Value value = vm->stack.values[index];
+                if (value.defined) {
+                    vm->ip = offset + active_instance->code;
+                }
+                vm->stack.values[index].defined = true;
+                break;
+            }
+
+            case OP_STORE_PEEK: {
+                uint16_t offset = NEXT_SHORT();
+                uint8_t peek = NEXT_BYTE();
+                Value value = PEEK_VALUE();
+                Value* store = &vm->stack.values[vm->stack.count - peek - 1];
+                if (store->is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
+                }
+
+                if (!store->is_variable_type && store->defined) {
+                    DataType type = store->type;
+                    ErrorType castRes = castValue(&value, type);
+                    if (castRes != E_NULL) {
+                        PRINT_ERROR(castRes);
+                    }
+                } else if (store->defined) {
+                    value.is_variable_type = true;
+                }
+
+                value.is_constant = false;
+
+                *store = value;
+                markDefined(store);
 
                 break;
             }
@@ -914,6 +960,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     int stack_offset = PEEK_STACK();
                     for (size_t i = 0; i < lambda.captured_count; i++) {
                         Value value = vm->stack.values[stack_offset + lambda.captured_indices[i]];
+                        value.defined = true;
                         pushValue(lambda.captured, value);
                     }
                 }

@@ -10,6 +10,7 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
     OpCode instruction = code[offset++];
 
     int address = 0;
+    int peek_count = 0;
     int pop_count = 0;
     switch (instruction) {
         case OP_RETURN:
@@ -51,6 +52,19 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);
             printf(": (0x%x)", address);
             break;
+        case OP_JUMP_PEEK_IF_DEFINED:
+            printf("OP_JUMP_PEEK_IF_DEFINED");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            peek_count = code[offset + 2];
+            printf(": (0x%x) (%d)", address, peek_count);
+            break;
+        case OP_STORE_PEEK:
+            printf("OP_STORE_PEEK");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            peek_count = code[offset + 2];
+            printf(": (0x%x) (%d)", address, peek_count);
+            break;
+
         case OP_LOAD_LAMBDA:
             printf("OP_LOAD_LAMBDA");
             address = DOSATO_GET_ADDRESS_SHORT(code, offset);

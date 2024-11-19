@@ -37,7 +37,8 @@ static const char* ERROR_MESSAGES[] = {
     "Break keyword can only be used inside a loop",
     "Continue keyword can only be used inside a loop",
     "Expected String Literal",
-    "Too many includes (Might be a circular include)",	
+    "Too many includes (You might have a circular include)",
+    "Default arguments must be last in function call",
 
     "Undefined Variable",
     "Variable already defined",
