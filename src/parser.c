@@ -5,7 +5,14 @@
 #include "../include/token.h"
 
 #define PRINT_ERROR(index, code) do { \
-    printError(source, tokens.tokens[index].start - source, file_name, code, tokens.tokens[index].length); \
+    printf("index: %d\n", index); \
+    if (index < 0) { \
+        printError(source, tokens.tokens[0].start - source, file_name, code, tokens.tokens[0].length); \
+    } else if (index >= tokens.count) { \
+        printError(source, tokens.tokens[tokens.count - 1].start - source, file_name, code, tokens.tokens[tokens.count - 1].length); \
+    } else { \
+        printError(source, tokens.tokens[index].start - source, file_name, code, tokens.tokens[index].length); \
+    } \
 } while (0)
 
 #define ENCASED_IN_BRACKETS(start, end, b_type) \
@@ -177,7 +184,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     PRINT_ERROR(endofblock + 1, E_UNEXPECTED_TOKEN);
                 }
                 write_NodeList(&root.body, parse(source, length, start + 1, endofblock, tokens, NODE_BLOCK, file_name));
-            } else if (tokens.tokens[start].type == TOKEN_IDENTIFIER) {
+            } else {
                 write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_FUNCTION_CALL, file_name));
             }
             break;
