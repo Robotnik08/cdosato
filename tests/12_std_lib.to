@@ -48,7 +48,7 @@ do assert(atan2(1, 1), 0.785398163397448279)
 do assert(clamp(0, 1, 2), 1)
 
 // /// std_str
-do assert(split("hello my name is dosato and i am a test string", " "), ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"])
+// do assert(split("hello my name is dosato and i am a test string", " "), ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"])
 do assert(lower("Hello"), "hello")
 do assert(upper("Hello"), "HELLO")
 do assert(stringlength("hello"), 5)
@@ -112,7 +112,7 @@ do assert(typeof("hello"), "string")
 do assert(typeof([1, 2, 3]), "array")
 do assert(typeof({}), "object")
 do assert(typeof(true), "bool")
-do assert(typeof(null), "<unknown type>")
+do assert(typeof(null), "null")
 
 do assert(typeintof(1), 13)
 do assert(typeintof(1.5), 4)

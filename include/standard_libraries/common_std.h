@@ -19,4 +19,10 @@
         } \
     } while (0)
 
+#define CAST_COPY_TO_STRING(value) \
+    do { \
+        char* str = valueToString(value, false); \
+        value = BUILD_STRING(str, false); \
+    } while (0)
+
 #endif // DOSATO_STD_LIBRARY_COMMON_STD_H

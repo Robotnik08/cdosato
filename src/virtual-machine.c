@@ -442,11 +442,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 for (int i = 0; i < function->arity; i++) {
                     Value* arg = &vm->stack.values[vm->stack.count - function->arity + i];
                     ErrorType code = castValue(arg, function->argt[i]);
-                    if (i < arity) {
-                        arg->defined = true;
-                    }
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
+                    }
+                    if (i < arity) {
+                        arg->defined = true;
                     }
                 }
                 
@@ -2074,14 +2074,26 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
         Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
         return return_val;
     } else {
-        if (args.count != function->arity) {
+        if (args.count > function->arity || args.count < function->arity - function->default_count) {
             return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
         }
-        // cast arguments
+
         for (int i = 0; i < args.count; i++) {
-            ErrorType code = castValue(&args.values[i], function->argt[i]);
+            pushValue(&main_vm->stack, args.values[i]);
+        }
+
+        for (int i = args.count; i < function->arity; i++) {
+            pushValue(&main_vm->stack, UNDEFINED_VALUE);
+        }
+        // cast arguments
+        for (int i = 0; i < function->arity; i++) {
+            Value* arg = &main_vm->stack.values[main_vm->stack.count - function->arity + i];
+            ErrorType code = castValue(arg, function->argt[i]);
             if (code != E_NULL) {
                 return BUILD_EXCEPTION(code);
+            }
+            if (i < args.count) {
+                arg->defined = true;
             }
         }
         // call function
@@ -2090,11 +2102,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
 
         main_vm->instance = function->instance;
 
-        write_StackFrames(&main_vm->stack_frames, main_vm->stack.count);
-        // push arguments
-        for (int i = 0; i < args.count; i++) {
-            pushValue(&main_vm->stack, args.values[i]);
-        }
+        write_StackFrames(&main_vm->stack_frames, main_vm->stack.count - function->arity);
         
         // push captured variables
         if (function->captured_count > 0) {
