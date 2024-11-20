@@ -216,7 +216,6 @@ void pushValue(ValueArray* array, Value value) {
 }
 
 #define PRINT_ERROR(e_code) do { \
-    PRINT_STACK(); \
     if (vm->error_jumps.count > 0) { \
         ErrorJump jump = vm->error_jumps.jumps[--vm->error_jumps.count]; \
         while (vm->stack.count > jump.error_stack_count) { \

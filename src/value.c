@@ -271,7 +271,6 @@ ErrorType castValue(Value* value, DataType type) {
                 return E_CANT_CONVERT_TO_INT;
             }
             default: {
-                printf("Type: %d\n", value->type);
                 return E_CANT_CONVERT_TO_INT;
             }
         }

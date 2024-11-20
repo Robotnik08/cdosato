@@ -48,7 +48,7 @@ do assert(atan2(1, 1), 0.785398163397448279)
 do assert(clamp(0, 1, 2), 1)
 
 // /// std_str
-// do assert(split("hello my name is dosato and i am a test string", " "), ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"])
+do assert(split("hello my name is dosato and i am a test string", " "), ["hello", "my", "name", "is", "dosato", "and", "i", "am", "a", "test", "string"])
 do assert(lower("Hello"), "hello")
 do assert(upper("Hello"), "HELLO")
 do assert(stringlength("hello"), 5)
@@ -60,14 +60,13 @@ do assert(trim("  hello  "), "hello")
 do assert(startswith("hello", "h"), true)
 do assert(endswith("hello", "o"), true)
 do assert(stringcontains("hello", "e"), true)
-do assert(stringreverse("hello"), "olleh")
-do assert(stringremove("hello", "ell"), "ho")
-do assert(stringinsert("hello", 1, "e"), "heello")
-do assert(stringtoint("1"), 1)
-do assert(stringtodouble("1.5"), 1.5)
-do assert(stringcount("hello", "l"), 2)
-do assert(join(["hello", "world"], " "), "hello world")
-
+do assert(stringreverse("hello"), "olleh") 
+do assert(stringremove("hello", "ell"), "ho") 
+do assert(stringinsert("hello", 1, "e"), "heello") 
+do assert(stringtoint("1"), 1) 
+do assert(stringtodouble("1.5"), 1.5) 
+do assert(stringcount("hello", "l"), 2) 
+do assert(join(["hello", "world"], " "), "hello world") 
 /// std_array
 make array a = [1, 2, 3]
 

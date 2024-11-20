@@ -53,9 +53,11 @@ Value string_lower(ValueArray args, bool debug) {
 
     CAST_COPY_TO_STRING(arg);
 
-    toLower(AS_STRING(arg));
+    char* str = COPY_STRING(AS_STRING(arg));
 
-    return arg;
+    toLower(str);
+
+    return BUILD_STRING(str, true);
 }
 
 Value string_upper(ValueArray args, bool debug) {
@@ -67,9 +69,11 @@ Value string_upper(ValueArray args, bool debug) {
 
     CAST_COPY_TO_STRING(arg);
 
-    toUpper(AS_STRING(arg));
+    char* str = COPY_STRING(AS_STRING(arg));
+    
+    toUpper(str);
 
-    return arg;
+    return BUILD_STRING(str, true);
 }
 
 Value string_length(ValueArray args, bool debug) {
@@ -261,7 +265,7 @@ Value string_trim(ValueArray args, bool debug) {
 
     CAST_COPY_TO_STRING(arg);
 
-    char* str = AS_STRING(arg);
+    char* str = COPY_STRING(AS_STRING(arg));
 
     size_t start = 0;
     size_t end = strlen(str) - 1;
@@ -273,7 +277,7 @@ Value string_trim(ValueArray args, bool debug) {
     }
     char* result = malloc(end - start + 2);
     strncpy(result, str + start, end - start + 1);
-    result[strlen(result)] = '\0';
+    result[end - start + 1] = '\0';
 
 
     return BUILD_STRING(result, true);

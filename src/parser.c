@@ -5,7 +5,6 @@
 #include "../include/token.h"
 
 #define PRINT_ERROR(index, code) do { \
-    printf("index: %d\n", index); \
     if (index < 0) { \
         printError(source, tokens.tokens[0].start - source, file_name, code, tokens.tokens[0].length); \
     } else if (index >= tokens.count) { \
