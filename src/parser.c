@@ -151,12 +151,12 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             temp_body = new_temp_body;
 
 
-            // if WHEN, WHILE, FOR, CATCH they should encapsulate everything before them (in their body)
+            // if WHEN, WHILE, FOR, CATCH, UNLESS or UNTIL they should encapsulate everything before them (in their body)
             NodeList full_body;
             init_NodeList(&full_body);
             write_NodeList(&full_body, temp_body.nodes[0]);
             for (int i = 1; i < temp_body.count; i++) {
-                if (temp_body.nodes[i].type == NODE_WHEN_BODY || temp_body.nodes[i].type == NODE_WHILE_BODY || temp_body.nodes[i].type == NODE_FOR_BODY || temp_body.nodes[i].type == NODE_CATCH_BODY) {
+                if (temp_body.nodes[i].type == NODE_WHEN_BODY || temp_body.nodes[i].type == NODE_WHILE_BODY || temp_body.nodes[i].type == NODE_FOR_BODY || temp_body.nodes[i].type == NODE_CATCH_BODY || temp_body.nodes[i].type == NODE_UNLESS_BODY || temp_body.nodes[i].type == NODE_UNTIL_BODY) {
                     for (int j = 0; j < full_body.count; j++) {
                         write_NodeList(&temp_body.nodes[i].body, full_body.nodes[j]);
                     }
@@ -169,6 +169,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
             break;
         }
+
         case NODE_MASTER_DO_BODY: 
         case NODE_THEN_BODY: 
         case NODE_CATCH_BODY:
@@ -760,9 +761,10 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
-
         case NODE_WHEN_BODY:
-        case NODE_WHILE_BODY: {
+        case NODE_WHILE_BODY:
+        case NODE_UNLESS_BODY:
+        case NODE_UNTIL_BODY: {
             // expression
             write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION, file_name));
             break;

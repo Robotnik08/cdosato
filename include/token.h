@@ -4,7 +4,7 @@
 #include "common.h"
 
 #define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM", "IF"}
-#define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR"}
+#define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "UNLESS", "UNTIL"}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR", "FUNCTION"}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
 #define NULL_KEYWORDS {"NULL"}
@@ -127,6 +127,9 @@ typedef enum {
     EXT_CATCH,
     EXT_THEN,
     EXT_FOR,
+    EXT_UNLESS,
+    EXT_UNTIL,
+    
     EXT_IF,
 
     EXT_NULL = -1
