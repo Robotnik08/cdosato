@@ -204,6 +204,11 @@ ErrorType castValue(Value* value, DataType type) {
     if (ISINTTYPE(type) || type == TYPE_CHAR) {
         long long int numberValue = 0;
         switch (value->type) {
+            case D_NULL: {
+                numberValue = 0;
+                break;
+            }
+
             case TYPE_UBYTE: {
                 numberValue = value->as.ubyteValue;
                 break;
@@ -318,6 +323,11 @@ ErrorType castValue(Value* value, DataType type) {
     } else if (ISFLOATTYPE(type) || type == TYPE_BOOL) {
         double numberValue = 0;
         switch (value->type) {
+            case D_NULL: {
+                numberValue = 0.0;
+                break;
+            }
+
             case TYPE_UBYTE: {
                 numberValue = value->as.ubyteValue;
                 break;
@@ -801,6 +811,9 @@ char* dataTypeToString (DataType type) {
         }
         case TYPE_HLT: {
             return "hlt";
+        }
+        case D_NULL: {
+            return "null";
         }
         default: {
             return "<unknown type>";

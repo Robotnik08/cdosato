@@ -8,10 +8,10 @@ Value string_split(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
-    char* str = AS_STRING(arg1);
+    char* str = COPY_STRING(AS_STRING(arg1));
     char* delim = AS_STRING(arg2);
 
     if (strlen(delim) == 0) {
@@ -51,11 +51,13 @@ Value string_lower(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
-    toLower(AS_STRING(arg));
+    char* str = COPY_STRING(AS_STRING(arg));
 
-    return arg;
+    toLower(str);
+
+    return BUILD_STRING(str, true);
 }
 
 Value string_upper(ValueArray args, bool debug) {
@@ -65,11 +67,13 @@ Value string_upper(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
-    toUpper(AS_STRING(arg));
+    char* str = COPY_STRING(AS_STRING(arg));
+    
+    toUpper(str);
 
-    return arg;
+    return BUILD_STRING(str, true);
 }
 
 Value string_length(ValueArray args, bool debug) {
@@ -79,7 +83,7 @@ Value string_length(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
     size_t len = strlen(AS_STRING(arg));
 
@@ -95,7 +99,7 @@ Value string_substr(ValueArray args, bool debug) {
     Value arg2 = GET_ARG(args, 1);
     Value arg3 = GET_ARG(args, 2);
 
-    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
     CAST_SAFE(arg2, TYPE_LONG);
     CAST_SAFE(arg3, TYPE_LONG);
 
@@ -123,8 +127,8 @@ Value string_indexof(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -150,8 +154,8 @@ Value string_lastindexof(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -175,8 +179,8 @@ Value string_startswith(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -195,8 +199,8 @@ Value string_endswith(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -216,9 +220,9 @@ Value string_replace(ValueArray args, bool debug) {
     Value arg2 = GET_ARG(args, 1);
     Value arg3 = GET_ARG(args, 2);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
-    CAST_SAFE(arg3, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
+    CAST_COPY_TO_STRING(arg3);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -259,9 +263,9 @@ Value string_trim(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
-    char* str = AS_STRING(arg);
+    char* str = COPY_STRING(AS_STRING(arg));
 
     size_t start = 0;
     size_t end = strlen(str) - 1;
@@ -273,7 +277,7 @@ Value string_trim(ValueArray args, bool debug) {
     }
     char* result = malloc(end - start + 2);
     strncpy(result, str + start, end - start + 1);
-    result[strlen(result)] = '\0';
+    result[end - start + 1] = '\0';
 
 
     return BUILD_STRING(result, true);
@@ -286,7 +290,7 @@ Value string_reverse(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
     char* str = AS_STRING(arg);
     size_t len = strlen(str);
@@ -308,8 +312,8 @@ Value string_contains(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -327,8 +331,8 @@ Value string_remove(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -366,9 +370,10 @@ Value string_insert(ValueArray args, bool debug) {
     Value arg2 = GET_ARG(args, 1);
     Value arg3 = GET_ARG(args, 2);
 
-    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
     CAST_SAFE(arg2, TYPE_LONG);
-    CAST_SAFE(arg3, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg3);
+
 
     char* str = AS_STRING(arg1);
     long long int index = AS_LONG(arg2);
@@ -400,7 +405,7 @@ Value string_atoi(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
     char* str = AS_STRING(arg);
     long long int result = atoll(str);
@@ -415,7 +420,7 @@ Value string_atod(ValueArray args, bool debug) {
 
     Value arg = GET_ARG(args, 0);
 
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
     char* str = AS_STRING(arg);
     double result = atof(str);
@@ -431,8 +436,8 @@ Value string_count(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_SAFE(arg1, TYPE_STRING);
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
+    CAST_COPY_TO_STRING(arg2);
 
     char* str = AS_STRING(arg1);
     char* substr = AS_STRING(arg2);
@@ -460,7 +465,7 @@ Value string_join(ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
     }
 
-    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg2);
 
     ValueArray* arr = AS_ARRAY(arg1);
     char* delim = AS_STRING(arg2);
@@ -488,7 +493,7 @@ Value string_format(ValueArray args, bool debug) {
 
     Value arg1 = GET_ARG(args, 0);
 
-    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg1);
 
     char* format = AS_STRING(arg1);
     char* result = malloc(1);
@@ -523,7 +528,7 @@ Value string_to_string(ValueArray args, bool debug) {
     }
 
     Value arg = GET_ARG(args, 0);
-    CAST_SAFE(arg, TYPE_STRING);
+    CAST_COPY_TO_STRING(arg);
 
     return arg;
 }

@@ -106,6 +106,11 @@ int getOffset(OpCode instruction) {
         case OP_LOAD_LAMBDA:
             return 3; // 2 bytes for address
 
+        case OP_JUMP_PEEK_IF_DEFINED:
+            return 4; // 2 bytes for the location, 1 byte for the peak count
+        case OP_STORE_PEEK:
+            return 4; // 2 bytes for the address, 1 byte for the peak count
+
         case OP_DEFINE:
             return 3; // 2 bytes for address
 

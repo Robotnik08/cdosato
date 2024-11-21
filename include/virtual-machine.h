@@ -14,6 +14,7 @@ typedef struct {
     DataType return_type;
     size_t* argv;
     DataType* argt;
+    size_t default_count;
     size_t arity;
     uint8_t* ip;
 
