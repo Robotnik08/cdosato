@@ -378,7 +378,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     POP_VALUE();
                 }
 
-                if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP) || (*vm->ip == OP_FOR_ITER) || (*vm->ip == OP_FOR_DISCARD)) { 
+                if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP_IF_TRUE) || (*vm->ip == OP_JUMP) || (*vm->ip == OP_FOR_ITER) || (*vm->ip == OP_FOR_DISCARD)) { 
                     NEXT_BYTE(); // skip the offset
                     uint16_t offset = NEXT_SHORT();
                     vm->ip = offset + active_instance->code;
