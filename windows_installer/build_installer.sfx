@@ -10,7 +10,7 @@ Path=%ProgramFiles%\Dosato
 FinishMessage=Installation complete. Press OK to exit.
 Text
 {
-    <h1>Dosato Installer 0.6</h1>
+    <h1>Dosato Installer 0.6.1</h1>
     This installer will install or update Dosato on your computer. <br>
     Click "Install" to begin.
 }
