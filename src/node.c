@@ -30,6 +30,7 @@ static const char* NODE_NAMES[] = {
     "NODE_MASTER_CLASS",
     "NODE_MASTER_IMPLEMENT",
     "NODE_MASTER_ENUM",
+    "NODE_MASTER_IF",
 
     "NODE_MASTER_DO_BODY",
     "NODE_MASTER_MAKE_BODY",
@@ -45,6 +46,7 @@ static const char* NODE_NAMES[] = {
     "NODE_MASTER_CLASS_BODY",
     "NODE_MASTER_IMPLEMENT_BODY",
     "NODE_MASTER_ENUM_BODY",
+    "NODE_MASTER_IF_BODY",
 
     "NODE_WHEN_BODY",
     "NODE_WHILE_BODY",
@@ -85,7 +87,8 @@ static const char* NODE_NAMES[] = {
     "NODE_TEMPLATE_STRING_PART",
     "NODE_LAMBDA_EXPRESSION",
     "NODE_ENUM_BODY",
-    "NODE_ENUM_EXPRESSION"
+    "NODE_ENUM_EXPRESSION",
+    "NODE_FOR_EXPRESSION"
 };
 
 void printNode (Node node, int depth) {

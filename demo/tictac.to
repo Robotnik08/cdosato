@@ -1,11 +1,10 @@
 make array board = [0] * 9
 
 define void printBoard () {
-    make i = 0
     do {
         do say(board#i ? (board#i == 1 ? "X" : "O") : i)
-        do if i % 3 == 2 then say("\n")
-    } for range(9) as i
+        if i % 3 == 2 then say("\n")
+    } for i in range(9)
     do say("\n")
 }
 
@@ -39,7 +38,7 @@ define int playGame () {
         return player when checkWin(player)
         
         set player = -player
-    } for range(9) as _
+    } for range(9)
 
     return 0
 }
@@ -49,6 +48,6 @@ make int winner = playGame()
 set winner = 2 when winner == -1
 
 do printBoard()
-do if winner == 0 then 
+if winner == 0 then 
     sayln("It's a draw!") else
     sayln(`Player {winner} wins!`)

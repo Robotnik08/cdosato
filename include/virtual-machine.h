@@ -14,6 +14,7 @@ typedef struct {
     DataType return_type;
     size_t* argv;
     DataType* argt;
+    size_t default_count;
     size_t arity;
     uint8_t* ip;
 
@@ -116,6 +117,7 @@ void markValue(Value* value);
 #define POP_VALUE() (vm->stack.values[--vm->stack.count])
 #define PEEK_VALUE() (vm->stack.values[vm->stack.count - 1])
 #define PEEK_VALUE_TWO() (vm->stack.values[vm->stack.count - 2])
+#define PEEK_VALUE_THREE() (vm->stack.values[vm->stack.count - 3])
 #define POP_STACK() (vm->stack_frames.stack[--vm->stack_frames.count])
 #define PUSH_STACK(frame) write_StackFrames(&vm->stack_frames, frame)
 #define PEEK_STACK() (vm->stack_frames.stack[vm->stack_frames.count - 1])

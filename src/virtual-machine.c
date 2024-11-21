@@ -155,6 +155,7 @@ void init_Function(Function* func) {
     func->argv = NULL;
     func->argt = NULL;
     func->arity = 0;
+    func->default_count = 0;
     func->return_type = TYPE_VOID;
     func->is_compiled = false;
     func->is_class = false;
@@ -232,6 +233,16 @@ void pushValue(ValueArray* array, Value value) {
     } \
 } while(0); \
 break;
+
+
+#define PRINT_STACK() do { \
+    printf("Stack count: %d\n", vm->stack.count); \
+    for (int i = 0; i < vm->stack.count; i++) { \
+        printf("Stack value %d: ", i); \
+        printValue(vm->stack.values[i], true); \
+        printf("\n"); \
+    } \
+} while(0);
 
 int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
     if (debug) printf("Running virtual machine\n");
@@ -367,10 +378,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     POP_VALUE();
                 }
 
-                if (*vm->ip == OP_FOR_ITER) {
-                    // set the iterator to -2 (so the loop will end)
-                    vm->stack.values[vm->stack.count - 1].as.longValue = -2;
-                } else if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP)) { 
+                if ((*vm->ip == OP_JUMP_IF_FALSE) || (*vm->ip == OP_JUMP) || (*vm->ip == OP_FOR_ITER) || (*vm->ip == OP_FOR_DISCARD)) { 
                     NEXT_BYTE(); // skip the offset
                     uint16_t offset = NEXT_SHORT();
                     vm->ip = offset + active_instance->code;
@@ -421,21 +429,28 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     break;
                 }
 
-                if (arity != function->arity && function->arity != -1) {
+                if (arity > function->arity || arity < function->arity - function->default_count) {
                     PRINT_ERROR(E_WRONG_NUMBER_OF_ARGUMENTS);
                 }
 
+                for (int i = arity; i < function->arity; i++) {
+                    pushValue(&vm->stack, UNDEFINED_VALUE);
+                }
+
                 // cast arguments
-                for (int i = 0; i < arity; i++) {
-                    Value* arg = &vm->stack.values[vm->stack.count - arity + i];
+                for (int i = 0; i < function->arity; i++) {
+                    Value* arg = &vm->stack.values[vm->stack.count - function->arity + i];
                     ErrorType code = castValue(arg, function->argt[i]);
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
+                    if (i < arity) {
+                        arg->defined = true;
+                    }
                 }
                 
                 // push new frame
-                PUSH_STACK(vm->stack.count - arity);
+                PUSH_STACK(vm->stack.count - function->arity);
                 
                 // push captured variables
                 for (int i = 0; i < function->captured_count; i++) {
@@ -643,8 +658,47 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
+            case OP_JUMP_PEEK_IF_DEFINED: {
+                uint16_t offset = NEXT_SHORT();
+                uint16_t index = NEXT_BYTE() + PEEK_STACK();
+                Value value = vm->stack.values[index];
+                if (value.defined) {
+                    vm->ip = offset + active_instance->code;
+                }
+                vm->stack.values[index].defined = true;
+                break;
+            }
+
+            case OP_STORE_PEEK: {
+                uint16_t offset = NEXT_SHORT();
+                uint8_t peek = NEXT_BYTE();
+                Value value = PEEK_VALUE();
+                Value* store = &vm->stack.values[vm->stack.count - peek - 1];
+                if (store->is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
+                }
+
+                if (!store->is_variable_type && store->defined) {
+                    DataType type = store->type;
+                    ErrorType castRes = castValue(&value, type);
+                    if (castRes != E_NULL) {
+                        PRINT_ERROR(castRes);
+                    }
+                } else if (store->defined) {
+                    value.is_variable_type = true;
+                }
+
+                value.is_constant = false;
+
+                *store = value;
+                markDefined(store);
+
+                break;
+            }
+
             case OP_FOR_ITER: {
                 uint16_t offset = NEXT_SHORT();
+                POP_VALUE(); // pop old iterator
                 Value* index = &vm->stack.values[vm->stack.count - 1];
                 Value list = PEEK_VALUE_TWO();
                 if (list.type != TYPE_ARRAY) {
@@ -905,6 +959,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     int stack_offset = PEEK_STACK();
                     for (size_t i = 0; i < lambda.captured_count; i++) {
                         Value value = vm->stack.values[stack_offset + lambda.captured_indices[i]];
+                        value.defined = true;
                         pushValue(lambda.captured, value);
                     }
                 }
@@ -2018,14 +2073,26 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
         Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
         return return_val;
     } else {
-        if (args.count != function->arity) {
+        if (args.count > function->arity || args.count < function->arity - function->default_count) {
             return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
         }
-        // cast arguments
+
         for (int i = 0; i < args.count; i++) {
-            ErrorType code = castValue(&args.values[i], function->argt[i]);
+            pushValue(&main_vm->stack, args.values[i]);
+        }
+
+        for (int i = args.count; i < function->arity; i++) {
+            pushValue(&main_vm->stack, UNDEFINED_VALUE);
+        }
+        // cast arguments
+        for (int i = 0; i < function->arity; i++) {
+            Value* arg = &main_vm->stack.values[main_vm->stack.count - function->arity + i];
+            ErrorType code = castValue(arg, function->argt[i]);
             if (code != E_NULL) {
                 return BUILD_EXCEPTION(code);
+            }
+            if (i < args.count) {
+                arg->defined = true;
             }
         }
         // call function
@@ -2034,11 +2101,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
 
         main_vm->instance = function->instance;
 
-        write_StackFrames(&main_vm->stack_frames, main_vm->stack.count);
-        // push arguments
-        for (int i = 0; i < args.count; i++) {
-            pushValue(&main_vm->stack, args.values[i]);
-        }
+        write_StackFrames(&main_vm->stack_frames, main_vm->stack.count - function->arity);
         
         // push captured variables
         if (function->captured_count > 0) {

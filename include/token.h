@@ -3,14 +3,14 @@
 
 #include "common.h"
 
-#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM"}
-#define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "IF"}
+#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM", "IF"}
+#define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR"}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR", "FUNCTION"}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
 #define NULL_KEYWORDS {"NULL"}
 #define INFINITY_KEYWORDS {"INFINITY"}
 #define NAN_KEYWORDS {"NAN"}
-#define RESERVED_KEYWORDS {"OTHER", "AS"}
+#define RESERVED_KEYWORDS {"OTHER", "IN"}
 
 #define BRACKETS {"()", "{}", "[]"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
@@ -134,7 +134,7 @@ typedef enum {
 
 typedef enum {
     KEYWORD_OTHER,
-    KEYWORD_AS
+    KEYWORD_IN
 } ReservedKeywordType;
 
 typedef struct {

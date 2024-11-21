@@ -80,6 +80,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_IF:
         case NODE_MASTER_SWITCH:
         case NODE_MASTER_CONTINUE:
         case NODE_MASTER_BREAK:
@@ -165,19 +166,42 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             int arity = node.body.nodes[identifier_index + 1].body.count;
             int* hash_map = malloc(sizeof(int) * arity);
+            bool found_default = false;
+            int default_count = 0;
             for (int i = 0; i < arity; i++) {
                 Node arg = node.body.nodes[identifier_index + 1].body.nodes[i];
-                int carry = ast->tokens.tokens[arg.body.nodes[arg.body.count - 1].start].carry;
+                int f_identifier_index = arg.body.nodes[0].type == NODE_TYPE ? 1 : 0;
+                int carry = ast->tokens.tokens[arg.body.nodes[f_identifier_index].start].carry;
                 for (int j = 0; j < i; j++) {
                     if (hash_map[j] == carry) {
-                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[arg.body.count - 1].start);
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[f_identifier_index].start);
                     }
                 }
                 hash_map[i] = carry;
                 pushScopeData(new_scope, carry);
+
+                if (arg.body.count == 2 + f_identifier_index) {
+                    found_default = true;
+                    default_count++;
+                } else if (found_default) {
+                    PRINT_ERROR(E_DEFAULT_ARGUMENTS_MUST_BE_LAST, arg.body.nodes[f_identifier_index].start);
+                }
             }
             free(hash_map);
             new_scope->return_type = data_type;
+
+            for (int i = arity - default_count; i < arity; i++) {
+                // compile each default argument expression
+                Node arg = node.body.nodes[identifier_index + 1].body.nodes[i];
+                int expression_index = arg.body.nodes[0].type == NODE_TYPE ? 2 : 1;
+                writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
+                int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
+                compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
+                writeByteCode(instance, OP_POP, arg.end);
+                instance->code[jump_index + 1] = instance->count & 0xFF;
+                instance->code[jump_index + 2] = instance->count >> 8;
+            }
 
             compileNode(vm, instance, node.body.nodes[identifier_index + 2], ast, new_scope);
 
@@ -203,6 +227,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             func.name_index = name_index;
             func.argv = name_indexs;
             func.argt = types;
+            func.default_count = default_count;
             func.arity = node.body.nodes[identifier_index + 1].body.count;
             func.instance = instance;
             func.return_type = data_type;
@@ -238,19 +263,42 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             int arity = node.body.nodes[identifier_index + 1].body.count;
             int* hash_map = malloc(sizeof(int) * arity);
+            bool found_default = false;
+            int default_count = 0;
             for (int i = 0; i < arity; i++) {
-                Node arg = node.body.nodes[identifier_index +1].body.nodes[i];
-                int carry = ast->tokens.tokens[arg.body.nodes[arg.body.count - 1].start].carry;
+                Node arg = node.body.nodes[identifier_index + 1].body.nodes[i];
+                int f_identifier_index = arg.body.nodes[0].type == NODE_TYPE ? 1 : 0;
+                int carry = ast->tokens.tokens[arg.body.nodes[f_identifier_index].start].carry;
                 for (int j = 0; j < i; j++) {
                     if (hash_map[j] == carry) {
-                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[arg.body.count - 1].start);
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[f_identifier_index].start);
                     }
                 }
                 hash_map[i] = carry;
                 pushScopeData(new_scope, carry);
+
+                if (arg.body.count == 2 + f_identifier_index) {
+                    found_default = true;
+                    default_count++;
+                } else if (found_default) {
+                    PRINT_ERROR(E_DEFAULT_ARGUMENTS_MUST_BE_LAST, arg.body.nodes[f_identifier_index].start);
+                }
             }
             free(hash_map);
             new_scope->return_type = data_type;
+
+            for (int i = arity - default_count; i < arity; i++) {
+                // compile each default argument expression
+                Node arg = node.body.nodes[identifier_index + 1].body.nodes[i];
+                int expression_index = arg.body.nodes[0].type == NODE_TYPE ? 2 : 1;
+                writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
+                int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
+                compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
+                writeByteCode(instance, OP_POP, arg.end);
+                instance->code[jump_index + 1] = instance->count & 0xFF;
+                instance->code[jump_index + 2] = instance->count >> 8;
+            }
 
             compileNode(vm, instance, node.body.nodes[identifier_index + 2], ast, new_scope);
 
@@ -315,6 +363,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             func.name_index = name_index;
             func.argv = name_indexs;
             func.argt = types;
+            func.default_count = default_count;
             func.arity = node.body.nodes[identifier_index + 1].body.count;
             func.instance = instance;
             func.return_type = data_type;
@@ -379,23 +428,47 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             int arity = node.body.nodes[1].body.count;
             int* hash_map = malloc(sizeof(int) * arity);
+            bool found_default = false;
+            int default_count = 0;
             for (int i = 0; i < arity; i++) {
                 Node arg = node.body.nodes[1].body.nodes[i];
-                int carry = ast->tokens.tokens[arg.body.nodes[arg.body.count - 1].start].carry;
+                int f_identifier_index = arg.body.nodes[0].type == NODE_TYPE ? 1 : 0;
+                int carry = ast->tokens.tokens[arg.body.nodes[f_identifier_index].start].carry;
                 for (int j = 0; j < i; j++) {
                     if (hash_map[j] == carry) {
-                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[arg.body.count - 1].start);
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[f_identifier_index].start);
                     }
                 }
                 hash_map[i] = carry;
                 if (carry <= 1) {
-                    PRINT_ERROR(E_INVALID_IDENTIFIER, arg.body.nodes[arg.body.count - 1].start);
+                    PRINT_ERROR(E_INVALID_IDENTIFIER, arg.body.nodes[f_identifier_index].start);
                 }
                 pushScopeData(new_scope, carry);
+                
+
+                if (arg.body.count == 2 + f_identifier_index) {
+                    found_default = true;
+                    default_count++;
+                } else if (found_default) {
+                    PRINT_ERROR(E_DEFAULT_ARGUMENTS_MUST_BE_LAST, arg.body.nodes[f_identifier_index].start);
+                }
             }
             
             free(hash_map);
             new_scope->return_type = D_NULL;
+
+            for (int i = arity - default_count; i < arity; i++) {
+                // compile each default argument expression
+                Node arg = node.body.nodes[1].body.nodes[i];
+                int expression_index = arg.body.nodes[0].type == NODE_TYPE ? 2 : 1;
+                writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
+                int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
+                compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
+                writeByteCode(instance, OP_POP, arg.end);
+                instance->code[jump_index + 1] = instance->count & 0xFF;
+                instance->code[jump_index + 2] = instance->count >> 8;
+            }
 
             int self_index = 1;
 
@@ -430,6 +503,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             func.name_index = name_index;
             func.argv = name_indexs;
             func.argt = types;
+            func.default_count = default_count;
             func.arity = node.body.nodes[1].body.count;
             func.instance = instance;
             func.return_type = TYPE_OBJECT;
@@ -590,9 +664,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             int identifier_index = 0;
             DataType data_type = TYPE_VAR;
             if (node.body.nodes[0].type == NODE_TYPE) {
-                if (ast->tokens.tokens[node.body.nodes[1].start].carry == 0) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[1].start);
-                }
                 data_type = ast->tokens.tokens[node.body.nodes[0].start].carry;
                 identifier_index = 1;
             }
@@ -636,8 +707,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             if (scope == NULL) { // global scope
                 for (int i = identifier_index; i < operator_index; i++) {
-                    if (ast->tokens.tokens[node.body.nodes[i].start].carry == 0) {
-                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[i].start);
+                    if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
+                        PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
                     writeInstruction(ci, node.body.nodes[i].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
 
@@ -652,6 +723,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 for (int i = identifier_index; i < operator_index; i++) {
                     if (inScope(scope, ast->tokens.tokens[node.body.nodes[i].start].carry)) {
                         PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, node.body.nodes[i].start);
+                    }
+                    if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
+                        PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
                     writeInstruction(ci, node.body.nodes[i].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
@@ -1087,19 +1161,42 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             int arity = node.body.nodes[1].body.count;
             int* hash_map = malloc(sizeof(int) * arity);
+            bool found_default = false;
+            int default_count = 0;
             for (int i = 0; i < arity; i++) {
                 Node arg = node.body.nodes[1].body.nodes[i];
-                int carry = ast->tokens.tokens[arg.body.nodes[arg.body.count - 1].start].carry;
+                int f_identifier_index = arg.body.nodes[0].type == NODE_TYPE ? 1 : 0;
+                int carry = ast->tokens.tokens[arg.body.nodes[f_identifier_index].start].carry;
                 for (int j = 0; j < i; j++) {
                     if (hash_map[j] == carry) {
-                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[arg.body.count - 1].start);
+                        PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, arg.body.nodes[f_identifier_index].start);
                     }
                 }
                 hash_map[i] = carry;
                 pushScopeData(new_scope, carry);
+
+                if (arg.body.count == 2 + f_identifier_index) {
+                    found_default = true;
+                    default_count++;
+                } else if (found_default) {
+                    PRINT_ERROR(E_DEFAULT_ARGUMENTS_MUST_BE_LAST, arg.body.nodes[f_identifier_index].start);
+                }
             }
             free(hash_map);
             new_scope->return_type = data_type;
+
+            for (int i = arity - default_count; i < arity; i++) {
+                // compile each default argument expression
+                Node arg = node.body.nodes[1].body.nodes[i];
+                int expression_index = arg.body.nodes[0].type == NODE_TYPE ? 2 : 1;
+                writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
+                int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
+                compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
+                writeByteCode(instance, OP_POP, arg.end);
+                instance->code[jump_index + 1] = instance->count & 0xFF;
+                instance->code[jump_index + 2] = instance->count >> 8;
+            }
 
             compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
 
@@ -1165,6 +1262,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             func.argv = name_indexs;
             func.argt = types;
             func.arity = node.body.nodes[1].body.count;
+            func.default_count = default_count;
             func.instance = instance;
             func.return_type = data_type;
 
@@ -1262,46 +1360,60 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
         case NODE_FOR_BODY: {
             // push the list to the stack
-            compileNode(vm, ci, node.body.nodes[0], ast, scope);
-            // push the index to the stack
-            writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
+            Node expression = node.body.nodes[0];
+
+            bool is_discard = expression.body.count == 1;
+            int expression_index = is_discard ? 0 : 1;
+
+            if (!is_discard) {
+                if (ast->tokens.tokens[expression.body.nodes[0].start].carry <= 1) {
+                    PRINT_ERROR(E_INVALID_IDENTIFIER, expression.body.nodes[0].start);
+                }
+            }
+
+            compileNode(vm, ci, expression.body.nodes[expression_index], ast, scope);
 
             bool is_local = scope != NULL;
-
             if (is_local) {
                 pushScopeData(scope, -1);
                 pushScopeData(scope, -1);
-            }
-
-            writeInstruction(ci, node.start, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
-            int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
-
-            // store the loop location data
-            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 2);
-
-            // store to iterator
-            if (ast->tokens.tokens[node.body.nodes[1].start].carry != 0) {
-                if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
-                    writeInstruction(ci, node.body.nodes[1].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)));
-                } else {
-                    writeInstruction(ci, node.body.nodes[1].start, OP_STORE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
-                }
-                writeByteCode(ci, OP_POP, node.body.nodes[1].end);
             } else {
-                // if underscore, don't store the value
-                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
-            }
-
-            // if global scope, the 2 locals must be added to the scope
-            if (!is_local) {
                 ScopeData new_scope;
                 initScopeData(&new_scope);
                 scope = &new_scope;
                 pushScopeData(scope, -1);
                 pushScopeData(scope, -1);
             }
+
+
+
+            // push the index to the stack
+            writeByteCode(ci, OP_PUSH_MINUS_ONE, node.start);
+            if (!is_discard) {
+                writeByteCode(ci, OP_PUSH_NULL, node.start);
+            }
+
+            writeInstruction(ci, node.start + 2, OP_FOR_ITER, DOSATO_SPLIT_SHORT(0)); // jump to the end of the for block if the list is empty
+            int jump_index = ci->count - getOffset(OP_FOR_ITER); // index of the jump instruction
+
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_index, scope->locals_count);
+            int old_locals_count = scope->locals_count - 2;
+
+
+            // store to iterator
+            if (!is_discard) {
+                if (inScope(scope, ast->tokens.tokens[expression.body.nodes[0].start].carry)) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE, expression.body.nodes[0].start);
+                }
+                pushScopeData(scope, ast->tokens.tokens[expression.body.nodes[0].start].carry);
+            } else {
+                // if discard, don't store the value
+                ci->code[jump_index] = OP_FOR_DISCARD; // change the jump instruction to discard the value
+            }
+
             // compile the body
-            for (int i = 2; i < node.body.count; i++) {
+            for (int i = 1; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
             }
             // back to global scope
@@ -1317,7 +1429,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ci->code[jump_index + 2] = ci->count >> 8;
 
             if (is_local) {
-                scope->locals_count -= 2;
+                scope->locals_count = old_locals_count;
             }
 
             // pop the loop location data
@@ -1416,8 +1528,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // top_stack_amount is the amount of locals in the loop, and the same for both the break and continue instruction
             size_t top_stack_amount = ci->loop_jump_locations.stack_count[ci->loop_jump_locations.count - 1];
+            bool is_for = ci->code[top_jump_index] == OP_FOR_ITER || ci->code[top_jump_index] == OP_FOR_DISCARD;
+            int offset = is_for ? (type == NODE_MASTER_CONTINUE_BODY ? (ci->code[top_jump_index] == OP_FOR_DISCARD ? 0 : -1) : 2) : 0;
             bool is_local = scope != NULL;
-            writeInstruction(ci, node.start, type == NODE_MASTER_BREAK_BODY ? OP_BREAK : OP_CONTINUE, DOSATO_SPLIT_SHORT(top_jump_index), DOSATO_SPLIT_SHORT((is_local ? scope->locals_count - top_stack_amount : 0)));
+            writeInstruction(ci, node.start, type == NODE_MASTER_BREAK_BODY ? OP_BREAK : OP_CONTINUE, DOSATO_SPLIT_SHORT(top_jump_index), DOSATO_SPLIT_SHORT((is_local ?  scope->locals_count - top_stack_amount + offset : 0)));
             break;
         }
 

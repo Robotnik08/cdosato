@@ -734,6 +734,17 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
         }
     }
 
+    // turn IF master keywords into IF extension tokens only if the previous token is an ELSE extension token
+    for (int i = 0; i < list->count; i++) {
+        if (list->tokens[i].type == TOKEN_MASTER_KEYWORD && list->tokens[i].carry + NODE_MASTER_DO == NODE_MASTER_IF) {
+            if (i > 0 && list->tokens[i - 1].type == TOKEN_EXT && list->tokens[i - 1].carry == EXT_ELSE) {
+                list->tokens[i].type = TOKEN_EXT;
+                list->tokens[i].carry = EXT_IF;
+            }
+        }
+    }
+    
+
     // finalise tokens
     REFRESH_LIST()
     trimComments(list); // comments will be ignored from now on

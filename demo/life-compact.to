@@ -1,16 +1,12 @@
 make int size = 10
 make array board = *([[0] * size] * size)
 
-define void printBoard () {
-    do {
-        do say(j ? "#" : ".") for j in i
-        do say("\n")
-    } for i in board
+define printBoard () {
+    do say(j ? "#" : ".") for j in i then sayln() for i in board
 }
 
 define bool getFrom (int x, int y) {
-    return board#x#y when x >= 0 && x < size && y >= 0 && y < size
-    return false
+    return x >= 0 && x < size && y >= 0 && y < size ? board#x#y : false
 }
 
 define bool getAlive (int x, int y) {
@@ -26,12 +22,9 @@ define bool getAlive (int x, int y) {
     return getFrom(x, y) ? (neighbors == 2 || neighbors == 3) : (neighbors == 3)
 }
 
-define void nextGen () {
-    make array newBoard = *board
-    do {
-        set newBoard#i#j = getAlive(i, j) for j in range(board#i)
-    } for i in range(board)
-    
+define nextGen () {
+    make newBoard = *board
+    set newBoard#i#j = getAlive(i, j) for j in 0:>board#i for i in 0:>board
     set board = newBoard
 }
 
@@ -50,4 +43,4 @@ do {
     do printBoard()
     do nextGen()
     do sleep(0.5)
-} for i in range(max_iteration)
+} for i in 0:>max_iteration

@@ -22,6 +22,9 @@ typedef enum {
     OP_STORE_OBJ, // store to object
     OP_LOAD_LAMBDA,
 
+    OP_JUMP_PEEK_IF_DEFINED,
+    OP_STORE_PEEK,
+
     OP_DEFINE, // define a global variable
 
     OP_TYPE_CAST,
