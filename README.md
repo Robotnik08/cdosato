@@ -28,6 +28,7 @@ Theres no wrong way to write dosato code, it allows nearly any style of programm
 
 ## Installation
 
+Make sure you have gcc installed. <br>
 In the root directory of the project, run the following command to install the CDosato interpreter:
 
 ```bash
@@ -56,7 +57,7 @@ For example, to run the `hello_world.to` program, you can use the following comm
 dosato hello_world.to
 ```
 
-(You can find the `hello_world.to` program in the tests directory of the project)
+(You can find the `hello_world.to` program in the demo directory of the project)
 
 ## Documentation
 
