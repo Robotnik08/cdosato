@@ -1309,12 +1309,15 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
-        case NODE_WHEN_BODY: {
+        case NODE_WHEN_BODY:
+        case NODE_UNLESS_BODY: {
             // compile the condition
+            OpCode op = node.type == NODE_WHEN_BODY ? OP_JUMP_IF_FALSE : OP_JUMP_IF_TRUE;
+
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
-            writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0)); // jump to the end of the when block if the condition is false
-            int jump_index = ci->count - getOffset(OP_JUMP_IF_FALSE); // index of the jump instruction
+            writeInstruction(ci, node.start, op, DOSATO_SPLIT_SHORT(0)); // jump to the end of the when block if the condition is false
+            int jump_index = ci->count - getOffset(op); // index of the jump instruction
             // compile the body
             for (int i = 1; i < node.body.count; i++) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
@@ -1325,13 +1328,16 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             return jump_index; // return the index of the jump instruction, so the ELSE_BODY can update it
         }
 
-        case NODE_WHILE_BODY: {
+        case NODE_WHILE_BODY:
+        case NODE_UNTIL_BODY: {
+            OpCode op = node.type == NODE_WHILE_BODY ? OP_JUMP_IF_FALSE : OP_JUMP_IF_TRUE;
+
             // compile the condition
             int condition_start = ci->count;
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
-            writeInstruction(ci, node.start, OP_JUMP_IF_FALSE, DOSATO_SPLIT_SHORT(0)); // jump to the end of the while block if the condition is false
-            int jump_index = ci->count - getOffset(OP_JUMP_IF_FALSE); // index of the jump instruction
+            writeInstruction(ci, node.start, op, DOSATO_SPLIT_SHORT(0)); // jump to the end of the while block if the condition is false
+            int jump_index = ci->count - getOffset(op); // index of the jump instruction
 
             bool is_local = scope != NULL;
 
@@ -1346,7 +1352,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // copy the condition
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             writeInstruction(ci, node.start, OP_TYPE_CAST, TYPE_BOOL); // cast to the correct type
-            writeInstruction(ci, node.start, OP_JUMP_IF_TRUE, DOSATO_SPLIT_SHORT(jump_index + getOffset(OP_JUMP_IF_FALSE))); // jump to the start of the while block if the condition is true
+            writeInstruction(ci, node.start, node.type == NODE_UNTIL_BODY ? OP_JUMP_IF_FALSE : OP_JUMP_IF_TRUE, DOSATO_SPLIT_SHORT(jump_index + getOffset(op))); // jump to the start of the while block if the condition is true
 
 
             // manually edit the jump instruction
