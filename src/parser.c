@@ -1079,7 +1079,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             }
 
             if (func_call) {
-                write_NodeList(&root.body, parse(source, length, new_start, getEndOfBlock(tokens, highest_index) + 1, tokens, NODE_FUNCTION_CALL, file_name));
+                write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_FUNCTION_CALL, file_name));
                 break;
             }
             if (type_cast) {
