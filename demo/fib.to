@@ -1,7 +1,7 @@
 // Simple recursive Fibonacci function
 define long fib (long n) {
     make a, b = 0, 1
-    set a, b = b, a + b for range(n) as _
+    set a, b = b, a + b for range(n)
     return a
 }
 
