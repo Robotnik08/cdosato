@@ -92,13 +92,19 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"map", array_map},
         {"reduce", array_reduce},
         {"some", array_some},
+        {"filter", array_filter},
+        {"every", array_every},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},
         {"typeIntOf", type_typeof_int},
         {"isNaN", type_isnan},
 
-        {"throw", type_throw}
+        {"throw", type_throw},
+
+        {"keys", object_keys},
+        {"values", object_values},
+        {"entries", object_entries},
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {
