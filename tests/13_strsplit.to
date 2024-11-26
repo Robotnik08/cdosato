@@ -1,11 +1,11 @@
 include "0_assert.to"
 
 make string str = "Hello my name is Dosato and I am a test string"
-make array arr = split(str, " ")
+make array arr = stringSplit(str, " ")
 make array result = []
 
 do {
     set result += [(ulong)i]
 } for i in arr
 
-do assert (result, [5, 2, 4, 2, 6, 3, 1, 2, 1, 4, 6])
+do assert(result, [5, 2, 4, 2, 6, 3, 1, 2, 1, 4, 6])

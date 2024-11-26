@@ -472,3 +472,185 @@ Value array_set_counter(ValueArray args, bool debug) {
 
     return BUILD_LONG(counter++);
 }
+
+Value array_map (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value function = GET_ARG(args, 1);
+    if (function.type != TYPE_FUNCTION) {
+        return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
+    }
+
+    ValueArray* obj = AS_ARRAY(arg);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+    for (int i = 0; i < obj->count; i++) {
+        ValueArray args;
+        init_ValueArray(&args);
+        // pass the value and the index to the function
+        write_ValueArray(&args, obj->values[i]);
+        write_ValueArray(&args, BUILD_LONG(i));
+        Value result = callExternalFunction(function, args, false);
+        free_ValueArray(&args);
+        if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            return result;
+        }
+        write_ValueArray(new_array, result);
+    }
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+Value array_reduce (ValueArray args, bool debug) {
+    if (args.count != 3) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value function = GET_ARG(args, 1);
+    if (function.type != TYPE_FUNCTION) {
+        return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
+    }
+
+    Value initial = GET_ARG(args, 2);
+
+    ValueArray* obj = AS_ARRAY(arg);
+    Value accumulator = initial;
+    for (int i = 0; i < obj->count; i++) {
+        ValueArray args;
+        init_ValueArray(&args);
+        // pass the accumulator, the value, and the index to the function
+        write_ValueArray(&args, accumulator);
+        write_ValueArray(&args, obj->values[i]);
+        write_ValueArray(&args, BUILD_LONG(i));
+        Value result = callExternalFunction(function, args, false);
+        free_ValueArray(&args);
+        if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            return result;
+        }
+        accumulator = result;
+    }
+
+    return accumulator;
+}
+
+Value array_some (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value function = GET_ARG(args, 1);
+    if (function.type != TYPE_FUNCTION) {
+        return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
+    }
+
+    ValueArray* obj = AS_ARRAY(arg);
+    for (int i = 0; i < obj->count; i++) {
+        ValueArray args;
+        init_ValueArray(&args);
+        // pass the value and the index to the function
+        write_ValueArray(&args, obj->values[i]);
+        write_ValueArray(&args, BUILD_LONG(i));
+        Value result = callExternalFunction(function, args, false);
+        free_ValueArray(&args);
+        if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            return result;
+        }
+        CAST_SAFE(result, TYPE_BOOL);
+        if (AS_BOOL(result)) {
+            return BUILD_BOOL(true);
+        }
+    }
+
+    return BUILD_BOOL(false);
+}
+
+Value array_filter (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value function = GET_ARG(args, 1);
+    if (function.type != TYPE_FUNCTION) {
+        return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
+    }
+
+    ValueArray* obj = AS_ARRAY(arg);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+    for (int i = 0; i < obj->count; i++) {
+        ValueArray args;
+        init_ValueArray(&args);
+        // pass the value and the index to the function
+        write_ValueArray(&args, obj->values[i]);
+        write_ValueArray(&args, BUILD_LONG(i));
+        Value result = callExternalFunction(function, args, false);
+        free_ValueArray(&args);
+        if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            return result;
+        }
+        CAST_SAFE(result, TYPE_BOOL);
+        if (AS_BOOL(result)) {
+            write_ValueArray(new_array, obj->values[i]);
+        }
+    }
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+Value array_every (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value function = GET_ARG(args, 1);
+    if (function.type != TYPE_FUNCTION) {
+        return BUILD_EXCEPTION(E_NOT_A_FUNCTION);
+    }
+
+    ValueArray* obj = AS_ARRAY(arg);
+    for (int i = 0; i < obj->count; i++) {
+        ValueArray args;
+        init_ValueArray(&args);
+        // pass the value and the index to the function
+        write_ValueArray(&args, obj->values[i]);
+        write_ValueArray(&args, BUILD_LONG(i));
+        Value result = callExternalFunction(function, args, false);
+        free_ValueArray(&args);
+        if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            return result;
+        }
+        CAST_SAFE(result, TYPE_BOOL);
+        if (!AS_BOOL(result)) {
+            return BUILD_BOOL(false);
+        }
+    }
+
+    return BUILD_BOOL(true);
+}

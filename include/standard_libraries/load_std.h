@@ -16,6 +16,7 @@
 #include "std_string.h"
 #include "std_array.h"
 #include "std_type.h"
+#include "std_object.h"
 
 int loadStandardLibrary(VirtualMachine* vm);
 int loadConstants (VirtualMachine* vm, char** argv, int argc);
