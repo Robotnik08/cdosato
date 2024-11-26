@@ -24,4 +24,11 @@ Value array_rangef(ValueArray args, bool debug);
 Value array_counter(ValueArray args, bool debug);
 Value array_set_counter(ValueArray args, bool debug);
 
+Value array_map(ValueArray args, bool debug);
+Value array_reduce(ValueArray args, bool debug);
+Value array_some(ValueArray args, bool debug);
+Value array_filter(ValueArray args, bool debug);
+Value array_every(ValueArray args, bool debug);
+
+
 #endif // STD_ARRAY_H
