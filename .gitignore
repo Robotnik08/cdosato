@@ -6,3 +6,4 @@ test.*
 DS_Store
 temp
 !test_library.dll
+installer_output
