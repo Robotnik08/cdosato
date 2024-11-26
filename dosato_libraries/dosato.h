@@ -86,6 +86,7 @@ typedef enum {
     E_CONTINUE_OUTSIDE_LOOP,
     E_EXPECTED_STRING,
     E_TOO_MANY_INCLUDES,
+    E_DEFAULT_ARGUMENTS_MUST_BE_LAST,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,
