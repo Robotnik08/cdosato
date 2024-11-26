@@ -1,7 +1,7 @@
 # Makefile for building a DLL
 CC = gcc
 CFLAGS = -shared -I$(HEADER_PATH)
-LDFLAGS = -L$(DOSATO_LIB_PATH) -ldosato_lib
+LDFLAGS = -L$(DOSATO_LIB_PATH) -llibdosato
 BUILD_DIR = build
 TMP_DIR = temp
 LIB_NAME = $(LIB_NAME)

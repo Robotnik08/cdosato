@@ -8,7 +8,7 @@ ExtractTitle=Dosato Installation - Select Destination
 ExtractText=Please choose the installation location and click "Install" to begin.
 Path=%ProgramFiles%\Dosato
 FinishMessage=Installation complete. Press OK to exit.
-Setup=setup.bat
+Setup=cmd /c setup.bat
 Text
 {
     <h1>Dosato Installer 0.6.2</h1>
