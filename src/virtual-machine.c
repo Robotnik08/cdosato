@@ -475,6 +475,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 // pop ip
                 if (ip_stack_count == 0) {
                     halt = true;
+                    pushValue(&vm->stack, UNDEFINED_VALUE); // push NULL for return value
                     break;
                 }
 
