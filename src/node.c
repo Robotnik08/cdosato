@@ -99,9 +99,9 @@ void printNode (Node node, int depth) {
     printf("Node: s:%d e:%d Type:%s\n", node.start, node.end - 1, NODE_NAMES[node.type]);
     for (size_t i = 0; i < node.body.count; i++) {
         for (int i = 0; i < depth; i++) {
-            printf("  ");
+            puts("  ");
         }
-        printf("  ");
+        puts("  ");
         printNode(node.body.nodes[i], depth + 1);
     }
 }

@@ -33,7 +33,7 @@ Value io_pause (ValueArray args, bool debug) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
-    printf("Press enter to continue...");
+    puts("Press enter to continue...");
     getchar();
 
     return UNDEFINED_VALUE;

@@ -85,7 +85,7 @@ char* getTokenEnumString (LexTokenType type) {
 void printTokens (TokenList list) {
     Token* tokens = list.tokens;
     if (list.count == 0) {
-        printf("No tokens.\n");
+        puts("No tokens.\n");
         return;
     }
     char* offset = tokens[0].start; // first token start

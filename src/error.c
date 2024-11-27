@@ -79,14 +79,14 @@ static const char* ERROR_MESSAGES[] = {
 
 void printError (const char* full_code, const int pos, const char* file_name, const ErrorType type, const int token_size) {
     if (type != E_EMPTY_MESSAGE) {
-        printf("\nERROR:\n");
+        puts("\nERROR:\n");
         printf("E%d: %s\n", type, ERROR_MESSAGES[type < E_AMOUNT && E_AMOUNT > 0 ? type : E_UNKNOWN]);
     }
 
     if (pos < strlen(full_code) && pos >= 0) {
         printf("At line %i:%i in <%s>\n", getLine(full_code, pos), getLineCol(full_code, pos), file_name);
     } else {
-        printf("At UNSPECIFIED position\n");
+        puts("At UNSPECIFIED position\n");
     }
 
     // print full line
@@ -104,14 +104,14 @@ void printError (const char* full_code, const int pos, const char* file_name, co
 
     // print arrow to position
     for (int i = start; i < pos; i++) {
-        printf(" ");
+        puts(" ");
     }
 
     for (int i = pos; i < pos + token_size; i++) {
-        printf("^");
+        puts("^");
     }
 
-    printf("\n");
+    puts("\n");
 
     #ifdef _WIN32
     _fcloseall(); // close all files if any were opened
