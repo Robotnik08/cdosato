@@ -11,8 +11,7 @@ if %ERRORLEVEL% NEQ 0 (
 :: Clean and rebuild the project
 make -C ../ clean
 if %ERRORLEVEL% NEQ 0 (
-    echo Clean failed. Please fix any issues and try again.
-    exit /b 1
+    echo Clean failed, continuing with build.
 )
 
 make -C ../
