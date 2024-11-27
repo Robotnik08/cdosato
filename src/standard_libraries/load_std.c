@@ -183,23 +183,6 @@ int loadConstants (VirtualMachine* vm, char** argv, int argc) {
     argv_.is_constant = true;
     argv_.defined = true;
 
-
-
-    
-    ADD_CONST("MAXLONG", maxlong);
-    ADD_CONST("MINLONG", minlong);
-    ADD_CONST("MAXINT", maxint);
-    ADD_CONST("MININT", minint);
-    ADD_CONST("MAXSHORT", maxshort);
-    ADD_CONST("MINSHORT", minshort);
-    ADD_CONST("MAXBYTE", maxchar);
-    ADD_CONST("MINBYTE", minchar);
-    ADD_CONST("MATH_PI", pi);
-    ADD_CONST("MATH_E", e);
-
-    ADD_CONST("ARGC", argc_);
-    ADD_CONST("ARGV", argv_);
-
     // add lower case constants
     ADD_CONST("maxlong", maxlong);
     ADD_CONST("minlong", minlong);
