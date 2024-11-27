@@ -30,7 +30,7 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
         exit(res);
     }
     if (debug & 0b100) {
-        puts("==== Tokens: ====\n");
+        printf("%s", "==== Tokens: ====\n");
         printTokens(ast->tokens);
     }
 

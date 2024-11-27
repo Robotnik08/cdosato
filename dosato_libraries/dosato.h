@@ -390,7 +390,7 @@ extern long long int getFileSize(FILE *file);
  * Based on the debug formatting used by dosato, meaning it'll stay consistent with the rest of the language.
  */
 #define PRINT_ERROR(...) do { \
-    puts("ERROR: \n"); \
+    printf("%s", "ERROR: \n"); \
     printf(__VA_ARGS__); \
 } while(0)
 
