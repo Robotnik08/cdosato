@@ -1182,6 +1182,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 if (ip_stack_count == 0) {
+                    POP_STACK(); // pop frame
                     pushValue(&vm->stack, return_value);
                     halt = true;
                     break;
@@ -2110,6 +2111,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
                 pushValue(&main_vm->stack, function->captured->values[i]);
             }
         }
+
 
         runVirtualMachine(main_vm, debug, false);
 
