@@ -86,6 +86,7 @@ typedef enum {
     E_CONTINUE_OUTSIDE_LOOP,
     E_EXPECTED_STRING,
     E_TOO_MANY_INCLUDES,
+    E_DEFAULT_ARGUMENTS_MUST_BE_LAST,
 
     // runtime errors
     E_UNDEFINED_VARIABLE,
@@ -389,9 +390,9 @@ extern long long int getFileSize(FILE *file);
  * Prints the arguments (like printf, first is the format string, the rest are the arguments).
  * Based on the debug formatting used by dosato, meaning it'll stay consistent with the rest of the language.
  */
-#define PRINT_ERROR(...) do { \
-    printf("ERROR: \n"); \
-    printf(__VA_ARGS__); \
+#define PRINT_ERROR(format, ...) do { \
+    printf("%s", "ERROR: \n"); \
+    printf(format, __VA_ARGS__); \
 } while(0)
 
 /**

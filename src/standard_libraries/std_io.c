@@ -28,7 +28,7 @@ Value io_sayln (ValueArray args, bool debug) {
     if (say_result.type == TYPE_EXCEPTION) {
         return say_result;
     }
-    printf("\n"); // sayln adds a newline
+    printf("%s", "\n"); // sayln adds a newline
     AS_LONG(say_result)++; // add one to the char count
     return say_result;
 }

@@ -1017,16 +1017,6 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 if (node.body.nodes[i].type == NODE_TEMPLATE_STRING_PART) {
                     // add constant to the constants pool
                     char* val = getTokenString(ast->tokens.tokens[node.body.nodes[i].start]);
-                    if (i == 0) {
-                        char* new_val = malloc(strlen(val));
-                        strcpy(new_val, val + 1); // remove the first quote
-                        free(val);
-                        val = new_val;
-                    }
-
-                    if (i == node.body.count - 1) {
-                        val[strlen(val) - 1] = '\0'; // remove the last quote
-                    }
 
                     int id = -1;
                     if (hasName(&vm->constants_map, val)) {
@@ -1034,6 +1024,18 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                         free(val);
                     } else {
                         id = addName(&vm->constants_map, val);
+
+                        if (i == 0) {
+                            char* new_val = malloc(strlen(val));
+                            strcpy(new_val, val + 1); // remove the first quote
+                            free(val);
+                            val = new_val;
+                        }
+
+                        if (i == node.body.count - 1) {
+                            val[strlen(val) - 1] = '\0'; // remove the last quote
+                        }
+
                         // parse escape sequences
                         for (int j = 0; j < strlen(val); j++) {
                             if (val[j] == '\\') {

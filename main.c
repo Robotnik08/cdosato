@@ -15,12 +15,12 @@ int debug = 0b0;
 #define DEBUG_PARSE 0b1000
 #define DEBUG_COMPILE 0b10000
 
-#define PRINT_USAGE printf("Usage: dosato <source file> <args> \n");
+#define PRINT_USAGE printf("%s", "Usage: dosato <source file> <args> \n");
 
 int main (int argc, char** argv) {
     if (argc < 2) {
         PRINT_USAGE
-        printf("Type 'dosato -h' for help\n");
+        printf("%s", "Type 'dosato -h' for help\n");
         return 1;
     }
 
@@ -29,22 +29,22 @@ int main (int argc, char** argv) {
     if (argc == 2) {
         if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
             PRINT_USAGE
-            printf("Options:\n");
-            printf("  -h, --help: Show this help message\n");
-            printf("  -v, --version: Show version information\n");
-            printf("  -c, --cin: Cin mode\n");
-            printf("  -d, --debug: Enable debug mode (after the source file)\n");
-            printf("     Debug options (prefix with -d):\n");
-            printf("     -s, --source: Show source code\n");
-            printf("     -l, --lexer: Show tokens\n");
-            printf("     -p, --parser: Show AST\n");
-            printf("     -c, --compiler: Show bytecode\n");
-            printf("     -a, --all: Show all of the above\n");
-            printf("     -n, --none: Show none\n");
+            printf("%s", "Options:\n");
+            printf("%s", "  -h, --help: Show this help message\n");
+            printf("%s", "  -v, --version: Show version information\n");
+            printf("%s", "  -c, --cin: Cin mode\n");
+            printf("%s", "  -d, --debug: Enable debug mode (after the source file)\n");
+            printf("%s", "     Debug options (prefix with -d):\n");
+            printf("%s", "     -s, --source: Show source code\n");
+            printf("%s", "     -l, --lexer: Show tokens\n");
+            printf("%s", "     -p, --parser: Show AST\n");
+            printf("%s", "     -c, --compiler: Show bytecode\n");
+            printf("%s", "     -a, --all: Show all of the above\n");
+            printf("%s", "     -n, --none: Show none\n");
             return 0;
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
             printf("Dosato version %s, compiled on %s\n", DOSATO_VERSION, DOSATO_DATE);
-            printf("Type 'dosato -h' for help\n");
+            printf("%s", "Type 'dosato -h' for help\n");
             return 0;
         } else if (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--cin") == 0) {
             // cin mode
@@ -105,7 +105,7 @@ int main (int argc, char** argv) {
 
         source = malloc(length + 1);
         if (source == NULL) {
-            printf("Could not allocate memory for source\n");
+            printf("%s", "Could not allocate memory for source\n");
             return 1;
         }
 
@@ -115,7 +115,7 @@ int main (int argc, char** argv) {
 
         fclose(file);
     } else {
-        printf("Enter source code:\n");
+        printf("%s", "Enter source code:\n");
         source = readStdin(&length);
     }
 
@@ -132,7 +132,7 @@ int main (int argc, char** argv) {
     load_AST(main_ast, source, length, name, debug, vm);
 
     if (debug & DEBUG_PARSE) {
-        printf("==== AST: ====\n");
+        printf("%s", "==== AST: ====\n");
         printNode(main_ast->root, 0);
     } 
 
@@ -157,7 +157,7 @@ int main (int argc, char** argv) {
 
         for (int i = 0; i < vm->functions.count; i++) {
             if (vm->functions.funcs[i].is_compiled) continue;
-            printf("\n");
+            printf("%s", "\n");
             disassembleCode(vm->functions.funcs[i].instance, vm->functions.funcs[i].name);
         }
     }
@@ -177,19 +177,19 @@ int main (int argc, char** argv) {
         printf("\nExecution time: %f\n", time);
         printf("Stack size: %d (%s)\n", vm->stack.count, vm->stack.count == 0 ? "passed" : "failed");
         if ((int)vm->stack.count > 0) {
-            printf("Left over stack:\n");
+            printf("%s", "Left over stack:\n");
             for (int i = 0; i < vm->stack.count; i++) {
                 printf("%d: ", i);
                 printValue(vm->stack.values[i], true);
-                printf("\n");
+                printf("%s", "\n");
             }
         }
-        printf("Done running\n");
+        printf("%s", "Done running\n");
     }
 
     freeVirtualMachine(vm);
     free(vm);
 
-    if (debug) printf("Succesfull cleanup\n");
+    if (debug) printf("%s", "Succesfull cleanup\n");
     return exit_code;
 }

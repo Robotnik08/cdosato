@@ -240,12 +240,12 @@ break;
     for (int i = 0; i < vm->stack.count; i++) { \
         printf("Stack value %d: ", i); \
         printValue(vm->stack.values[i], true); \
-        printf("\n"); \
+        printf("%s", "\n"); \
     } \
 } while(0);
 
 int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
-    if (debug) printf("Running virtual machine\n");
+    if (debug) printf("%s", "Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
     CodeInstance* active_instance = vm->instance;
@@ -1182,6 +1182,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 if (ip_stack_count == 0) {
+                    POP_STACK(); // pop frame
                     pushValue(&vm->stack, return_value);
                     halt = true;
                     break;
@@ -2110,6 +2111,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
                 pushValue(&main_vm->stack, function->captured->values[i]);
             }
         }
+
 
         runVirtualMachine(main_vm, debug, false);
 

@@ -36,7 +36,7 @@ void destroyValue(Value* value) {
 
 void printValue(Value value, bool extensive) {
     char* str = valueToString (value, extensive);
-    printf(str);
+    printf("%s", str);
     free(str);
 }
 

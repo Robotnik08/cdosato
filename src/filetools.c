@@ -48,7 +48,7 @@ char* readStdin(long long int* length) {
 
     long long int size = 0;
 
-    printf(">>> ");
+    printf("%s", ">>> ");
 
     while (1) {
         char* new_str = realloc(str, size + 2);
@@ -65,7 +65,7 @@ char* readStdin(long long int* length) {
 
         if (ch == '\n') {
             size--;
-            printf(">>> ");
+            printf("%s", ">>> ");
         }
         
         str[size] = ch;
