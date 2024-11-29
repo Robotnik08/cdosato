@@ -390,9 +390,9 @@ extern long long int getFileSize(FILE *file);
  * Prints the arguments (like printf, first is the format string, the rest are the arguments).
  * Based on the debug formatting used by dosato, meaning it'll stay consistent with the rest of the language.
  */
-#define PRINT_ERROR(...) do { \
+#define PRINT_ERROR(format, ...) do { \
     printf("%s", "ERROR: \n"); \
-    printf(__VA_ARGS__); \
+    printf(format, __VA_ARGS__); \
 } while(0)
 
 /**
