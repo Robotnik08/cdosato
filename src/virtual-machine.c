@@ -223,9 +223,12 @@ void pushValue(ValueArray* array, Value value) {
         } \
         vm->ip = jump.error_jump_loc; \
         vm->globals.values[0].as.longValue = e_code; \
+        if (ip_stack_count == jump.error_active_index_count) { \
+            break; \
+        } \
         ip_stack_count = jump.error_active_index_count; \
         if (jump.error_active_index_count > 0) { \
-            active_instance = active_stack[ip_stack_count - 1]; \
+            active_instance = active_stack[ip_stack_count]; \
         } \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
@@ -417,6 +420,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     vm->instance = active_instance;
                     vm->ip = old_ip;
                     if (return_val.type == TYPE_EXCEPTION) {
+                        vm->instance = old_instance;
                         PRINT_ERROR(return_val.as.longValue);
                     }
                     if (return_val.type == TYPE_HLT) {
