@@ -258,3 +258,79 @@ Value io_copy_file (ValueArray args, bool debug) {
 
     return UNDEFINED_VALUE;
 }
+
+Value io_create_directory (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    CAST_SAFE(arg, TYPE_STRING);
+
+    int result = mkdir(AS_STRING(arg));
+    if (result != 0) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_ALREADY_EXISTS));
+    }
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_delete_directory (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    CAST_SAFE(arg, TYPE_STRING);
+
+    int result = rmdir(AS_STRING(arg));
+    if (result != 0) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : (errno == ENOTEMPTY ? E_DIRECTORY_NOT_EMPTY : E_FILE_NOT_FOUND)));
+    }
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_directory_exists (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    CAST_SAFE(arg, TYPE_STRING);
+
+    int result = directory_exists(AS_STRING(arg));
+    return BUILD_BOOL(result);
+}
+
+Value io_get_files_directory (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    CAST_SAFE(arg, TYPE_STRING);
+
+    char** files;
+    int count;
+    get_files_in_directory(AS_STRING(arg), &files, &count);
+
+    ValueArray* array = malloc(sizeof(ValueArray));
+    init_ValueArray(array);
+    for (int i = 0; i < count; i++) {
+        write_ValueArray(array, BUILD_STRING(COPY_STRING(files[i]), false));
+        free(files[i]);
+    }
+    
+    free_files(files, count);
+
+    return BUILD_ARRAY(array, true);
+}
