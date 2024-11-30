@@ -184,7 +184,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     PRINT_ERROR(endofblock + 1, E_UNEXPECTED_TOKEN);
                 }
                 write_NodeList(&root.body, parse(source, length, start + 1, endofblock, tokens, NODE_BLOCK, file_name));
-            } else {
+            } else if (type != NODE_ELSE_BODY || start != end) {
                 write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_FUNCTION_CALL, file_name));
             }
             break;
