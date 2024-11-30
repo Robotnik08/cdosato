@@ -2,7 +2,7 @@
   <img src="assets/dosato_logo_wide.png">
 </p>
 
-# Dosato version 0.6.3
+# Dosato version 0.6.4
 
 cDosato is the official implementation of the DOSATO programming language.<br>
 

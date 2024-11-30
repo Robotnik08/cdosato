@@ -98,6 +98,10 @@ Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count) {
 }
 
 bool valueEquals (Value* a, Value* b) {
+    if (a->type == D_NULL && b->type == D_NULL) {
+        return true;
+    }
+
     if (a->type == TYPE_FUNCTION || b->type == TYPE_FUNCTION) {
         return false; // can't compare functions
     }
