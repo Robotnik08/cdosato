@@ -16,5 +16,9 @@ Value io_delete_file (ValueArray args, bool debug);
 Value io_file_exists (ValueArray args, bool debug);
 Value io_move_file (ValueArray args, bool debug);
 Value io_copy_file (ValueArray args, bool debug);
+Value io_create_directory (ValueArray args, bool debug);
+Value io_delete_directory (ValueArray args, bool debug);
+Value io_directory_exists (ValueArray args, bool debug);
+Value io_get_files_directory (ValueArray args, bool debug);
 
 #endif // STD_IO_H

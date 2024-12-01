@@ -1562,6 +1562,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // catch statement
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
 
+            if (node.body.nodes[0].type == NODE_FUNCTION_CALL) {
+                writeByteCode(ci, OP_POP, node.start);
+            }
+
             // jump to the end of the catch block
             writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
             int jump_end_index2 = ci->count - getOffset(OP_JUMP); // index of the jump instruction
