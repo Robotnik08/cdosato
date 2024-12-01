@@ -97,6 +97,9 @@ do assert(some([1, 2, 3], long (a, i) => {return a == 2}), true)
 do assert(every([1, 2, 3], long (a, i) => {return a == 2}), false)
 do assert(filter([1, 2, 3], long (a, i) => {return a == 2}), [2])
 
+do assert(count([1, 2, 3, 1, 2, 3, 4, 5], 1), 2)
+do assert(sum([1, 2, 3]), 6)
+
 /// std_random
 // do srandom(1) // seed random number generator
 // do assert(random(), 0.5635853144932401193)

@@ -29,6 +29,8 @@ Value array_reduce(ValueArray args, bool debug);
 Value array_some(ValueArray args, bool debug);
 Value array_filter(ValueArray args, bool debug);
 Value array_every(ValueArray args, bool debug);
+Value array_count(ValueArray args, bool debug);
+Value array_sum(ValueArray args, bool debug);
 
 
 #endif // STD_ARRAY_H
