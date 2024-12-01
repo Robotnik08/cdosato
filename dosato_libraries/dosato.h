@@ -119,6 +119,7 @@ typedef enum {
     E_FILE_PERMISSION_DENIED,
     E_CANNOT_BE_ZERO,
     E_CANNOT_BE_NEGATIVE,
+    E_DIRECTORY_NOT_EMPTY,
 
     // utility errors
     E_EMPTY_MESSAGE,

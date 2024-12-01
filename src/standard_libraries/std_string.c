@@ -8,11 +8,11 @@ Value string_split(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_COPY_TO_STRING(arg1);
-    CAST_COPY_TO_STRING(arg2);
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = COPY_STRING(AS_STRING(arg1));
-    char* delim = AS_STRING(arg2);
+    char* delim = COPY_STRING(AS_STRING(arg2));
 
     if (strlen(delim) == 0) {
         // build an array of characters
@@ -27,21 +27,19 @@ Value string_split(ValueArray args, bool debug) {
             write_ValueArray(result, value);
         }
 
-        return BUILD_ARRAY(result, true);
+        return BUILD_ARRAY(result, false);
     }
 
-    char* token = strtok(str, delim);
+    char* token = strtok(COPY_STRING(str), delim);
     ValueArray* result = malloc(sizeof(ValueArray));
     init_ValueArray(result);
     while (token != NULL) {
-        char* new_token = malloc(strlen(token) + 1);
-        strcpy(new_token, token);
-        Value value = BUILD_STRING(new_token, false);
+        Value value = BUILD_STRING(COPY_STRING(token), false);
         write_ValueArray(result, value);
         token = strtok(NULL, delim);
     }
-
-    return BUILD_ARRAY(result, true);
+    
+    return BUILD_ARRAY(result, false);
 }
 
 Value string_lower(ValueArray args, bool debug) {
@@ -228,10 +226,12 @@ Value string_replace(ValueArray args, bool debug) {
     char* substr = AS_STRING(arg2);
     char* replacement = AS_STRING(arg3);
 
+    int replacement_len = strlen(replacement);
+    int substr_len = strlen(substr);
 
     char* result = malloc(1);
     result[0] = '\0';
-    for (size_t i = 0; i < __max(strlen(str), strlen(result)); i++) {
+    for (size_t i = 0; i < strlen(str); i++) {
         bool match = true;
         for (size_t j = 0; j < strlen(substr); j++) {
             if (str[i + j] != substr[j]) {
@@ -240,10 +240,11 @@ Value string_replace(ValueArray args, bool debug) {
             }
         }
         if (match) {
-            result = realloc(result, strlen(result) + strlen(replacement) + 1);
+            int len = strlen(result);
+            result = realloc(result, strlen(result) + replacement_len + 1);
             strcat(result, replacement);
-            result[strlen(result)] = '\0';
-            i += strlen(substr) - 1;
+            i += substr_len - 1;
+            result[len + replacement_len + 1] = '\0';
         } else {
             result = realloc(result, strlen(result) + 2);
             size_t len = strlen(result);
@@ -251,7 +252,6 @@ Value string_replace(ValueArray args, bool debug) {
             result[len + 1] = '\0';
         }
     }
-    result[strlen(result)] = '\0';
 
     return BUILD_STRING(result, true);
 }
