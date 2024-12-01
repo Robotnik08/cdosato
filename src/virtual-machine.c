@@ -13,29 +13,32 @@ DOSATO_LIST_FUNC_GEN(EnumList, Enum, enums)
 
 
 DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm) {
-    VirtualMachine* vm_intance = (VirtualMachine*)vm;
+    VirtualMachine* vm_instance = (VirtualMachine*)vm;
 
     DosatoObject* object = malloc(sizeof(DosatoObject));
     object->body = body;
     object->type = type;
     object->marked = true; // immune to garbage collection for the first sweep, to ensure values that are not on the stack are not deleted (for arithmetics)
 
-    vm_intance->allocated_objects[vm_intance->allocated_objects_count++] = object;
+    vm_instance->allocated_objects[vm_instance->allocated_objects_count++] = object;
 
-    if (vm_intance->allocated_objects_count >= vm_intance->allocated_objects_capacity) {
+
+    if (vm_instance->allocated_objects_count >= vm_instance->allocated_objects_capacity) {
         // mark and sweep
-        if (sweep) {
-            markObjects(vm_intance);
-            sweepObjects(vm_intance);
+        if (sweep && vm_instance->allow_sweep) {
+            markObjects(vm_instance);
+            sweepObjects(vm_instance);
         }
         // set new capacity to double the amount of allocated objects left
-        vm_intance->allocated_objects_capacity = __max(vm_intance->allocated_objects_count * 3 / 2, GC_MIN_THRESHOLD);
-        vm_intance->allocated_objects = realloc(vm_intance->allocated_objects, sizeof(DosatoObject*) * vm_intance->allocated_objects_capacity);
+        vm_instance->allocated_objects_capacity = __max(vm_instance->allocated_objects_count * 3 / 2, GC_MIN_THRESHOLD);
+        vm_instance->allocated_objects = realloc(vm_instance->allocated_objects, sizeof(DosatoObject*) * vm_instance->allocated_objects_capacity);
     }
     
     return object;
 }
 
+    static int times = 0;
+    static int count = 0;
 void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->stack.count; i++) {
         markValue(&vm->stack.values[i]);
@@ -48,6 +51,7 @@ void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->constants.count; i++) {
         markValue(&vm->constants.values[i]);
     }
+    count = 0;
 }
 
 void sweepObjects (VirtualMachine* vm) {
@@ -67,7 +71,7 @@ void sweepObjects (VirtualMachine* vm) {
                     }
                 }
             }
-
+            
             free(object->body);
             free(object);
             
@@ -80,9 +84,12 @@ void sweepObjects (VirtualMachine* vm) {
             object->marked = false;
         }
     }
+    times++;
 }
 
 void markValue(Value* value) {
+
+    count++;
     if (value->type == TYPE_ARRAY) {
         DosatoObject* object = value->as.objectValue;
         if (object->marked) return; // already marked
@@ -188,6 +195,7 @@ void initVirtualMachine(VirtualMachine* vm) {
     vm->allocated_objects = malloc(sizeof(DosatoObject*) * GC_MIN_THRESHOLD);
     vm->allocated_objects_count = 0;
     vm->allocated_objects_capacity = GC_MIN_THRESHOLD;
+    vm->allow_sweep = true;
 }
 
 void freeVirtualMachine(VirtualMachine* vm) {
@@ -1246,7 +1254,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                         Value val = b_array->values[i];
                         write_ValueArray(new_array, val);
                     }
-                    Value result = BUILD_ARRAY(new_array, true);
+                    Value result = BUILD_ARRAY(new_array, false);
                     pushValue(&vm->stack, result);
                     break;
                 } else if (a.type == TYPE_OBJECT && b.type == TYPE_OBJECT) {
@@ -1265,7 +1273,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                         Value val = b_obj->values[i];
                         write_ValueObject(new_obj, b_obj->keys[i], val);
                     }
-                    Value result = BUILD_OBJECT(new_obj, true);
+                    Value result = BUILD_OBJECT(new_obj, false);
                     pushValue(&vm->stack, result);
                     break;
                 } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
@@ -2076,7 +2084,9 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
     Function* function = AS_FUNCTION(func);
 
     if (function->is_compiled) {
+        main_vm->allow_sweep = false;
         Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
+        main_vm->allow_sweep = true;
         return return_val;
     } else {
         if (args.count > function->arity || args.count < function->arity - function->default_count) {
@@ -2116,8 +2126,9 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
             }
         }
 
-
+        main_vm->allow_sweep = false;
         runVirtualMachine(main_vm, debug, false);
+        main_vm->allow_sweep = true;
 
         main_vm->instance = old;
 

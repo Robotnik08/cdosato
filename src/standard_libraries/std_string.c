@@ -8,11 +8,11 @@ Value string_split(ValueArray args, bool debug) {
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
 
-    CAST_COPY_TO_STRING(arg1);
-    CAST_COPY_TO_STRING(arg2);
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
 
     char* str = COPY_STRING(AS_STRING(arg1));
-    char* delim = AS_STRING(arg2);
+    char* delim = COPY_STRING(AS_STRING(arg2));
 
     if (strlen(delim) == 0) {
         // build an array of characters
@@ -27,21 +27,19 @@ Value string_split(ValueArray args, bool debug) {
             write_ValueArray(result, value);
         }
 
-        return BUILD_ARRAY(result, true);
+        return BUILD_ARRAY(result, false);
     }
 
-    char* token = strtok(str, delim);
+    char* token = strtok(COPY_STRING(str), delim);
     ValueArray* result = malloc(sizeof(ValueArray));
     init_ValueArray(result);
     while (token != NULL) {
-        char* new_token = malloc(strlen(token) + 1);
-        strcpy(new_token, token);
-        Value value = BUILD_STRING(new_token, false);
+        Value value = BUILD_STRING(COPY_STRING(token), false);
         write_ValueArray(result, value);
         token = strtok(NULL, delim);
     }
-
-    return BUILD_ARRAY(result, true);
+    
+    return BUILD_ARRAY(result, false);
 }
 
 Value string_lower(ValueArray args, bool debug) {
