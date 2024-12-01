@@ -359,10 +359,7 @@ Value array_fill (ValueArray args, bool debug) {
     Value value = GET_ARG(args, 0);
     Value count = GET_ARG(args, 1);
 
-    int cast_error = castValue(&count, TYPE_LONG);
-    if (cast_error != E_NULL) {
-        return BUILD_EXCEPTION(cast_error);
-    }
+    CAST_SAFE(count, TYPE_LONG);
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
@@ -653,4 +650,48 @@ Value array_every (ValueArray args, bool debug) {
     }
 
     return BUILD_BOOL(true);
+}
+
+Value array_count (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value value = GET_ARG(args, 1);
+
+    ValueArray* obj = AS_ARRAY(arg);
+    int count = 0;
+    for (int i = 0; i < obj->count; i++) {
+        if (valueEquals(&obj->values[i], &value)) {
+            count++;
+        }
+    }
+
+    return BUILD_LONG(count);
+}
+
+Value array_sum (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* obj = AS_ARRAY(arg);
+    double sum = 0;
+    for (int i = 0; i < obj->count; i++) {
+        Value value = obj->values[i];
+        CAST_SAFE(value, TYPE_DOUBLE);
+        sum += AS_DOUBLE(value);
+    }
+
+    return BUILD_DOUBLE(sum);
 }

@@ -94,6 +94,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"some", array_some},
         {"filter", array_filter},
         {"every", array_every},
+        {"count", array_count},
+        {"sum", array_sum},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},
