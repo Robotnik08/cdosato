@@ -69,6 +69,7 @@ static const char* ERROR_MESSAGES[] = {
     "Permission denied",
     "Value cannot be zero",
     "Value cannot be negative",
+    "Directory must be empty",
 
     // utility errors
     "Empty error", // this is for libraries to print their own error messages

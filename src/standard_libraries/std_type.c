@@ -55,5 +55,5 @@ Value type_throw(ValueArray args, bool debug) {
     }
 
     CAST_SAFE(exception, TYPE_LONG);
-    return BUILD_EXCEPTION(exception.as.longValue);
+    return BUILD_EXCEPTION(AS_LONG(exception));
 }

@@ -70,6 +70,7 @@ typedef struct {
     size_t allocated_objects_count;
     size_t allocated_objects_capacity;
     
+    bool allow_sweep;
 } VirtualMachine;
 
 extern VirtualMachine* main_vm;

@@ -14,6 +14,10 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"exists", io_file_exists},
         {"move", io_move_file},
         {"copy", io_copy_file},
+        {"createDirectory", io_create_directory},
+        {"deleteDirectory", io_delete_directory},
+        {"directoryExists", io_directory_exists},
+        {"getFiles", io_get_files_directory},
 
         {"clear", io_clear},
         {"end", io_end},

@@ -536,7 +536,7 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
         case TYPE_OBJECT: {
             for (size_t i = 0; i < count; i++) {
                 if ((*pointers)[i] == value.as.objectValue) {
-                    string = realloc(string, strlen(string) + 6);
+                    string = realloc(string, strlen(string) + 10);
                     strcat(string, "{...}");
                     return string;
                 }
@@ -568,7 +568,7 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
         case TYPE_ARRAY: {
             for (size_t i = 0; i < count; i++) {
                 if ((*pointers)[i] == value.as.objectValue) {
-                    string = realloc(string, strlen(string) + 6);
+                    string = realloc(string, strlen(string) + 10);
                     strcat(string, "[...]");
                     return string;
                 }
@@ -750,7 +750,6 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
             break;
         }
     }
-
     return string;
 }
 
