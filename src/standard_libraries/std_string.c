@@ -30,15 +30,57 @@ Value string_split(ValueArray args, bool debug) {
         return BUILD_ARRAY(result, false);
     }
 
-    char* token = strtok(COPY_STRING(str), delim);
+    if (strlen(delim) == 1) {
+        char* token = strtok(COPY_STRING(str), delim);
+        ValueArray* result = malloc(sizeof(ValueArray));
+        init_ValueArray(result);
+        while (token != NULL) {
+            printf("%s\n", token);
+            Value value = BUILD_STRING(COPY_STRING(token), false);
+            write_ValueArray(result, value);
+            token = strtok(NULL, delim);
+        }
+        
+        return BUILD_ARRAY(result, false);
+    }
+
+    // build an array of strings
     ValueArray* result = malloc(sizeof(ValueArray));
     init_ValueArray(result);
-    while (token != NULL) {
-        Value value = BUILD_STRING(COPY_STRING(token), false);
-        write_ValueArray(result, value);
-        token = strtok(NULL, delim);
+
+    int last_index = 0;
+    for (size_t i = 0; i < strlen(str) - strlen(delim); i++) {
+        bool match = true;
+        for (size_t j = 0; j < strlen(delim); j++) {
+            if (str[i + j] != delim[j]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            if (i - last_index == 0) {
+                last_index = i + strlen(delim);
+                i += strlen(delim) - 1;
+                continue;
+            }
+            char* new_token = malloc(i - last_index + 1);
+            strncpy(new_token, str + last_index, i - last_index);
+            new_token[i - last_index] = '\0';
+            Value value = BUILD_STRING(new_token, false);
+            write_ValueArray(result, value);
+            last_index = i + strlen(delim);
+            i += strlen(delim) - 1;
+        }
     }
-    
+
+    if (last_index < strlen(str)) {
+        char* new_token = malloc(strlen(str) - last_index + 1);
+        strncpy(new_token, str + last_index, strlen(str) - last_index);
+        new_token[strlen(str) - last_index] = '\0';
+        Value value = BUILD_STRING(new_token, false);
+        write_ValueArray(result, value);
+    }
+
     return BUILD_ARRAY(result, false);
 }
 
