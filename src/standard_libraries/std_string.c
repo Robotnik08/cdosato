@@ -35,7 +35,6 @@ Value string_split(ValueArray args, bool debug) {
         ValueArray* result = malloc(sizeof(ValueArray));
         init_ValueArray(result);
         while (token != NULL) {
-            printf("%s\n", token);
             Value value = BUILD_STRING(COPY_STRING(token), false);
             write_ValueArray(result, value);
             token = strtok(NULL, delim);
