@@ -161,7 +161,18 @@ int getOffset(OpCode instruction) {
 
         case OP_INCLUDE:
             return 3; // 2 bytes for the instance index
-            
+        
+        case OP_POP:
+            return 2; // 1 byte for the count
+        
+        case OP_STORE_FAST_POP:
+            return 3; // 2 bytes for the address
+
+        case OP_STORE_FAST_CONSTANT:
+            return 3; // 2 bytes for the address
+
+        case OP_END_FUNC:
+            return 2; // 1 byte for the pop count
 
 
         default:

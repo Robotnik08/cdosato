@@ -483,9 +483,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_END_FUNC: {
                 // pop frame
                 size_t frame = POP_STACK();
+                int pop_amount = NEXT_BYTE();
+                vm->stack.count -= pop_amount;
 
                 // pop ip
-                if (ip_stack_count == 0) {
+                if (ip_stack_count == 0) { // for external function environments
                     halt = true;
                     pushValue(&vm->stack, UNDEFINED_VALUE); // push NULL for return value
                     break;
@@ -644,9 +646,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 pushValue(&vm->stack, local);
                 break;
             }
+
+            case OP_STORE_FAST_POP:
+            case OP_STORE_FAST_CONSTANT:
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                Value value = PEEK_VALUE();
+                Value value = instruction == OP_STORE_FAST ? PEEK_VALUE() : POP_VALUE();
 
                 if (vm->stack.values[index].is_constant) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
@@ -663,13 +668,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     value.is_variable_type = true;
                 }
 
-                value.is_constant = false;
-
+                value.is_constant = instruction == OP_STORE_FAST_CONSTANT;
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
 
                 break;
             }
+
 
             case OP_JUMP_PEEK_IF_DEFINED: {
                 uint16_t offset = NEXT_SHORT();
@@ -819,7 +824,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_DEFINE: {
                 uint16_t index = NEXT_SHORT();
-                Value value = PEEK_VALUE();
+                Value value = POP_VALUE();
                 if (vm->globals.values[index].defined) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
@@ -1179,7 +1184,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             
             case OP_POP: {
-                POP_VALUE();
+                vm->stack.count -= NEXT_BYTE();
                 break;
             }
 

@@ -113,6 +113,10 @@ typedef enum {
 
     OP_END_FUNC,
 
+    // Super Instructions
+    OP_STORE_FAST_POP,
+    OP_STORE_FAST_CONSTANT,
+
     OP_TEMP // temporary opcode for swapping
 
 } OpCode;

@@ -24,6 +24,8 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_POP:
             printf("%s", "OP_POP");
+            pop_count = code[offset];
+            printf(": (%d)", pop_count);
             break;
 
         case OP_LOAD_CONSTANT:
@@ -329,6 +331,8 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_END_FUNC:
             printf("%s", "OP_END_FUNC");
+            pop_count = code[offset];
+            printf(": (%d)", pop_count);
             break;
 
         case OP_LOAD_UNDERSCORE:
@@ -364,6 +368,18 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
 
         case OP_TEMP:
             printf("%s", "OP_TEMP");
+            break;
+
+        case OP_STORE_FAST_POP:
+            printf("%s", "OP_STORE_FAST_POP");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
+        case OP_STORE_FAST_CONSTANT:
+            printf("%s", "OP_STORE_FAST_CONSTANT");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
             break;
 
         default:
