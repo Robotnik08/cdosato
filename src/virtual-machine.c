@@ -727,6 +727,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 } else {
                     // push iterator
                     Value value = array->values[i];
+                    value.defined = true;
                     pushValue(&vm->stack, value);
                 }
                 
