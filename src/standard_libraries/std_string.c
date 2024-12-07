@@ -27,7 +27,7 @@ Value string_split(ValueArray args, bool debug) {
             write_ValueArray(result, value);
         }
 
-        return BUILD_ARRAY(result, false);
+        return BUILD_ARRAY(result, true);
     }
 
     if (strlen(delim) == 1) {
@@ -40,7 +40,7 @@ Value string_split(ValueArray args, bool debug) {
             token = strtok(NULL, delim);
         }
         
-        return BUILD_ARRAY(result, false);
+        return BUILD_ARRAY(result, true);
     }
 
     // build an array of strings
@@ -80,7 +80,7 @@ Value string_split(ValueArray args, bool debug) {
         write_ValueArray(result, value);
     }
 
-    return BUILD_ARRAY(result, false);
+    return BUILD_ARRAY(result, true);
 }
 
 Value string_lower(ValueArray args, bool debug) {

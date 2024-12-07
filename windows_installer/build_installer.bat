@@ -43,7 +43,7 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-copy /Y "..\dosato_libraries\dosato.h" "%OUTPUT_DIR%\"
+copy /Y "..\dosato_api\dosato.h" "%OUTPUT_DIR%\"
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to copy dosato.h. Ensure the libraries folder exists and try again.
     exit /b 1
