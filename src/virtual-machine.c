@@ -37,8 +37,6 @@ DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm)
     return object;
 }
 
-    static int times = 0;
-    static int count = 0;
 void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->stack.count; i++) {
         markValue(&vm->stack.values[i]);
@@ -51,7 +49,6 @@ void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->constants.count; i++) {
         markValue(&vm->constants.values[i]);
     }
-    count = 0;
 }
 
 void sweepObjects (VirtualMachine* vm) {
@@ -84,12 +81,9 @@ void sweepObjects (VirtualMachine* vm) {
             object->marked = false;
         }
     }
-    times++;
 }
 
 void markValue(Value* value) {
-
-    count++;
     if (value->type == TYPE_ARRAY) {
         DosatoObject* object = value->as.objectValue;
         if (object->marked) return; // already marked
@@ -2103,9 +2097,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
     Function* function = AS_FUNCTION(func);
 
     if (function->is_compiled) {
-        main_vm->allow_sweep = false;
         Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
-        main_vm->allow_sweep = true;
         return return_val;
     } else {
         if (args.count > function->arity || args.count < function->arity - function->default_count) {
@@ -2145,9 +2137,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
             }
         }
 
-        main_vm->allow_sweep = false;
         runVirtualMachine(main_vm, debug, false);
-        main_vm->allow_sweep = true;
 
         main_vm->instance = old;
 
