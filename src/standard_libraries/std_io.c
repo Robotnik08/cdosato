@@ -267,7 +267,11 @@ Value io_create_directory (ValueArray args, bool debug) {
     Value arg = GET_ARG(args, 0);
     CAST_SAFE(arg, TYPE_STRING);
 
+    #ifdef _WIN32
     int result = mkdir(AS_STRING(arg));
+    #else
+    int result = mkdir(AS_STRING(arg), 0777);
+    #endif
     if (result != 0) {
         #ifdef _WIN32
         _fcloseall(); // close all files if any were opened
