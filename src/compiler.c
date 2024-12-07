@@ -1598,7 +1598,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ValueObject* obj = malloc(sizeof(ValueObject));
             init_ValueObject(obj);
 
-            u_int64 index = 0;
+            long long int index = 0;
             for (int i = 0; i < node.body.nodes[1].body.count; i++) {
                 Node enum_node = node.body.nodes[1].body.nodes[i];
                 if (enum_node.body.count != 0) {
