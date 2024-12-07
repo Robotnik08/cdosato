@@ -79,6 +79,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x)", address);
             break;
 
+        case OP_DEFINE_POP:
+            printf("%s", "OP_DEFINE_POP");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
         case OP_TYPE_CAST:
             printf("%s", "OP_TYPE_CAST");
             int type = code[offset];

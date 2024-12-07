@@ -26,6 +26,7 @@ typedef enum {
     OP_STORE_PEEK,
 
     OP_DEFINE, // define a global variable
+    OP_DEFINE_POP, // define a global variable and pop the value
 
     OP_TYPE_CAST,
     OP_MARK_CONSTANT,

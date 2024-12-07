@@ -93,89 +93,48 @@ void freeCodeInstanceWeak(CodeInstance* instance) {
 
 int getOffset(OpCode instruction) {
     switch (instruction) {
-        case OP_LOAD_CONSTANT:
-            return 3; // 2 bytes for address
-        case OP_LOAD:
-            return 3; // 2 bytes for address
-        case OP_STORE:
-            return 3; // 2 bytes for address
-        case OP_LOAD_FAST:
-            return 3; // 2 bytes for address
-        case OP_STORE_FAST:
-            return 3; // 2 bytes for address
-        case OP_LOAD_LAMBDA:
-            return 3; // 2 bytes for address
-
-        case OP_JUMP_PEEK_IF_DEFINED:
-            return 4; // 2 bytes for the location, 1 byte for the peak count
-        case OP_STORE_PEEK:
-            return 4; // 2 bytes for the address, 1 byte for the peak count
-
-        case OP_DEFINE:
-            return 3; // 2 bytes for address
-
-        case OP_BUILD_LIST:
-            return 3; // 2 bytes for the count
-        case OP_BUILD_OBJECT:
-            return 3; // 2 bytes for the count
-
-        case OP_DECREMENT_FAST:
-            return 3; // 2 bytes for the address
-        case OP_INCREMENT_FAST:
-            return 3; // 2 bytes for the address
-        case OP_DECREMENT:
-            return 3; // 2 bytes for the address
-        case OP_INCREMENT:
-            return 3; // 2 bytes for the address
-            
-
-        case OP_JUMP:
-            return 3; // 2 bytes for the location
-        case OP_JUMP_IF_FALSE:
-            return 3; // 2 bytes for the location
-        case OP_JUMP_IF_TRUE:
-            return 3; // 2 bytes for the location
-        case OP_JUMP_IF_MATCH:
-            return 3; // 2 bytes for the location
-        case OP_FOR_ITER:
-            return 3; // 2 bytes for the location
-        case OP_FOR_DISCARD:
-            return 3; // 2 bytes for the location
-
-        case OP_JUMP_IF_EXCEPTION:
-            return 3; // 2 bytes for the location
-
-        case OP_BREAK:
-            return 5; // 2 bytes for the location and 2 bytes for the pop count
-        case OP_CONTINUE:
-            return 5; // 2 bytes for the location and 2 bytes for the pop count
-
+        default:
+            return 1; // simple instructions
 
         case OP_TYPE_CAST:
-            return 2; // 1 byte for the type
-
         case OP_CALL:
-            return 2; // 1 byte for the arity
         case OP_RETURN:
-            return 2; // 1 byte for the arity
-
-        case OP_INCLUDE:
-            return 3; // 2 bytes for the instance index
-        
         case OP_POP:
-            return 2; // 1 byte for the count
-        
-        case OP_STORE_FAST_POP:
-            return 3; // 2 bytes for the address
-
-        case OP_STORE_FAST_CONSTANT:
-            return 3; // 2 bytes for the address
-
         case OP_END_FUNC:
             return 2; // 1 byte for the pop count
 
+        case OP_DEFINE:
+        case OP_DEFINE_POP:
+        case OP_LOAD_CONSTANT:
+        case OP_LOAD:
+        case OP_STORE:
+        case OP_LOAD_FAST:
+        case OP_STORE_FAST:
+        case OP_LOAD_LAMBDA:
+        case OP_BUILD_LIST:
+        case OP_BUILD_OBJECT:
+        case OP_JUMP:
+        case OP_JUMP_IF_FALSE:
+        case OP_JUMP_IF_TRUE:
+        case OP_JUMP_IF_MATCH:
+        case OP_FOR_ITER:
+        case OP_FOR_DISCARD:
+        case OP_JUMP_IF_EXCEPTION:
+        case OP_DECREMENT_FAST:
+        case OP_INCREMENT_FAST:
+        case OP_DECREMENT:
+        case OP_INCREMENT:
+        case OP_INCLUDE:
+        case OP_STORE_FAST_POP:
+        case OP_STORE_FAST_CONSTANT:
+            return 3;
 
-        default:
-            return 1; // simple instructions
+        case OP_JUMP_PEEK_IF_DEFINED:
+        case OP_STORE_PEEK:
+            return 4;
+
+        case OP_BREAK:
+        case OP_CONTINUE:
+            return 5; // 2 bytes for the location and 2 bytes for the pop count
     }
 }

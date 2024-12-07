@@ -52,7 +52,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
             if (scope != NULL) {
                 int count = scope->locals_count - scope_start;
-                writeInstruction(ci, node.start, OP_POP, count);
+                if (count > 0)
+                    writeInstruction(ci, node.start, OP_POP, count);
                 for (int i = 0; i < count; i++) {
                     popScopeData(scope);
                 }
@@ -714,7 +715,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? OP_DEFINE_POP : OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
                 }
             } else {
                 for (int i = identifier_index; i < operator_index; i++) {
@@ -724,11 +725,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple ? OP_STORE_FAST_POP : OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? OP_STORE_FAST_POP : OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
-                }
-                if (!is_tuple) {
-                    writeInstruction(ci, node.start, OP_POP, 1);
                 }
             }
             
@@ -1216,7 +1214,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // each OP_LOAD_FAST must be offset by the capture_index_count and OP_TEMP must be changed to OP_LOAD_FAST
             for (int i = 0; i < instance->count; i += getOffset(instance->code[i])) {
-                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST) {
+                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST || instance->code[i] == OP_STORE_FAST_POP) {
                     size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
                     if (index < arity) {
                         continue;

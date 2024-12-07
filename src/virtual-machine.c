@@ -824,6 +824,19 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_DEFINE: {
                 uint16_t index = NEXT_SHORT();
+                Value value = PEEK_VALUE();
+                if (vm->globals.values[index].defined) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
+                }
+                
+                vm->globals.values[index] = value;
+                markDefined(&vm->globals.values[index]);
+
+                break;
+            }
+            
+            case OP_DEFINE_POP: {
+                uint16_t index = NEXT_SHORT();
                 Value value = POP_VALUE();
                 if (vm->globals.values[index].defined) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
