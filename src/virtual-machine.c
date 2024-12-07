@@ -37,8 +37,6 @@ DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm)
     return object;
 }
 
-    static int times = 0;
-    static int count = 0;
 void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->stack.count; i++) {
         markValue(&vm->stack.values[i]);
@@ -51,78 +49,114 @@ void markObjects (VirtualMachine* vm) {
     for (size_t i = 0; i < vm->constants.count; i++) {
         markValue(&vm->constants.values[i]);
     }
-    count = 0;
 }
 
 void sweepObjects (VirtualMachine* vm) {
-    int function_count = 0;
+    int object_index = 0;
     for (size_t i = 0; i < vm->allocated_objects_count; i++) {
         DosatoObject* object = vm->allocated_objects[i];
         if (!object->marked) {
-            if (object->type == TYPE_ARRAY) {
+            switch (object->type) {
+                case TYPE_ARRAY: {
+                    free_ValueArray((ValueArray*)object->body);
+                    break;
+                } 
+                case TYPE_OBJECT: {
+                    free_ValueObject((ValueObject*)object->body);
+                    break;
+                } 
+                case TYPE_FUNCTION: {
+                    if (((Function*)object->body)->captured_count > 0 && !((Function*)object->body)->is_compiled) {
+                        if (((Function*)object->body)->captured != NULL) {
+                            free_ValueArray(((Function*)object->body)->captured);
+                            free(((Function*)object->body)->captured);
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            free(object->body);
+            free(object);
+        } else {
+            vm->allocated_objects[object_index++] = object;
+            object->marked = false;
+        }
+    }
+    vm->allocated_objects_count = object_index;
+}
+
+void finalClear (VirtualMachine* vm) {
+    for (size_t i = 0; i < vm->allocated_objects_count; i++) {
+        DosatoObject* object = vm->allocated_objects[i];
+        switch (object->type) {
+            case TYPE_ARRAY: {
                 free_ValueArray((ValueArray*)object->body);
-            } else if (object->type == TYPE_OBJECT) {
+                break;
+            } 
+            case TYPE_OBJECT: {
                 free_ValueObject((ValueObject*)object->body);
-            } else if (object->type == TYPE_FUNCTION) {
+                break;
+            } 
+            case TYPE_FUNCTION: {
                 if (((Function*)object->body)->captured_count > 0 && !((Function*)object->body)->is_compiled) {
                     if (((Function*)object->body)->captured != NULL) {
                         free_ValueArray(((Function*)object->body)->captured);
                         free(((Function*)object->body)->captured);
                     }
                 }
+                break;
             }
-            
-            free(object->body);
-            free(object);
-            
-            for (size_t j = i; j < vm->allocated_objects_count - 1; j++) {
-                vm->allocated_objects[j] = vm->allocated_objects[j + 1];
-            }
-            vm->allocated_objects_count--;
-            i--; // recheck this index
-        } else {
-            object->marked = false;
         }
+        
+        free(object->body);
+        free(object);
     }
-    times++;
 }
 
 void markValue(Value* value) {
-
-    count++;
-    if (value->type == TYPE_ARRAY) {
-        DosatoObject* object = value->as.objectValue;
-        if (object->marked) return; // already marked
-        object->marked = true;
-        ValueArray* array = AS_ARRAY(*value);
-        for (size_t i = 0; i < array->count; i++) {
-            markValue(&array->values[i]);
-        }
-    } else if (value->type == TYPE_OBJECT) {
-        DosatoObject* object = value->as.objectValue;
-        if (object->marked) return; // already marked
-        object->marked = true;
-        ValueObject* objectList = AS_OBJECT(*value);
-        for (size_t i = 0; i < objectList->count; i++) {
-            markValue(&objectList->values[i]);
-        }
-    } else if (value->type == TYPE_STRING) {
-        DosatoObject* object = value->as.objectValue;
-        object->marked = true;
-    } else if (value->type == TYPE_FUNCTION) {
-        DosatoObject* object = value->as.objectValue;
-        if (object->marked) return; // already marked
-        object->marked = true;
-        Function* func = AS_FUNCTION(*value);
-
-        if (func->is_compiled) {
-            return;
-        }
-
-        if (func->captured_count > 0) {
-            for (size_t i = 0; i < func->captured_count; i++) {
-                markValue(&func->captured->values[i]);
+    switch (value->type) {
+        case TYPE_ARRAY: {
+            DosatoObject* object = value->as.objectValue;
+            if (object->marked) return; // already marked
+            object->marked = true;
+            ValueArray* array = AS_ARRAY(*value);
+            for (size_t i = 0; i < array->count; i++) {
+                markValue(&array->values[i]);
             }
+            break;
+        }
+        case TYPE_OBJECT: {
+            DosatoObject* object = value->as.objectValue;
+            if (object->marked) return; // already marked
+            object->marked = true;
+            ValueObject* objectList = AS_OBJECT(*value);
+            for (size_t i = 0; i < objectList->count; i++) {
+                markValue(&objectList->values[i]);
+            }
+            break;
+        } 
+        case TYPE_STRING: {
+            DosatoObject* object = value->as.objectValue;
+            object->marked = true;
+            break;
+        } 
+        case TYPE_FUNCTION: {
+            DosatoObject* object = value->as.objectValue;
+            if (object->marked) return; // already marked
+            object->marked = true;
+            Function* func = AS_FUNCTION(*value);
+
+            if (func->is_compiled) {
+                return;
+            }
+
+            if (func->captured_count > 0) {
+                for (size_t i = 0; i < func->captured_count; i++) {
+                    markValue(&func->captured->values[i]);
+                }
+            }
+            break;
         }
     }
 }
@@ -198,7 +232,7 @@ void initVirtualMachine(VirtualMachine* vm) {
     vm->allow_sweep = true;
 }
 
-void freeVirtualMachine(VirtualMachine* vm) {
+void freeVirtualMachine(VirtualMachine* vm, bool clean_garbage_collector) {
     freeCodeInstance(vm->instance);
     free(vm->instance);
     free_StackFrames(&vm->stack_frames);
@@ -209,8 +243,9 @@ void freeVirtualMachine(VirtualMachine* vm) {
     free_ErrorJumps(&vm->error_jumps);
     destroy_CodeInstanceList(&vm->includes);
 
-    sweepObjects(vm); // sweep all objects
-    sweepObjects(vm); // sweep remaining objects
+    if (clean_garbage_collector) {
+        finalClear(vm);
+    }
 
     free_ValueArray(&vm->globals);
     free_ValueArray(&vm->stack);
@@ -483,9 +518,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_END_FUNC: {
                 // pop frame
                 size_t frame = POP_STACK();
+                int pop_amount = NEXT_BYTE();
+                vm->stack.count -= pop_amount;
 
                 // pop ip
-                if (ip_stack_count == 0) {
+                if (ip_stack_count == 0) { // for external function environments
                     halt = true;
                     pushValue(&vm->stack, UNDEFINED_VALUE); // push NULL for return value
                     break;
@@ -644,9 +681,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 pushValue(&vm->stack, local);
                 break;
             }
+
+            case OP_STORE_FAST_POP:
+            case OP_STORE_FAST_CONSTANT:
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                Value value = PEEK_VALUE();
+                Value value = instruction == OP_STORE_FAST ? PEEK_VALUE() : POP_VALUE();
 
                 if (vm->stack.values[index].is_constant) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
@@ -663,13 +703,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     value.is_variable_type = true;
                 }
 
-                value.is_constant = false;
-
+                value.is_constant = instruction == OP_STORE_FAST_CONSTANT;
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
 
                 break;
             }
+
 
             case OP_JUMP_PEEK_IF_DEFINED: {
                 uint16_t offset = NEXT_SHORT();
@@ -682,42 +722,30 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
-            case OP_STORE_PEEK: {
-                uint16_t offset = NEXT_SHORT();
-                uint8_t peek = NEXT_BYTE();
-                Value value = PEEK_VALUE();
-                Value* store = &vm->stack.values[vm->stack.count - peek - 1];
-                if (store->is_constant) {
-                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
-                }
-
-                if (!store->is_variable_type && store->defined) {
-                    DataType type = store->type;
-                    ErrorType castRes = castValue(&value, type);
-                    if (castRes != E_NULL) {
-                        PRINT_ERROR(castRes);
-                    }
-                } else if (store->defined) {
-                    value.is_variable_type = true;
-                }
-
-                value.is_constant = false;
-
-                *store = value;
-                markDefined(store);
-
-                break;
-            }
-
             case OP_FOR_ITER: {
                 uint16_t offset = NEXT_SHORT();
                 POP_VALUE(); // pop old iterator
                 Value* index = &vm->stack.values[vm->stack.count - 1];
                 Value list = PEEK_VALUE_TWO();
-                if (list.type != TYPE_ARRAY) {
-                    PRINT_ERROR(E_NOT_AN_ARRAY);
+                if (list.type != TYPE_ARRAY && list.type != TYPE_STRING) {
+                    PRINT_ERROR(E_NOT_ITERABLE);
                 }
                 
+                if (list.type == TYPE_STRING) {
+                    char* string = AS_STRING(list);
+                    int i = ++index->as.longValue;
+                    if (index->as.longValue >= strlen(string)) {
+                        POP_VALUE(); // pop index
+                        POP_VALUE(); // pop list
+                        vm->ip = offset + active_instance->code;
+                    } else {
+                        // push iterator
+                        Value value = BUILD_CHAR(string[index->as.longValue]);
+                        value.defined = true;
+                        pushValue(&vm->stack, value);
+                    }
+                    break;
+                }
                 int i = ++index->as.longValue;
                 ValueArray* array = AS_ARRAY(list);
                 if (i >= array->count || i < 0) {
@@ -820,6 +848,19 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_DEFINE: {
                 uint16_t index = NEXT_SHORT();
                 Value value = PEEK_VALUE();
+                if (vm->globals.values[index].defined) {
+                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
+                }
+                
+                vm->globals.values[index] = value;
+                markDefined(&vm->globals.values[index]);
+
+                break;
+            }
+            
+            case OP_DEFINE_POP: {
+                uint16_t index = NEXT_SHORT();
+                Value value = POP_VALUE();
                 if (vm->globals.values[index].defined) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
@@ -1179,7 +1220,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             
             case OP_POP: {
-                POP_VALUE();
+                vm->stack.count -= NEXT_BYTE();
                 break;
             }
 
@@ -2085,9 +2126,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
     Function* function = AS_FUNCTION(func);
 
     if (function->is_compiled) {
-        main_vm->allow_sweep = false;
         Value return_val = ((DosatoFunction)function->func_ptr)(args, debug);
-        main_vm->allow_sweep = true;
         return return_val;
     } else {
         if (args.count > function->arity || args.count < function->arity - function->default_count) {
@@ -2127,9 +2166,7 @@ Value callExternalFunction(Value func, ValueArray args, bool debug) {
             }
         }
 
-        main_vm->allow_sweep = false;
         runVirtualMachine(main_vm, debug, false);
-        main_vm->allow_sweep = true;
 
         main_vm->instance = old;
 

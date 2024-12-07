@@ -25,6 +25,7 @@ int main (int argc, char** argv) {
     }
 
     bool cin_mode = false;
+    bool clean_garbage_collector = true;
 
     if (argc == 2) {
         if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
@@ -32,7 +33,7 @@ int main (int argc, char** argv) {
             printf("%s", "Options:\n");
             printf("%s", "  -h, --help: Show this help message\n");
             printf("%s", "  -v, --version: Show version information\n");
-            printf("%s", "  -c, --cin: Cin mode\n");
+            printf("%s", "  -c, --cin: Console input mode\n");
             printf("%s", "  -d, --debug: Enable debug mode (after the source file)\n");
             printf("%s", "     Debug options (prefix with -d):\n");
             printf("%s", "     -s, --source: Show source code\n");
@@ -187,7 +188,7 @@ int main (int argc, char** argv) {
         printf("%s", "Done running\n");
     }
 
-    freeVirtualMachine(vm);
+    freeVirtualMachine(vm, clean_garbage_collector);
     free(vm);
 
     if (debug) printf("%s", "Succesfull cleanup\n");
