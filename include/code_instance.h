@@ -10,6 +10,7 @@ typedef enum {
     OP_RETURN,
 
     OP_CALL,
+    OP_CALL_POP,
 
     OP_POP,
 
@@ -23,9 +24,9 @@ typedef enum {
     OP_LOAD_LAMBDA,
 
     OP_JUMP_PEEK_IF_DEFINED,
-    OP_STORE_PEEK,
 
     OP_DEFINE, // define a global variable
+    OP_DEFINE_POP, // define a global variable and pop the value
 
     OP_TYPE_CAST,
     OP_MARK_CONSTANT,
@@ -112,6 +113,10 @@ typedef enum {
     OP_END_INCLUDE,
 
     OP_END_FUNC,
+
+    // Super Instructions
+    OP_STORE_FAST_POP,
+    OP_STORE_FAST_CONSTANT,
 
     OP_TEMP // temporary opcode for swapping
 

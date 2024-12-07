@@ -100,6 +100,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"every", array_every},
         {"count", array_count},
         {"sum", array_sum},
+        {"find", array_find},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},

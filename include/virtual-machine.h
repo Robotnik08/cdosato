@@ -78,7 +78,7 @@ extern VirtualMachine* main_vm;
 #include "ast.h"
 
 void initVirtualMachine(VirtualMachine* vm);
-void freeVirtualMachine(VirtualMachine* vm);
+void freeVirtualMachine(VirtualMachine* vm, bool clean_garbage_collector);
 
 void pushValue(ValueArray* array, Value value);
 
@@ -107,6 +107,7 @@ Value callExternalFunction(Value function, ValueArray args, bool debug);
 DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm);
 void markObjects (VirtualMachine* vm);
 void sweepObjects (VirtualMachine* vm);
+void finalClear (VirtualMachine* vm);
 void markValue(Value* value);
 #define BUILD_STRING(value, trigger_sweep) (Value){ TYPE_STRING, .as.objectValue = buildDosatoObject(value, TYPE_STRING, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }
 #define BUILD_ARRAY(value, trigger_sweep) (Value){ TYPE_ARRAY, .as.objectValue = buildDosatoObject(value, TYPE_ARRAY, trigger_sweep, main_vm), .defined = false, .is_variable_type = false, .is_constant = false }

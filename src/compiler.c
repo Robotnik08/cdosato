@@ -52,8 +52,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
             if (scope != NULL) {
                 int count = scope->locals_count - scope_start;
+                if (count > 0)
+                    writeInstruction(ci, node.start, OP_POP, count);
                 for (int i = 0; i < count; i++) {
-                    writeByteCode(ci, OP_POP, 0);
                     popScopeData(scope);
                 }
                 if (created_scope) {
@@ -197,8 +198,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
                 int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
                 compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
-                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
-                writeByteCode(instance, OP_POP, arg.end);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST_POP, DOSATO_SPLIT_SHORT(i));
                 instance->code[jump_index + 1] = instance->count & 0xFF;
                 instance->code[jump_index + 2] = instance->count >> 8;
             }
@@ -208,17 +208,14 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             freeScopeData(new_scope);
             free(new_scope);
 
-            for (int i = 0; i < arity; i++) {
-                writeByteCode(instance, OP_POP, node.body.nodes[identifier_index + 1].body.nodes[i].end);
-            }
-            writeByteCode(instance, OP_END_FUNC, node.body.nodes[identifier_index + 2].end);
+            writeInstruction(instance, node.body.nodes[identifier_index + 2].end, OP_END_FUNC, arity);
 
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[identifier_index + 1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }          
 
             Function func;
@@ -294,8 +291,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
                 int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
                 compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
-                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
-                writeByteCode(instance, OP_POP, arg.end);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST_POP, DOSATO_SPLIT_SHORT(i));
                 instance->code[jump_index + 1] = instance->count & 0xFF;
                 instance->code[jump_index + 2] = instance->count >> 8;
             }
@@ -324,19 +320,34 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // each OP_LOAD_FAST must be offset by the capture_index_count and OP_TEMP must be changed to OP_LOAD_FAST
             for (int i = 0; i < instance->count; i += getOffset(instance->code[i])) {
-                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST) {
-                    size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
-                    if (index < arity) {
-                        continue;
+                switch (instance->code[i]) {
+                    case OP_LOAD_FAST:
+                    case OP_STORE_FAST:
+                    case OP_INCREMENT_FAST:
+                    case OP_DECREMENT_FAST:
+                    case OP_STORE_FAST_POP:
+                    case OP_STORE_FAST_CONSTANT: {
+                        size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
+                        if (index < arity) {
+                            continue;
+                        }
+                        instance->code[i + 1] = (index + capture_index_count) & 0xFF;
+                        instance->code[i + 2] = (index + capture_index_count) >> 8;
+                        break;
                     }
-                    instance->code[i + 1] = (index + capture_index_count) & 0xFF;
-                    instance->code[i + 2] = (index + capture_index_count) >> 8;
-                } else if (instance->code[i] == OP_RETURN) {
-                    size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
-                    instance->code[i + 1] = (index + capture_index_count) & 0xFF;
-                    instance->code[i + 2] = (index + capture_index_count) >> 8;
-                } else if (instance->code[i] == OP_TEMP) {
-                    instance->code[i] = OP_LOAD_FAST; // change back without changing the index
+                    case OP_RETURN: {
+                        size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
+                        instance->code[i + 1] = (index + capture_index_count) & 0xFF;
+                        instance->code[i + 2] = (index + capture_index_count) >> 8;
+                        break;
+                    }
+                    case OP_TEMP: {
+                        instance->code[i] = OP_LOAD_FAST; // change back without changing the index
+                        break;
+                    }
+                    default: {
+                        break; // none
+                    }
                 }
             }
 
@@ -344,17 +355,14 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             freeScopeData(new_scope);
             free(new_scope);
 
-            for (int i = 0; i < arity + capture_index_count; i++) {
-                writeByteCode(instance, OP_POP, node.end);
-            }
-            writeByteCode(instance, OP_END_FUNC, node.body.nodes[identifier_index + 2].end);
+            writeInstruction(instance, node.body.nodes[identifier_index + 2].end, OP_END_FUNC, arity + capture_index_count);
 
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[identifier_index + 1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }
 
             Function func;
@@ -396,7 +404,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             writeInstruction(ci, node.body.nodes[identifier_index + 2].start, OP_LOAD_CONSTANT, DOSATO_SPLIT_SHORT(id));
 
             writeByteCode(ci, OP_STORE_OBJ, node.body.nodes[identifier_index].start);
-            writeByteCode(ci, OP_POP, node.body.nodes[identifier_index].start);
+            writeInstruction(ci, node.body.nodes[identifier_index].start, OP_POP, 1);
             break;
         }
         
@@ -464,8 +472,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
                 int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
                 compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
-                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
-                writeByteCode(instance, OP_POP, arg.end);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST_POP, DOSATO_SPLIT_SHORT(i));
                 instance->code[jump_index + 1] = instance->count & 0xFF;
                 instance->code[jump_index + 2] = instance->count >> 8;
             }
@@ -477,9 +484,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             writeByteCode(instance, OP_PUSH_NULL, node.start);
             writeInstruction(instance, node.body.nodes[2].start - 1, OP_BUILD_OBJECT, DOSATO_SPLIT_SHORT(0));
-            writeByteCode(instance, OP_MARK_CONSTANT, node.start);
-            writeInstruction(instance, node.body.nodes[2].start - 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(arity));
-            writeByteCode(instance, OP_POP, node.start);
+            writeInstruction(instance, node.body.nodes[2].start - 1, OP_STORE_FAST_CONSTANT, DOSATO_SPLIT_SHORT(arity));
 
             compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
 
@@ -487,14 +492,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             free(new_scope);
 
             writeInstruction(instance, node.body.nodes[2].end, OP_RETURN, DOSATO_SPLIT_SHORT(arity));
-            writeByteCode(instance, OP_END_FUNC, node.body.nodes[2].end);
 
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }          
 
             Function func;
@@ -530,7 +534,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             // pop the return value
-            if (node.body.nodes[0].type == NODE_FUNCTION_CALL) writeByteCode(ci, OP_POP, node.body.nodes[0].end);
+            if (node.body.nodes[0].type == NODE_FUNCTION_CALL) 
+                writeInstruction(ci, node.body.nodes[0].start, OP_POP, 1);
             break;
         }
 
@@ -710,14 +715,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
-
-                    if (is_tuple) {
-                        writeByteCode(ci, OP_POP, node.start);
-                    }
-                }
-                if (!is_tuple) {
-                    writeByteCode(ci, OP_POP, node.start);
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? OP_DEFINE_POP : OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
                 }
             } else {
                 for (int i = identifier_index; i < operator_index; i++) {
@@ -727,15 +725,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? OP_STORE_FAST_POP : OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
-
-                    if (is_tuple) {
-                        writeByteCode(ci, OP_POP, node.start);
-                    }
-                }
-                if (!is_tuple) {
-                    writeByteCode(ci, OP_POP, node.start);
                 }
             }
             
@@ -839,12 +830,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 }
 
                 if ((operator != OPERATOR_ASSIGN && operator != OPERATOR_INCREMENT && operator != OPERATOR_DECREMENT) || tuple) {
-                    writeByteCode(ci, OP_POP, node.start);
+                    writeInstruction(ci, node.start, OP_POP, 1);
                 }
             }
 
             if (operator == OPERATOR_ASSIGN && operator != OPERATOR_INCREMENT && operator != OPERATOR_DECREMENT && !tuple) {
-                writeByteCode(ci, OP_POP, node.start);
+                writeInstruction(ci, node.start, OP_POP, 1);
             }
             
             break;
@@ -1194,8 +1185,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
                 int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
                 compileNode(vm, instance, arg.body.nodes[expression_index], ast, new_scope);
-                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST, DOSATO_SPLIT_SHORT(i));
-                writeByteCode(instance, OP_POP, arg.end);
+                writeInstruction(instance, arg.start + expression_index + 1, OP_STORE_FAST_POP, DOSATO_SPLIT_SHORT(i));
                 instance->code[jump_index + 1] = instance->count & 0xFF;
                 instance->code[jump_index + 2] = instance->count >> 8;
             }
@@ -1224,7 +1214,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // each OP_LOAD_FAST must be offset by the capture_index_count and OP_TEMP must be changed to OP_LOAD_FAST
             for (int i = 0; i < instance->count; i += getOffset(instance->code[i])) {
-                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST) {
+                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST || instance->code[i] == OP_STORE_FAST_POP) {
                     size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
                     if (index < arity) {
                         continue;
@@ -1244,17 +1234,14 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             freeScopeData(new_scope);
             free(new_scope);
 
-            for (int i = 0; i < arity + capture_index_count; i++) {
-                writeByteCode(instance, OP_POP, node.end);
-            }
-            writeByteCode(instance, OP_END_FUNC, node.body.nodes[2].end);
+            writeInstruction(instance, node.body.nodes[2].end, OP_END_FUNC, arity + capture_index_count);
 
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }
 
             Function func;
@@ -1472,13 +1459,14 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             int default_jump_index = -1;
             if (default_index != -1) {
                 // if theres a default case, write a jump instruction for it
-                writeByteCode(ci, OP_POP, node.start);
+                writeInstruction(ci, node.start, OP_POP, 1);
                 writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
                 default_jump_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
+            } else {
+                writeInstruction(ci, node.start, OP_POP, 1);
             }
 
             // jump to end of the switch block if no case is matched
-            writeByteCode(ci, OP_POP, node.start);
             writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
             int jump_end_index = ci->count - getOffset(OP_JUMP); // index of the jump instruction
 
@@ -1563,7 +1551,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
 
             if (node.body.nodes[0].type == NODE_FUNCTION_CALL) {
-                writeByteCode(ci, OP_POP, node.start);
+                writeInstruction(ci, node.start, OP_POP, 1);
             }
 
             // jump to the end of the catch block
@@ -1610,7 +1598,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ValueObject* obj = malloc(sizeof(ValueObject));
             init_ValueObject(obj);
 
-            u_int64 index = 0;
+            long long int index = 0;
             for (int i = 0; i < node.body.nodes[1].body.count; i++) {
                 Node enum_node = node.body.nodes[1].body.nodes[i];
                 if (enum_node.body.count != 0) {

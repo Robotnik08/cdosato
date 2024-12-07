@@ -31,6 +31,6 @@ Value array_filter(ValueArray args, bool debug);
 Value array_every(ValueArray args, bool debug);
 Value array_count(ValueArray args, bool debug);
 Value array_sum(ValueArray args, bool debug);
-
+Value array_find(ValueArray args, bool debug);
 
 #endif // STD_ARRAY_H

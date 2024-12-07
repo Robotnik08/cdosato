@@ -63,6 +63,7 @@ static const char* ERROR_MESSAGES[] = {
     "Cannot reassign constant",
     "Mismatch in tuple expression",
     "Identifier cannot be used in this context",
+    "Value is not iterable",
 
     "File not found",
     "File already exists",
