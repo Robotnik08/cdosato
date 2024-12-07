@@ -130,7 +130,6 @@ int getOffset(OpCode instruction) {
             return 3;
 
         case OP_JUMP_PEEK_IF_DEFINED:
-        case OP_STORE_PEEK:
             return 4;
 
         case OP_BREAK:

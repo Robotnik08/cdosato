@@ -24,7 +24,6 @@ typedef enum {
     OP_LOAD_LAMBDA,
 
     OP_JUMP_PEEK_IF_DEFINED,
-    OP_STORE_PEEK,
 
     OP_DEFINE, // define a global variable
     OP_DEFINE_POP, // define a global variable and pop the value

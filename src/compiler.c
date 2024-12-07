@@ -215,7 +215,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[identifier_index + 1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }          
 
             Function func;
@@ -362,7 +362,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[identifier_index + 1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }
 
             Function func;
@@ -498,7 +498,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }          
 
             Function func;
@@ -1241,7 +1241,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             for (int i = 0; i < arity; i++) {
                 NodeList list = node.body.nodes[1].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
-                types[i] = list.count == 1 ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
+                types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }
 
             Function func;
