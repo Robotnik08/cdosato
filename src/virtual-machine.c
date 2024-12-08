@@ -261,18 +261,15 @@ void pushValue(ValueArray* array, Value value) {
 #define PRINT_ERROR(e_code) do { \
     if (vm->error_jumps.count > 0) { \
         ErrorJump jump = vm->error_jumps.jumps[--vm->error_jumps.count]; \
-        while (vm->stack.count > jump.error_stack_count) { \
-            POP_VALUE(); \
-        } \
+        vm->stack.count = jump.error_stack_count; \
+        vm->stack_frames.count = jump.error_stack_frame_count; \
         vm->ip = jump.error_jump_loc; \
         vm->globals.values[0].as.longValue = e_code; \
         if (ip_stack_count == jump.error_active_index_count) { \
             break; \
         } \
         ip_stack_count = jump.error_active_index_count; \
-        if (jump.error_active_index_count > 0) { \
-            active_instance = active_stack[ip_stack_count]; \
-        } \
+        active_instance = active_stack[ip_stack_count]; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
         printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code, ((AST*)active_instance->ast)->tokens.tokens[token_index].length);\
@@ -401,7 +398,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_JUMP_IF_EXCEPTION: {
                 uint16_t offset = NEXT_SHORT();
                 size_t stack_count = vm->stack.count;
-                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count, .error_active_index_count = ip_stack_count });
+                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count, .error_active_index_count = ip_stack_count, .error_stack_frame_count = vm->stack_frames.count });
                 break;
             }
 
@@ -684,9 +681,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_STORE_FAST_POP:
             case OP_STORE_FAST_CONSTANT:
+            case OP_STORE_FAST_POP_CONSTANT:
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                Value value = instruction == OP_STORE_FAST ? PEEK_VALUE() : POP_VALUE();
+                Value value = instruction == OP_STORE_FAST || instruction == OP_STORE_FAST_CONSTANT ? PEEK_VALUE() : POP_VALUE();
 
                 if (vm->stack.values[index].is_constant) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
@@ -703,7 +701,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     value.is_variable_type = true;
                 }
 
-                value.is_constant = instruction == OP_STORE_FAST_CONSTANT;
+                value.is_constant = instruction == OP_STORE_FAST_CONSTANT || instruction == OP_STORE_FAST_POP_CONSTANT;
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
 
@@ -845,27 +843,20 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
+            case OP_DEFINE_CONSTANT:
+            case OP_DEFINE_POP_CONSTANT:
+            case OP_DEFINE_POP:
             case OP_DEFINE: {
                 uint16_t index = NEXT_SHORT();
-                Value value = PEEK_VALUE();
+                Value value = instruction == OP_DEFINE || instruction == OP_DEFINE_CONSTANT ? PEEK_VALUE() : POP_VALUE();
                 if (vm->globals.values[index].defined) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
-                
-                vm->globals.values[index] = value;
-                markDefined(&vm->globals.values[index]);
 
-                break;
-            }
-            
-            case OP_DEFINE_POP: {
-                uint16_t index = NEXT_SHORT();
-                Value value = POP_VALUE();
-                if (vm->globals.values[index].defined) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
-                }
-                
+
+                value.is_constant = instruction == OP_DEFINE_CONSTANT || instruction == OP_DEFINE_POP_CONSTANT;
                 vm->globals.values[index] = value;
+    	        
                 markDefined(&vm->globals.values[index]);
 
                 break;

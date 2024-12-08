@@ -699,13 +699,15 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_INVALID_AMOUNT_SET_EXPRESSION, node.start + identifier_index);
             }
 
-            
+            OpCode op_normal = OP_STORE_FAST;
+            OpCode op_pop = OP_STORE_FAST_POP;
             for (int i = node.body.count - 1; i >= operator_index + 1; i--) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
                 writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
 
                 if (type == NODE_MASTER_CONST_BODY) {
-                    writeByteCode(ci, OP_MARK_CONSTANT, node.start);
+                    op_normal = OP_STORE_FAST_CONSTANT;
+                    op_pop = OP_STORE_FAST_POP_CONSTANT;
                 }
             }
 
@@ -715,7 +717,9 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? OP_DEFINE_POP : OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
+                    op_normal = op_normal == OP_STORE_FAST ? OP_DEFINE : OP_DEFINE_CONSTANT;
+                    op_pop = op_pop == OP_STORE_FAST_POP ? OP_DEFINE_POP : OP_DEFINE_POP_CONSTANT;
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? op_pop : op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
                 }
             } else {
                 for (int i = identifier_index; i < operator_index; i++) {
@@ -725,7 +729,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? OP_STORE_FAST_POP : OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? op_pop : op_normal, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
                 }
             }

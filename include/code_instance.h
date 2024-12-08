@@ -117,6 +117,10 @@ typedef enum {
     // Super Instructions
     OP_STORE_FAST_POP,
     OP_STORE_FAST_CONSTANT,
+    OP_STORE_FAST_POP_CONSTANT,
+
+    OP_DEFINE_CONSTANT,
+    OP_DEFINE_POP_CONSTANT,
 
     OP_TEMP // temporary opcode for swapping
 

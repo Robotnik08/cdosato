@@ -1,0 +1,7 @@
+include "include/assert.to"
+
+do setNameSpace("runtests.to")
+
+do expectError(void () => { const a = 1 set a  = 3 }, 54)
+
+do formReport()

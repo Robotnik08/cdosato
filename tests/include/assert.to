@@ -1,0 +1,34 @@
+// global tracking
+make test_id = 0
+make failed_tests = []
+make name_space = ""
+
+define void assert(var value, var expected) {
+    do {
+        if value != expected then {
+            do push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected: {expected} \n\t- Got: {value}`) 
+        }
+    } catch {
+        do push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed\n\t- Expected: {expected}\n\t- Got: {value}\n\t- With error code: {_}`)
+    }
+    set test_id++
+}
+
+define void expectError(function func, int code) {
+    do func() then push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected error code {code}, but it ran without errors`) catch {
+        do push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected error code {code}, got {_}`) when _ != code
+    }
+    set test_id++
+}
+
+define void setNameSpace(string name) {
+    set name_space = name
+    set test_id = 0
+}
+
+define void formReport() {
+    if ((int)failed_tests) > 0 then {
+        do sayln(`({(int)failed_tests}) tests failed: `)
+        do sayln(t) for t in failed_tests
+    } else sayln("All tests passed")
+}
