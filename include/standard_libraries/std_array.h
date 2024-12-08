@@ -32,5 +32,9 @@ Value array_every(ValueArray args, bool debug);
 Value array_count(ValueArray args, bool debug);
 Value array_sum(ValueArray args, bool debug);
 Value array_find(ValueArray args, bool debug);
+Value array_combinations(ValueArray args, bool debug);
+void combinationUtil(Value* arr, int n, int r, int index, int* data, int i, ValueArray* new_array);
+Value array_permutations(ValueArray args, bool debug);
+void permutationUtil(Value* arr, int n, int r, int index, int* data, bool* used, ValueArray* new_array);
 
 #endif // STD_ARRAY_H

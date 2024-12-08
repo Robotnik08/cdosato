@@ -101,6 +101,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"count", array_count},
         {"sum", array_sum},
         {"find", array_find},
+        {"combinations", array_combinations},
+        {"permutations", array_permutations},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},

@@ -731,3 +731,106 @@ Value array_find (ValueArray args, bool debug) {
 
     return UNDEFINED_VALUE;
 }
+
+// Generate all possible combinations of an array
+Value array_combinations (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value count = GET_ARG(args, 1);
+    CAST_SAFE(count, TYPE_LONG);
+
+    ValueArray* obj = AS_ARRAY(array);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    int n = obj->count;
+    int r = AS_LONG(count);
+    
+    int* data = malloc(r * sizeof(int));
+    combinationUtil(obj->values, n, r, 0, data, 0, new_array);
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+void combinationUtil(Value* arr, int n, int r, int index, int* data, int i, ValueArray* new_array) {
+    if (index == r) {
+        ValueArray* combination = malloc(sizeof(ValueArray));
+        init_ValueArray(combination);
+        for (int j = 0; j < r; j++) {
+            write_ValueArray(combination, arr[data[j]]);
+        }
+        write_ValueArray(new_array, BUILD_ARRAY(combination, true));
+        return;
+    }
+
+    if (i >= n) {
+        return;
+    }
+
+    data[index] = i;
+    combinationUtil(arr, n, r, index + 1, data, i + 1, new_array);
+    combinationUtil(arr, n, r, index, data, i + 1, new_array);
+}
+
+// Generate all possible permutations of an array
+Value array_permutations (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value count = GET_ARG(args, 1);
+    CAST_SAFE(count, TYPE_LONG);
+
+    ValueArray* obj = AS_ARRAY(array);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    int n = obj->count;
+    int r = AS_LONG(count);
+
+    int* data = malloc(r * sizeof(int));
+    bool* used = malloc(n * sizeof(bool));
+    for (int i = 0; i < n; i++) {
+        used[i] = false;
+    }
+
+    permutationUtil(obj->values, n, r, 0, data, used, new_array);
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+void permutationUtil(Value* arr, int n, int r, int index, int* data, bool* used, ValueArray* new_array) {
+    if (index == r) {
+        ValueArray* permutation = malloc(sizeof(ValueArray));
+        init_ValueArray(permutation);
+        for (int j = 0; j < r; j++) {
+            write_ValueArray(permutation, arr[data[j]]);
+        }
+        write_ValueArray(new_array, BUILD_ARRAY(permutation, true));
+        return;
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (used[i]) {
+            continue;
+        }
+
+        data[index] = i;
+        used[i] = true;
+        permutationUtil(arr, n, r, index + 1, data, used, new_array);
+        used[i] = false;
+    }
+}
