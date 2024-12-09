@@ -1,0 +1,53 @@
+## Covered Tests
+
+- [X] Do, Set, Make keywords
+    - [X] Variables
+    - [X] Constants
+    - [X] Tuple like assignments
+- [ ] Built-in keywords
+- [ ] While and Until loops
+- [ ] For loops
+- [ ] Break and Continue statements
+- [ ] If, Else, When, Unless statements
+- [ ] Catch statements
+- [ ] Switch statements
+- [ ] Type Conversions
+- [ ] Functions
+    - [ ] Default arguments
+    - [ ] Typed arguments
+    - [ ] Return values
+    - [ ] Recursive functions
+- [ ] Lambdas
+    - [ ] Capture variables
+- [ ] Classes
+    - [ ] Constructors
+    - [ ] Methods
+    - [ ] Inheritance
+- [ ] Objects
+- [ ] Arrays
+- [ ] Operators
+    - [ ] Arithmetic
+    - [ ] Comparison
+    - [ ] Logical
+    - [ ] Bitwise
+    - [ ] Assignment
+    - [ ] Ternary
+    - [ ] Range
+    - [ ] Strings
+    - [ ] Arrays
+    - [ ] Objects
+- [ ] Comments
+- [ ] Template strings
+- [ ] Type casting
+- [ ] Error handling
+- [ ] Enums
+- [ ] Built-ins
+    - [ ] Math
+    - [ ] Arrays
+    - [ ] Strings
+    - [ ] Objects
+    - [ ] IO
+    - [ ] Time
+    - [ ] Random
+    - [ ] Types
+    - [ ] System
