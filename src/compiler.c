@@ -1522,7 +1522,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(type == NODE_MASTER_BREAK_BODY ? E_BREAK_OUTSIDE_LOOP : E_CONTINUE_OUTSIDE_LOOP, node.start - 1);
             }
             size_t top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 1];
-            if (ci->code[top_jump_index] == OP_JUMP_IF_FALSE && type == NODE_MASTER_CONTINUE_BODY) {
+            if ((ci->code[top_jump_index] == OP_JUMP_IF_FALSE || ci->code[top_jump_index] == OP_JUMP_IF_TRUE) && type == NODE_MASTER_CONTINUE_BODY) {
                 top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 2]; // get the condition start index instead of the jump index
             }
 
