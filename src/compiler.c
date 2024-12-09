@@ -713,12 +713,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
 
             if (scope == NULL) { // global scope
+                op_normal = op_normal == OP_STORE_FAST ? OP_DEFINE : OP_DEFINE_CONSTANT;
+                op_pop = op_pop == OP_STORE_FAST_POP ? OP_DEFINE_POP : OP_DEFINE_POP_CONSTANT;
                 for (int i = identifier_index; i < operator_index; i++) {
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    op_normal = op_normal == OP_STORE_FAST ? OP_DEFINE : OP_DEFINE_CONSTANT;
-                    op_pop = op_pop == OP_STORE_FAST_POP ? OP_DEFINE_POP : OP_DEFINE_POP_CONSTANT;
                     writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? op_pop : op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
                 }
             } else {
