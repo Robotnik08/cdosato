@@ -83,7 +83,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_CLASS:
         case NODE_MASTER_IMPLEMENT:
         case NODE_MASTER_ENUM:
-        case NODE_MASTER_IF: {
+        case NODE_MASTER_IF:
+        case NODE_MASTER_INHERIT: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = type == NODE_MASTER_IF ? EXT_IF : EXT_NULL;
             if (type == NODE_MASTER_IF) {
@@ -315,6 +316,12 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 }
             }
             write_NodeList(&root.body, parse(source, length, s, end, tokens, NODE_EXPRESSION, file_name));
+            break;
+        }
+
+        case NODE_MASTER_INHERIT_BODY: {
+            // Expression
+            write_NodeList(&root.body, parse(source, length, start, end, tokens, NODE_EXPRESSION, file_name));
             break;
         }
 

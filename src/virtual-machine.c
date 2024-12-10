@@ -708,6 +708,28 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
+            case OP_STORE_FAST_FORCED: {
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
+                Value value = POP_VALUE();
+
+                bool was_constant = vm->stack.values[index].is_constant;
+
+                if (!vm->stack.values[index].is_variable_type && vm->stack.values[index].defined) {
+                    DataType type = vm->stack.values[index].type;
+                    ErrorType castRes = castValue(&value, type);
+                    if (castRes != E_NULL) {
+                        PRINT_ERROR(castRes);
+                    }
+                } else if (vm->stack.values[index].defined) {
+                    value.is_variable_type = true;
+                }
+
+                vm->stack.values[index] = value; // store to local
+                value.is_constant = was_constant;
+                markDefined(&vm->stack.values[index]);
+                break;
+            }
+
 
             case OP_JUMP_PEEK_IF_DEFINED: {
                 uint16_t offset = NEXT_SHORT();
