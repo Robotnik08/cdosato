@@ -1,0 +1,52 @@
+do setNameSpace("loops.to")
+
+make i = 0
+do {
+    set i++
+} while i < 10
+
+do assert(i, 10)
+
+make j = 0
+do {
+    set j++
+} until j == 10
+
+do assert(j, 10)
+
+make k = 0
+do {
+    set k++
+} for range(10)
+
+do assert(k, 10)
+
+set k++ for range(10)
+
+do assert(k, 20)
+
+make l = 0
+do {
+    set l += i
+} for i in range(10)
+
+do assert(l, 45)
+
+make list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+make l_sum = 0
+set l_sum += x * y for x in list for y in list
+
+do assert(l_sum, 3025)
+
+set list = [1, 1.2, 1.3F, "String", true, false, null, [1, 2, 3]]
+make expected_types = ["ulong", "double", "float", "string", "bool", "bool", "null", "array"]
+
+do assert(typeOf(list#i), expected_types#i) for i in range(list)
+
+set l_sum = 0
+do {
+    set l_sum += c - '0'
+} for c in "12345"
+
+do assert(l_sum, 15)

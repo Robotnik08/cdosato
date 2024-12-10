@@ -19,10 +19,10 @@
     - [X] Recursive functions
     - [x] Lambdas
         - [x] Capture variables
-- [ ] Classes
-    - [ ] Constructors
-    - [ ] Methods
-    - [ ] Inheritance
+- [x] Classes
+    - [x] Constructors
+    - [x] Methods
+    - [x] Inheritance
 - [ ] Objects
 - [ ] Arrays
 - [ ] Operators

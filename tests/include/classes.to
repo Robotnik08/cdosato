@@ -85,18 +85,18 @@ do assert(c_instance->setA(2), 20)
 
 do assert(c_instance->a, 2)
 
-// class CaptureLocalsInMethod () {
-//     make local = 3
-//     implement getLocal() {
-//         return local
-//     }
-// }
+class CaptureLocalsInMethod () {
+    make local = 3
+    implement getLocal() {
+        return local
+    }
+}
 
-// do expectNoError(void () => { do CaptureLocalsInMethod() })
+do expectNoError(void () => { do CaptureLocalsInMethod() })
 
-// set c_instance = CaptureLocalsInMethod()
+set c_instance = CaptureLocalsInMethod()
 
-// do assert(c_instance->getLocal(), 3)
+do assert(c_instance->getLocal(), 3)
 
 class TrySetSelf () {
     set self = null
@@ -114,7 +114,7 @@ class Person (name, age) {
 }
 
 class Student (name, age, grade) {
-    set self += Person(name, age)
+    inherit Person(name, age)
     set self->grade = grade
 
     implement sayGrade () {
@@ -122,7 +122,7 @@ class Student (name, age, grade) {
     }
 }
 
-do expectNoError(void () => { do Person("Bob", 20, "A") })
+do expectNoError(void () => { do Student("Bob", 20, "A") })
 
 make student1 = Student("Bob", 20, "A")
 
