@@ -1,0 +1,137 @@
+do setNameSpace("classes.to")
+
+class Blank () {
+
+}
+
+do expectNoError(void () => { do Blank() })
+
+make c_instance = Blank()
+
+do assert(c_instance, {})
+
+class WithConstructor (int a, int b) {
+    set self->a = a
+    set self->b = b
+}
+
+do expectError(void () => { do WithConstructor() }, 51)
+do expectError(void () => { do WithConstructor(1) }, 51)
+do expectNoError(void () => { do WithConstructor(1, 2) })
+
+set c_instance = WithConstructor(1, 2)
+
+do assert(c_instance->a, 1)
+do assert(c_instance->b, 2)
+
+set c_instance->a = 3
+set c_instance->b = 4
+
+do assert(c_instance->a, 3)
+do assert(c_instance->b, 4)
+
+do assert(c_instance, {a: 3, b: 4})
+
+class WithMethod () {
+    implement setA(int a) {
+        set self->a = a
+    }
+}
+
+do expectNoError(void () => { do WithMethod() })
+
+set c_instance = WithMethod()
+
+do assert(c_instance->a, null)
+
+do expectNoError(void () => { do c_instance->setA(1) })
+
+do assert(c_instance->a, 1)
+
+class WithMethodAndConstructor (int a) {
+    set self->a = a
+
+    implement setA(int a) {
+        set self->a = a
+    }
+}
+
+do expectNoError(void () => { do WithMethodAndConstructor(1) })
+
+set c_instance = WithMethodAndConstructor(1)
+
+do assert(c_instance->a, 1)
+
+do expectNoError(void () => { do c_instance->setA(2) })
+
+do assert(c_instance->a, 2)
+
+class WithMethodAndConstructorAndReturn (int a) {
+    set self->a = a
+
+    implement setA(int a) {
+        set self->a = a
+        return self->a * 10
+    }
+}
+
+do expectNoError(void () => { do WithMethodAndConstructorAndReturn(1) })
+
+set c_instance = WithMethodAndConstructorAndReturn(1)
+
+do assert(c_instance->a, 1)
+
+do assert(c_instance->setA(2), 20)
+
+do assert(c_instance->a, 2)
+
+// class CaptureLocalsInMethod () {
+//     make local = 3
+//     implement getLocal() {
+//         return local
+//     }
+// }
+
+// do expectNoError(void () => { do CaptureLocalsInMethod() })
+
+// set c_instance = CaptureLocalsInMethod()
+
+// do assert(c_instance->getLocal(), 3)
+
+class TrySetSelf () {
+    set self = null
+}
+
+do expectError(void () => { do TrySetSelf() }, 54)
+
+class Person (name, age) {
+    set self->name = name
+    set self->age = age
+
+    implement greet () {
+        return `Hello, my name is {self->name}. I am {self->age} years old`
+    }
+}
+
+class Student (name, age, grade) {
+    set self += Person(name, age)
+    set self->grade = grade
+
+    implement sayGrade () {
+        return `My grade is {self->grade}`
+    }
+}
+
+do expectNoError(void () => { do Person("Bob", 20, "A") })
+
+make student1 = Student("Bob", 20, "A")
+
+do assert(student1->greet(), "Hello, my name is Bob. I am 20 years old")
+
+do assert(student1->sayGrade(), "My grade is A")
+
+make student2 = Student("Bib", 21, "B") 
+
+do assert(student2->greet(), "Hello, my name is Bib. I am 21 years old")
+
+do assert(student2->sayGrade(), "My grade is B")

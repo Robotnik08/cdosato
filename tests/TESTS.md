@@ -12,13 +12,13 @@
 - [ ] Catch statements
 - [ ] Switch statements
 - [ ] Type Conversions
-- [ ] Functions
-    - [ ] Default arguments
-    - [ ] Typed arguments
-    - [ ] Return values
-    - [ ] Recursive functions
-- [ ] Lambdas
-    - [ ] Capture variables
+- [x] Functions
+    - [x] Default arguments
+    - [x] Typed arguments
+    - [x] Return values
+    - [X] Recursive functions
+    - [x] Lambdas
+        - [x] Capture variables
 - [ ] Classes
     - [ ] Constructors
     - [ ] Methods

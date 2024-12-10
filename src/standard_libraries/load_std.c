@@ -59,7 +59,6 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"stringSplit", string_split},
         {"stringLower", string_lower},
         {"stringUpper", string_upper},
-        {"stringLength", string_length},
         {"substring", string_substr},
         {"stringIndexOf", string_indexof},
         {"stringLastIndexOf", string_lastindexof},
@@ -103,6 +102,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"find", array_find},
         {"combinations", array_combinations},
         {"permutations", array_permutations},
+        {"removeDuplicates", array_remove_duplicates},
+        {"len", array_length},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},

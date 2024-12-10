@@ -36,5 +36,7 @@ Value array_combinations(ValueArray args, bool debug);
 void combinationUtil(Value* arr, int n, int r, int index, int* data, int i, ValueArray* new_array);
 Value array_permutations(ValueArray args, bool debug);
 void permutationUtil(Value* arr, int n, int r, int index, int* data, bool* used, ValueArray* new_array);
+Value array_remove_duplicates(ValueArray args, bool debug);
+Value array_length(ValueArray args, bool debug);
 
 #endif // STD_ARRAY_H

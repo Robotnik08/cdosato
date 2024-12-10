@@ -2,100 +2,100 @@ do setNameSpace("variables.to")
 
 /// Global Scope
 
-make global = 0
-const global_const = 0
+make v_global = 0
+const v_global_const = 0
 
-do assert(global, 0)
-do assert(global_const, 0)
+do assert(v_global, 0)
+do assert(v_global_const, 0)
 
-set global = 1
-do assert(global, 1)
-do assert(global_const, 0)
+set v_global = 1
+do assert(v_global, 1)
+do assert(v_global_const, 0)
 
-set global = "String" // type switch
-do assert(global, "String")
-do assert(global_const, 0)
+set v_global = "String" // type switch
+do assert(v_global, "String")
+do assert(v_global_const, 0)
 
-set global = 1.0 // type switch
+set v_global = 1.0 // type switch
 
-do assert(global, 1.0)
-do assert(global_const, 0)
+do assert(v_global, 1.0)
+do assert(v_global_const, 0)
 
-set global = true // type switch
-do assert(global, true)
-do assert(global_const, 0)
+set v_global = true // type switch
+do assert(v_global, true)
+do assert(v_global_const, 0)
 
-set global = false // type switch
-do assert(global, false)
-do assert(global_const, 0)
+set v_global = false // type switch
+do assert(v_global, false)
+do assert(v_global_const, 0)
 
-set global = null // type switch
-do assert(global, null)
-do assert(global_const, 0)
+set v_global = null // type switch
+do assert(v_global, null)
+do assert(v_global_const, 0)
 
-set global = [1, 2, 3] // type switch
-do assert(global, [1, 2, 3])
-do assert(global_const, 0)
+set v_global = [1, 2, 3] // type switch
+do assert(v_global, [1, 2, 3])
+do assert(v_global_const, 0)
 
 do expectError(void () => { set not_defined = 0 }, 34)
-do expectError(void () => { set global_const = 0 }, 54)
-do expectError(void () => { set global_const += 1 }, 54)
+do expectError(void () => { set v_global_const = 0 }, 54)
+do expectError(void () => { set v_global_const += 1 }, 54)
 
-const global_string = "String"
+const v_global_string = "String"
 
-do assert(global_string, "String")
+do assert(v_global_string, "String")
 
-do expectError(void () => { set global_string#0 = 's' }, 54)
+do expectError(void () => { set v_global_string#0 = 's' }, 54)
 
-make a, b, c = 1, 2, 3
-do assert(a, 1)
-do assert(b, 2)
-do assert(c, 3)
+make v_a, v_b, v_c = 1, 2, 3
+do assert(v_a, 1)
+do assert(v_b, 2)
+do assert(v_c, 3)
 
-set a, b, c = b, c, a
-do assert(a, 2)
-do assert(b, 3)
-do assert(c, 1)
+set v_a, v_b, v_c = v_b, v_c, v_a
+do assert(v_a, 2)
+do assert(v_b, 3)
+do assert(v_c, 1)
 
-set a, b, c++
-do assert(a, 3)
-do assert(b, 4)
-do assert(c, 2)
+set v_a, v_b, v_c++
+do assert(v_a, 3)
+do assert(v_b, 4)
+do assert(v_c, 2)
 
-set a, b, c--
-do assert(a, 2)
-do assert(b, 3)
-do assert(c, 1)
+set v_a, v_b, v_c--
+do assert(v_a, 2)
+do assert(v_b, 3)
+do assert(v_c, 1)
 
-set a, b, c += 10
-do assert(a, 12)
-do assert(b, 13)
-do assert(c, 11)
+set v_a, v_b, v_c += 10
+do assert(v_a, 12)
+do assert(v_b, 13)
+do assert(v_c, 11)
 
-set a, b, c = 1, 2, 3
-do assert(a, 1)
-do assert(b, 2)
-do assert(c, 3)
+set v_a, v_b, v_c = 1, 2, 3
+do assert(v_a, 1)
+do assert(v_b, 2)
+do assert(v_c, 3)
 
-const const_a, const_b, const_c = 1, 2, 3
-do assert(const_a, 1)
-do assert(const_b, 2)
-do assert(const_c, 3)
+const v_const_a, v_const_b, v_const_c = 1, 2, 3
+do assert(v_const_a, 1)
+do assert(v_const_b, 2)
+do assert(v_const_c, 3)
 
-do expectError(void () => { set const_a = 0 }, 54)
-do expectError(void () => { set const_b = 0 }, 54)
-do expectError(void () => { set const_c = 0 }, 54)
+do expectError(void () => { set v_const_a = 0 }, 54)
+do expectError(void () => { set v_const_b = 0 }, 54)
+do expectError(void () => { set v_const_c = 0 }, 54)
 
-make d, e, f = 1
+make v_d, v_e, v_f = 1
 
-do assert(d, 1)
-do assert(e, 1)
-do assert(f, 1)
+do assert(v_d, 1)
+do assert(v_e, 1)
+do assert(v_f, 1)
 
-set d, e += f
-do assert(d, 2)
-do assert(e, 2)
-do assert(f, 1)
+set v_d, v_e += v_f
+do assert(v_d, 2)
+do assert(v_e, 2)
+do assert(v_f, 1)
 
 
 /// Local Scope
@@ -138,49 +138,49 @@ do {
 
     do expectError(void () => { set local_string#0 = 's' }, 54)
 
-    make a, b, c = 1, 2, 3
-    do assert(a, 1)
-    do assert(b, 2)
-    do assert(c, 3)
+    make v_a, v_b, v_c = 1, 2, 3
+    do assert(v_a, 1)
+    do assert(v_b, 2)
+    do assert(v_c, 3)
 
-    set a, b, c = b, c, a
-    do assert(a, 2)
-    do assert(b, 3)
-    do assert(c, 1)
+    set v_a, v_b, v_c = v_b, v_c, v_a
+    do assert(v_a, 2)
+    do assert(v_b, 3)
+    do assert(v_c, 1)
 
-    set a, b, c++
-    do assert(a, 3)
-    do assert(b, 4)
-    do assert(c, 2)
+    set v_a, v_b, v_c++
+    do assert(v_a, 3)
+    do assert(v_b, 4)
+    do assert(v_c, 2)
 
-    set a, b, c--
-    do assert(a, 2)
-    do assert(b, 3)
-    do assert(c, 1)
+    set v_a, v_b, v_c--
+    do assert(v_a, 2)
+    do assert(v_b, 3)
+    do assert(v_c, 1)
 
-    set a, b, c += 10
-    do assert(a, 12)
-    do assert(b, 13)
-    do assert(c, 11)
+    set v_a, v_b, v_c += 10
+    do assert(v_a, 12)
+    do assert(v_b, 13)
+    do assert(v_c, 11)
 
-    set a, b, c = 1, 2, 3
-    do assert(a, 1)
-    do assert(b, 2)
-    do assert(c, 3)
+    set v_a, v_b, v_c = 1, 2, 3
+    do assert(v_a, 1)
+    do assert(v_b, 2)
+    do assert(v_c, 3)
 
-    const const_a, const_b, const_c = 1, 2, 3
-    do assert(const_a, 1)
-    do assert(const_b, 2)
-    do assert(const_c, 3)
+    const v_const_a, v_const_b, v_const_c = 1, 2, 3
+    do assert(v_const_a, 1)
+    do assert(v_const_b, 2)
+    do assert(v_const_c, 3)
 
-    make d, e, f = 1
+    make v_d, v_e, v_f = 1
 
-    do assert(d, 1)
-    do assert(e, 1)
-    do assert(f, 1)
+    do assert(v_d, 1)
+    do assert(v_e, 1)
+    do assert(v_f, 1)
 
-    set d, e += f
-    do assert(d, 2)
-    do assert(e, 2)
-    do assert(f, 1)
+    set v_d, v_e += v_f
+    do assert(v_d, 2)
+    do assert(v_e, 2)
+    do assert(v_f, 1)
 }

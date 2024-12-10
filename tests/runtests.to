@@ -1,5 +1,7 @@
 include "include/assert.to"
 
 include "include/variables.to"
+include "include/functions.to"
+include "include/classes.to"
 
 do formReport()

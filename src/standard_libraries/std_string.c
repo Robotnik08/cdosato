@@ -115,20 +115,6 @@ Value string_upper(ValueArray args, bool debug) {
     return BUILD_STRING(str, true);
 }
 
-Value string_length(ValueArray args, bool debug) {
-    if (args.count != 1) {
-        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
-    }
-
-    Value arg = GET_ARG(args, 0);
-
-    CAST_COPY_TO_STRING(arg);
-
-    size_t len = strlen(AS_STRING(arg));
-
-    return BUILD_LONG(len);
-}
-
 Value string_substr(ValueArray args, bool debug) {
     if (args.count != 3) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);

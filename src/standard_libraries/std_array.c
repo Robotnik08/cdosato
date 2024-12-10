@@ -834,3 +834,52 @@ void permutationUtil(Value* arr, int n, int r, int index, int* data, bool* used,
         used[i] = false;
     }
 }
+
+Value array_remove_duplicates (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* obj = AS_ARRAY(array);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    for (int i = 0; i < obj->count; i++) {
+        bool found = false;
+        for (int j = 0; j < new_array->count; j++) {
+            if (valueEquals(&obj->values[i], &new_array->values[j])) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            write_ValueArray(new_array, obj->values[i]);
+        }
+    }
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+Value array_length (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type == TYPE_ARRAY) {
+        return BUILD_LONG(AS_ARRAY(array)->count);
+    }
+    if (array.type == TYPE_STRING) {
+        return BUILD_LONG(strlen(AS_STRING(array)));
+    }
+    if (array.type == TYPE_OBJECT) {
+        return BUILD_LONG(AS_OBJECT(array)->count);
+    }
+
+    return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+}
