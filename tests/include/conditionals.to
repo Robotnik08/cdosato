@@ -175,3 +175,181 @@ do {
 }
 
 do assert(w_res, 200)
+
+do {
+    make c_if = 0
+    make c_else = 0
+
+    if c_if == 0 then {
+        set c_if = 1
+    }
+
+    do assert(c_if, 1)
+
+    if c_if == 0 then {
+        set c_if = 2
+    } else {
+        set c_else = 1
+    }
+
+    do assert(c_if, 1)
+    do assert(c_else, 1)
+
+    if c_if == 0 then {
+        set c_if = 3
+    } else if c_else == 0 then {
+        set c_else = 2
+    } else {
+        set c_if = 4
+    }
+
+    do assert(c_if, 4)
+    do assert(c_else, 1)
+
+    make con = 0
+    make c_res = 0
+    if con == 0 then {
+        set c_res += 1
+    } else if con == 1 then {
+        set c_res += 2
+    } else if con == 2 then {
+        set c_res += 3
+    } else if con == 3 then {
+        set c_res += 4
+    } else {
+        set c_res += 5
+    }
+
+    do assert(c_res, 1)
+
+    set con++
+    if con == 0 then {
+        set c_res += 1
+    } else if con == 1 then {
+        set c_res += 2
+    } else if con == 2 then {
+        set c_res += 3
+    } else if con == 3 then {
+        set c_res += 4
+    } else {
+        set c_res += 5
+    }
+
+    do assert(c_res, 3)
+
+    set con++
+    if con == 0 then {
+        set c_res += 1
+    } else if con == 1 then {
+        set c_res += 2
+    } else if con == 2 then {
+        set c_res += 3
+    } else if con == 3 then {
+        set c_res += 4
+    } else {
+        set c_res += 5
+    }
+
+    do assert(c_res, 6)
+
+    set con++
+
+    if con == 0 then {
+        set c_res += 1
+    } else if con == 1 then {
+        set c_res += 2
+    } else if con == 2 then {
+        set c_res += 3
+    } else if con == 3 then {
+        set c_res += 4
+    } else {
+        set c_res += 5
+    }
+
+    do assert(c_res, 10)
+
+    set con++
+
+    if con == 0 then {
+        set c_res += 1
+    } else if con == 1 then {
+        set c_res += 2
+    } else if con == 2 then {
+        set c_res += 3
+    } else if con == 3 then {
+        set c_res += 4
+    } else {
+        set c_res += 5
+    }
+
+    do assert(c_res, 15)
+
+    set con++
+
+    if con == 0 then {
+        set c_res += 1
+    } else if con == 1 then {
+        set c_res += 2
+    } else if con == 2 then {
+        set c_res += 3
+    } else if con == 3 then {
+        set c_res += 4
+    } else {
+        set c_res += 5
+    }
+
+    do assert(c_res, 20)
+
+    /// When
+
+    make w_res = 0
+    make w_m = 0
+
+    do {
+        set w_m++
+    } when w_m < 2
+
+    do assert(w_m, 1)
+
+    do {
+        set w_m++
+    } when w_m < 2
+
+    do assert(w_m, 2)
+
+    do {
+        set w_m++
+    } when w_m < 2
+
+    do assert(w_m, 2)
+
+    do {
+        set w_m--
+    } unless w_m < 2
+
+    do assert(w_m, 1)
+
+    do {
+        set w_m--
+    } unless w_m < 2
+
+    do assert(w_m, 1)
+
+
+    do {
+        set w_res = 100
+    } when w_m == 1 else {
+        set w_res = 200
+    }
+
+    do assert(w_res, 100)
+
+    set w_m = 2
+    do {
+        set w_res = 100
+    } when w_m == 1 else {
+        set w_res = 200
+    }
+
+    do assert(w_res, 200)
+}

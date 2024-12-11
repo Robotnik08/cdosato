@@ -12,10 +12,7 @@
         - [x] Arrays
         - [x] Strings
     - [x] Break and Continue statements
-- [ ] If, Else, When, Unless statements
-- [ ] Catch statements
-- [ ] Switch statements
-- [ ] Type Conversions
+- [x] If, Else, When, Unless statements
 - [x] Functions
     - [x] Default arguments
     - [x] Typed arguments
@@ -41,7 +38,10 @@
     - [ ] Arrays
     - [ ] Objects
 - [ ] Template strings
-- [ ] Type casting
+- [ ] Catch statements
+- [ ] Switch statements
+- [ ] Type Conversions
+    - [ ] Type casting
 - [ ] Error handling
 - [ ] Enums
 - [ ] Built-ins
