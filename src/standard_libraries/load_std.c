@@ -55,6 +55,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"atan", math_atan},
         {"atan2", math_atan2},
         {"clamp", math_clamp},
+        {"countDigits", math_digits},
 
         {"stringSplit", string_split},
         {"stringLower", string_lower},

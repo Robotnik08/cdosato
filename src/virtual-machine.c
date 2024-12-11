@@ -563,6 +563,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_LOAD_UNDERSCORE: {
                 // underscore is global variable 0
                 Value underscore = vm->globals.values[0];
+                underscore.is_constant = false;
                 pushValue(&vm->stack, underscore);
                 break;
             }
@@ -674,6 +675,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
+                local.is_constant = false;
 
                 pushValue(&vm->stack, local);
                 break;
@@ -830,6 +832,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 if (!global.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
+                global.is_constant = false;
 
                 pushValue(&vm->stack, global);
 
