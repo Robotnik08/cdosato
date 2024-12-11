@@ -269,3 +269,31 @@ Value math_exp(ValueArray args, bool debug) {
     CAST_SAFE(arg, TYPE_DOUBLE);
     return BUILD_DOUBLE(exp(AS_DOUBLE(arg)));
 }
+
+Value math_digits(ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (ISFLOATTYPE(arg.type)) {
+        CAST_SAFE(arg, TYPE_DOUBLE);
+        if (AS_DOUBLE(arg) == 0) {
+            return BUILD_LONG(1);
+        }
+        if (AS_DOUBLE(arg) < 0) {
+            return BUILD_LONG((long long int)log10(-AS_DOUBLE(arg)) + 2);
+        }
+        return BUILD_LONG((long long int)log10(AS_DOUBLE(arg)) + 1);
+    } else {
+        CAST_SAFE(arg, TYPE_LONG);
+        if (AS_LONG(arg) == 0) {
+            return BUILD_LONG(1);
+        }
+        // Accurate for positive numbers (even really large ones)
+        if (AS_LONG(arg) < 0) {
+            return BUILD_LONG((long long int)log10(-AS_LONG(arg)) + 2);
+        }
+        return BUILD_LONG((long long int)log10(AS_LONG(arg)) + 1);
+    }
+}

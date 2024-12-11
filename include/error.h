@@ -67,6 +67,7 @@ typedef enum {
     E_INVALID_AMOUNT_SET_EXPRESSION,
     E_INVALID_IDENTIFIER,
     E_NOT_ITERABLE,
+    E_MASTER_MUST_BE_IN_CLASS,
 
     // standard library errors
     E_FILE_NOT_FOUND,

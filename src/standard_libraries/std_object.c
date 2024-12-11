@@ -13,7 +13,7 @@ Value object_keys(ValueArray args, bool debug) {
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
     for (int i = 0; i < obj->count; i++) {
-        write_ValueArray(new_array, BUILD_STRING(COPY_STRING(obj->keys[i]), false));
+        write_ValueArray(new_array, obj->keys[i]);
     }
 
     return BUILD_ARRAY(new_array, true);
@@ -53,7 +53,7 @@ Value object_entries(ValueArray args, bool debug) {
     for (int i = 0; i < obj->count; i++) {
         ValueArray* entry = malloc(sizeof(ValueArray));
         init_ValueArray(entry);
-        write_ValueArray(entry, BUILD_STRING(COPY_STRING(obj->keys[i]), false));
+        write_ValueArray(entry, obj->keys[i]);
         write_ValueArray(entry, obj->values[i]);
         write_ValueArray(new_array, BUILD_ARRAY(entry, false));
     }
