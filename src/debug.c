@@ -400,6 +400,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf(": (0x%x)", address);
             break;
 
+        case OP_STORE_FAST_FORCED:
+            printf("%s", "OP_STORE_FAST_FORCED");
+            address = DOSATO_GET_ADDRESS_SHORT(code, offset);
+            printf(": (0x%x)", address);
+            break;
+
         default:
             printf("Unknown opcode: %d", instruction);
             break;

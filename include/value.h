@@ -28,7 +28,7 @@ typedef enum {
     TYPE_FUNCTION
 } DataType;
 
-#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE)
+#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE || type == D_NULL)
 #define ISFLOATTYPE(type) (type == TYPE_FLOAT || type == TYPE_DOUBLE)
 
 
@@ -121,7 +121,7 @@ typedef struct {
     size_t count;
     size_t capacity;
     Value* values;
-    char** keys;
+    Value* keys;
 } ValueObject;
 
 typedef struct {
@@ -156,11 +156,11 @@ void free_ValueArray(ValueArray* array);
 void destroyValueArray(ValueArray* array);
 
 void init_ValueObject(ValueObject* object);
-void write_ValueObject(ValueObject* object, char* key, Value value);
+void write_ValueObject(ValueObject* object, Value key, Value value);
 void free_ValueObject(ValueObject* object);
-bool hasKey(ValueObject* object, char* key);
-Value* getValueAtKey(ValueObject* object, char* key);
-void removeFromKey(ValueObject* object, char* key);
+bool hasKey(ValueObject* object, Value key);
+Value* getValueAtKey(ValueObject* object, Value key);
+void removeFromKey(ValueObject* object, Value key);
 
 ValueArray* buildArray(size_t count, ...);
 ValueObject* buildObject(size_t count, ...);

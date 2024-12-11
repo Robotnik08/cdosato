@@ -24,5 +24,6 @@ Value math_acos(ValueArray args, bool debug);
 Value math_atan(ValueArray args, bool debug);
 Value math_atan2(ValueArray args, bool debug);
 Value math_exp(ValueArray args, bool debug);
+Value math_digits(ValueArray args, bool debug);
 
 #endif // STD_MATH_H    

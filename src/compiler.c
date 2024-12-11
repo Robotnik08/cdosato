@@ -69,6 +69,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_ENUM:
         case NODE_MASTER_IMPLEMENT:
         case NODE_MASTER_CLASS:
+        case NODE_MASTER_INHERIT:
         case NODE_MASTER_CONST:
         case NODE_MASTER_IMPORT:
         case NODE_MASTER_INCLUDE:
@@ -239,7 +240,38 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_INHERIT_BODY: {
+            if (scope == NULL) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+            if (!scope->is_class) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+
+            // load self
+            int self_index = getScopeIndex(scope, 1);
+            
+            writeInstruction(ci, node.start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(self_index));
+
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+
+            // add them together
+            writeInstruction(ci, node.start, OP_BINARY_ADD, 0);
+
+            // store the result
+            writeInstruction(ci, node.start, OP_STORE_FAST_FORCED, DOSATO_SPLIT_SHORT(self_index));
+
+            break;
+        }
+
         case NODE_MASTER_IMPLEMENT_BODY: {
+            if (scope == NULL) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+            if (!scope->is_class) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+
             // a method is like a lambda, it assigns it to the self object after
 
             DataType data_type = TYPE_VAR;
@@ -484,7 +516,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             writeByteCode(instance, OP_PUSH_NULL, node.start);
             writeInstruction(instance, node.body.nodes[2].start - 1, OP_BUILD_OBJECT, DOSATO_SPLIT_SHORT(0));
-            writeInstruction(instance, node.body.nodes[2].start - 1, OP_STORE_FAST_CONSTANT, DOSATO_SPLIT_SHORT(arity));
+            writeInstruction(instance, node.body.nodes[2].start - 1, OP_STORE_FAST_POP_CONSTANT, DOSATO_SPLIT_SHORT(arity));
 
             compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
 
@@ -1616,8 +1648,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // add the constant to the object
                 char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
-                write_ValueObject(obj, enum_name, BUILD_ULONG(index));
-                free(enum_name);
+                write_ValueObject(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
 
                 index++;
             }

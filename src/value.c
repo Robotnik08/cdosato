@@ -155,7 +155,7 @@ bool valueEquals (Value* a, Value* b) {
         }
 
         for (size_t i = 0; i < aObject->count; i++) {
-            char* key = aObject->keys[i];
+            Value key = aObject->keys[i];
             if (!hasKey(bObject, key)) {
                 return false;
             }
@@ -511,7 +511,7 @@ ValueObject* buildObject(size_t count, ...) {
     va_start(args, count);
 
     for (size_t i = 0; i < count; i++) {
-        char* key = va_arg(args, char*);
+        Value key = va_arg(args, Value);
         Value value = va_arg(args, Value);
         write_ValueObject(object, key, value);
     }
@@ -548,10 +548,10 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
             strcat(string, "{");
             ValueObject* object = AS_OBJECT(value);
             for (size_t i = 0; i < object->count; i++) {
-                string = realloc(string, strlen(string) + strlen(object->keys[i]) + 5);
-                strcat(string, "\"");
-                strcat(string, object->keys[i]);
-                strcat(string, "\": ");
+                char* keyString = valueToStringSafe(object->keys[i], true, pointers, count);
+                string = realloc(string, strlen(string) + strlen(keyString) + 10);
+                strcat(string, keyString);
+                strcat(string, ": ");
                 char* valueString = valueToStringSafe(object->values[i], true, pointers, count);
                 string = realloc(string, strlen(string) + strlen(valueString) + 3);
                 strcat(string, valueString);
@@ -903,50 +903,45 @@ void init_ValueObject(ValueObject* object) {
     object->capacity = 0;
 }
 
-void write_ValueObject(ValueObject* object, char* key, Value value) {
+void write_ValueObject(ValueObject* object, Value key, Value value) {
     if (object->capacity < object->count + 1) {
         size_t oldCapacity = object->capacity;
         object->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
         object->values = DOSATO_RESIZE_LIST(Value, object->values, oldCapacity, object->capacity);
-        object->keys = DOSATO_RESIZE_LIST(char*, object->keys, oldCapacity, object->capacity);
+        object->keys = DOSATO_RESIZE_LIST(Value, object->keys, oldCapacity, object->capacity);
     }
     object->values[object->count] = value;
-    // Copy the key
-    object->keys[object->count] = COPY_STRING(key);
+    object->keys[object->count] = key;
     object->count++;
 }
 
 void free_ValueObject(ValueObject* object) {
-    for (size_t i = 0; i < object->count; i++) {
-        free(object->keys[i]);
-    }
     free(object->values);
     free(object->keys);
     init_ValueObject(object);
 }
 
-bool hasKey(ValueObject* object, char* key) {
+bool hasKey(ValueObject* object, Value key) {
     for (size_t i = 0; i < object->count; i++) {
-        if (strcmp(object->keys[i], key) == 0) {
+        if (valueEquals(&object->keys[i], &key)) {
             return true;
         }
     }
     return false;
 }
 
-Value* getValueAtKey(ValueObject* object, char* key) {
+Value* getValueAtKey(ValueObject* object, Value key) {
     for (size_t i = 0; i < object->count; i++) {
-        if (strcmp(object->keys[i], key) == 0) {
+        if (valueEquals(&object->keys[i], &key)) {
             return &object->values[i];
         }
     }
     return NULL;
 }
 
-void removeFromKey (ValueObject* object, char* key) {
+void removeFromKey (ValueObject* object, Value key) {
     for (size_t i = 0; i < object->count; i++) {
-        if (strcmp(object->keys[i], key) == 0) {
-            free(object->keys[i]);
+        if (valueEquals(&object->keys[i], &key)) {
             for (size_t j = i; j < object->count - 1; j++) {
                 object->keys[j] = object->keys[j + 1];
                 object->values[j] = object->values[j + 1];
