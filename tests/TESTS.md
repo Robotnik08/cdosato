@@ -1,10 +1,10 @@
 ## Covered Tests
 
-- [X] Comments
-- [X] Do, Set, Make keywords
-    - [X] Variables
-    - [X] Constants
-    - [X] Tuple like assignments
+- [x] Comments
+- [x] Do, Set, Make keywords
+    - [x] Variables
+    - [x] Constants
+    - [x] Tuple like assignments
 - [x] Loops
     - [x] While loops, Until loops
     - [x] For loops
