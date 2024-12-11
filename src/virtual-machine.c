@@ -2014,6 +2014,24 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
                 break;
             }
+
+            case OP_BINARY_STRICT_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                bool result = valueEqualsStrict(&a, &b);
+                pushValue(&vm->stack, BUILD_BOOL(result));
+                break;
+            }
+
+            case OP_BINARY_STRICT_NOT_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                bool result = !valueEqualsStrict(&a, &b);
+                pushValue(&vm->stack, BUILD_BOOL(result));
+                break;
+            }
             
             // unary operations
 

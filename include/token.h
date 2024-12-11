@@ -16,7 +16,7 @@
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
                    "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";", ":>",":<",":>=",":<=","??",\
-                   "?\?=","?->","^/=","|>"}
+                   "?\?=","?->","^/=","|>", "===","!=="}
 // operator precedence is mostly borrowed from C, lower means higher precedence
 #define OPERATOR_PRECEDENCE \
                   { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  1,   15,  1,   \
@@ -117,7 +117,9 @@ typedef enum {
     OPERATOR_NULL_COALESCE_ASSIGN,
     OPERATOR_NULL_COALESCE_ACCESS,
     OPERATOR_ROOT_ASSIGN,
-    OPERATOR_PIPE
+    OPERATOR_PIPE,
+    OPERATOR_TRIPLE_EQUAL,
+    OPERATOR_TRIPLE_NOT_EQUAL
 } OperatorType;
 
 typedef enum {

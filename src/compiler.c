@@ -1823,6 +1823,16 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             writeInstruction(ci, token_index, OP_CALL, 1);
             break;
         }
+
+        case OPERATOR_TRIPLE_EQUAL: {
+            writeByteCode(ci, OP_BINARY_STRICT_EQUAL, token_index);
+            break;
+        }
+
+        case OPERATOR_TRIPLE_NOT_EQUAL: {
+            writeByteCode(ci, OP_BINARY_STRICT_NOT_EQUAL, token_index);
+            break;
+        }
         
         default: {
             return -1;
