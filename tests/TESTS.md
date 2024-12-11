@@ -1,13 +1,17 @@
 ## Covered Tests
 
+- [X] Comments
 - [X] Do, Set, Make keywords
     - [X] Variables
     - [X] Constants
     - [X] Tuple like assignments
-- [ ] Built-in keywords
-- [ ] While and Until loops
-- [ ] For loops
-- [ ] Break and Continue statements
+- [x] Loops
+    - [x] While loops, Until loops
+    - [x] For loops
+        - [x] Ranges
+        - [x] Arrays
+        - [x] Strings
+    - [x] Break and Continue statements
 - [ ] If, Else, When, Unless statements
 - [ ] Catch statements
 - [ ] Switch statements
@@ -36,7 +40,6 @@
     - [ ] Strings
     - [ ] Arrays
     - [ ] Objects
-- [ ] Comments
 - [ ] Template strings
 - [ ] Type casting
 - [ ] Error handling

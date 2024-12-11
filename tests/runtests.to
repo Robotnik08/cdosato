@@ -4,5 +4,6 @@ include "include/variables.to"
 include "include/functions.to"
 include "include/classes.to"
 include "include/loops.to"
+include "include/comments.to"
 
 do formReport()

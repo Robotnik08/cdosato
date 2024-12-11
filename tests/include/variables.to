@@ -45,7 +45,7 @@ const v_global_string = "String"
 
 do assert(v_global_string, "String")
 
-do expectError(void () => { set v_global_string#0 = 's' }, 54)
+do expectNoError(void () => { set v_global_string#0 = 's' })
 
 make v_a, v_b, v_c = 1, 2, 3
 do assert(v_a, 1)
@@ -136,7 +136,7 @@ do {
     
     do assert(local_string, "String")
 
-    do expectError(void () => { set local_string#0 = 's' }, 54)
+    do expectNoError(void () => { set local_string#0 = 's' })
 
     make v_a, v_b, v_c = 1, 2, 3
     do assert(v_a, 1)

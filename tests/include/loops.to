@@ -39,8 +39,8 @@ set l_sum += x * y for x in list for y in list
 
 do assert(l_sum, 3025)
 
-set list = [1, 1.2, 1.3F, "String", true, false, null, [1, 2, 3]]
-make expected_types = ["ulong", "double", "float", "string", "bool", "bool", "null", "array"]
+set list = [1, 1.2, 1.3F, "String", true, false, null, [1, 2, 3], {}]
+make expected_types = ["ulong", "double", "float", "string", "bool", "bool", "null", "array", "object"]
 
 do assert(typeOf(list#i), expected_types#i) for i in range(list)
 
@@ -50,3 +50,240 @@ do {
 } for c in "12345"
 
 do assert(l_sum, 15)
+
+/// Break and continue
+
+make l_m = 0
+do {
+    set l_m++
+    break when l_m == 5
+} while true
+
+do assert(l_m, 5)
+
+set l_m = 0
+make l_n = 0
+do {
+    set l_n++
+    set l_m++
+    break when l_m == 10
+    continue when l_n == 5
+    set l_n++
+} while true
+
+do assert(l_n, 18)
+
+set l_m = 0
+set l_n = 0
+do {
+    set l_n++
+    set l_m++
+    break when l_m == 10
+    continue when l_n == 5
+    set l_n++
+} until false
+
+do assert(l_n, 18)
+
+set l_m = 0
+set l_n = 0
+
+do {
+    set l_m++
+    continue when l_n == 5
+    set l_n++
+} for range(10)
+
+do assert(l_n, 5)
+do assert(l_m, 10)
+
+set l_m = 0
+set l_n = 0
+do {
+    set l_m++
+    continue when l_m == 5
+    set l_n += i
+} for i in range(10)
+
+do assert(l_n, 41)
+do assert(l_m, 10)
+
+set l_m = 0
+set l_n = 0
+
+do {
+    set l_m++
+    break when l_m == 5
+    set l_n += i
+} for range(10)
+
+do assert(l_n, 40)
+do assert(l_m, 5)
+
+/// For loop editing
+
+const const_arr = [1, 2, 3, 4, 5]
+make normal_arr = [1, 2, 3, 4, 5]
+
+
+set l_n = 0
+set l_m = 0
+do {
+    set i *= 2
+    set l_m += i
+} for i in normal_arr
+
+do assert(l_m, 30)
+
+set l_m = 0
+do {
+    set i *= 2
+    set l_m += i
+} for i in const_arr
+
+do assert(l_m, 30)
+
+do {
+    make i = 0
+    do {
+        set i++
+    } while i < 10
+
+    do assert(i, 10)
+
+    make j = 0
+    do {
+        set j++
+    } until j == 10
+
+    do assert(j, 10)
+
+    make k = 0
+    do {
+        set k++
+    } for range(10)
+
+    do assert(k, 10)
+
+    set k++ for range(10)
+
+    do assert(k, 20)
+
+    make l = 0
+    do {
+        set l += i_
+    } for i_ in range(10)
+
+    do assert(l, 45)
+
+    make list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    make l_sum = 0
+    set l_sum += x * y for x in list for y in list
+
+    do assert(l_sum, 3025)
+
+    set list = [1, 1.2, 1.3F, "String", true, false, null, [1, 2, 3], {}]
+    make expected_types = ["ulong", "double", "float", "string", "bool", "bool", "null", "array", "object"]
+
+    do assert(typeOf(list#i_), expected_types#i_) for i_ in range(list)
+
+    set l_sum = 0
+    do {
+        set l_sum += c - '0'
+    } for c in "12345"
+
+    do assert(l_sum, 15)
+
+    /// Break and continue
+
+    make l_m = 0
+    do {
+        set l_m++
+        break when l_m == 5
+    } while true
+
+    do assert(l_m, 5)
+
+    set l_m = 0
+    make l_n = 0
+    do {
+        set l_n++
+        set l_m++
+        break when l_m == 10
+        continue when l_n == 5
+        set l_n++
+    } while true
+
+    do assert(l_n, 18)
+
+    set l_m = 0
+    set l_n = 0
+    do {
+        set l_n++
+        set l_m++
+        break when l_m == 10
+        continue when l_n == 5
+        set l_n++
+    } until false
+
+    do assert(l_n, 18)
+
+    set l_m = 0
+    set l_n = 0
+
+    do {
+        set l_m++
+        continue when l_n == 5
+        set l_n++
+    } for range(10)
+
+    do assert(l_n, 5)
+    do assert(l_m, 10)
+
+    set l_m = 0
+    set l_n = 0
+    do {
+        set l_m++
+        continue when l_m == 5
+        set l_n += i_
+    } for i_ in range(10)
+
+    do assert(l_n, 41)
+    do assert(l_m, 10)
+
+    set l_m = 0
+    set l_n = 0
+
+    do {
+        set l_m++
+        break when l_m == 5
+        set l_n += i
+    } for range(10)
+
+    do assert(l_n, 40)
+    do assert(l_m, 5)
+
+    /// For loop editing
+
+    const const_arr = [1, 2, 3, 4, 5]
+    make normal_arr = [1, 2, 3, 4, 5]
+
+
+    set l_n = 0
+    set l_m = 0
+    do {
+        set i_ *= 2
+        set l_m += i_
+    } for i_ in normal_arr
+
+    do assert(l_m, 30)
+
+    set l_m = 0
+    do {
+        set i_ *= 2
+        set l_m += i_
+    } for i_ in const_arr
+
+    do assert(l_m, 30)
+}
