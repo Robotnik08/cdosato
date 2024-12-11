@@ -1648,8 +1648,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // add the constant to the object
                 char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
-                write_ValueObject(obj, enum_name, BUILD_ULONG(index));
-                free(enum_name);
+                write_ValueObject(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
 
                 index++;
             }

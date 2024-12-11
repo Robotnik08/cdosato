@@ -619,22 +619,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     // push NULL
                     pushValue(&vm->stack, UNDEFINED_VALUE);
                     break;
                 }
 
-                Value value = *getValueAtKey(obj, AS_STRING(key));
+                Value value = *getValueAtKey(obj, key);
 
                 pushValue(&vm->stack, value);
 
@@ -650,22 +642,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     break;
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     // push NULL
                     pushValue(&vm->stack, UNDEFINED_VALUE);
                     break;
                 }
 
-                Value value = *getValueAtKey(obj, AS_STRING(key));
+                Value value = *getValueAtKey(obj, key);
 
                 pushValue(&vm->stack, value);
 
@@ -952,26 +936,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 markDefined(&value);
 
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     // add key
-                    write_ValueObject(obj, AS_STRING(key), value);
+                    write_ValueObject(obj, key, value);
                 } else {
                     // destroy old value
-                    removeFromKey(obj, AS_STRING(key));
+                    removeFromKey(obj, key);
 
                     // set new value
-                    write_ValueObject(obj, AS_STRING(key), value);
+                    write_ValueObject(obj, key, value);
                 }
 
 
@@ -999,16 +975,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 for (int i = vm->stack.count - count; i < vm->stack.count; i++) {
                     Value key = vm->stack.values[i];
                     Value value = vm->stack.values[++i];
-                    if (key.type != TYPE_STRING) {
-                        ErrorType code = castValue(&key, TYPE_STRING);
-                        if (code != E_NULL) {
-                            PRINT_ERROR(code);
-                        }
-                    }
-                    if (hasKey(obj, AS_STRING(key))) {
+                    if (hasKey(obj, key)) {
                         PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                     }
-                    write_ValueObject(obj, AS_STRING(key), value);
+                    write_ValueObject(obj, key, value);
                 }
 
                 vm->stack.count -= count;
@@ -1159,20 +1129,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
-                Value* value = getValueAtKey(obj, AS_STRING(key));
+                Value* value = getValueAtKey(obj, key);
                 // to do type checking
                 ErrorType code = incValue(value, 1);
                 if (code != E_NULL) {
@@ -1188,20 +1150,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
-                Value* value = getValueAtKey(obj, AS_STRING(key));
+                Value* value = getValueAtKey(obj, key);
                 // to do type checking
                 ErrorType code = incValue(value, -1);
                 if (code != E_NULL) {
@@ -1389,9 +1343,9 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
-                } else if (a.type == TYPE_OBJECT && b.type == TYPE_STRING) {
+                } else if (a.type == TYPE_OBJECT) {
                     ValueObject* a_obj = AS_OBJECT(a);
-                    char* key_to_remove = AS_STRING(b);
+                    Value key_to_remove = b;
                     if (!hasKey(a_obj, key_to_remove)) {
                         PRINT_ERROR(E_KEY_NOT_FOUND);
                     }

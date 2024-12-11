@@ -307,7 +307,7 @@ extern void free_ValueArray(ValueArray* array);
 extern void destroyValueArray(ValueArray* array);
 
 extern void init_ValueObject(ValueObject* object);
-extern void write_ValueObject(ValueObject* object, char* key, Value value);
+extern void write_ValueObject(ValueObject* object, Value key, Value value);
 extern void free_ValueObject(ValueObject* object);
 
 /**
@@ -315,7 +315,7 @@ extern void free_ValueObject(ValueObject* object);
  * @param object The object to check.
  * @param key The key to check for.
  */
-extern bool hasKey(ValueObject* object, char* key);
+extern bool hasKey(ValueObject* object, Value key);
 
 /**
  * @brief Gets the value at a specific key in an object.
@@ -323,14 +323,14 @@ extern bool hasKey(ValueObject* object, char* key);
  * @param key The key to get the value from.
  * @return The value at the key, or NULL if the key does not exist.
  */
-extern Value* getValueAtKey(ValueObject* object, char* key);
+extern Value* getValueAtKey(ValueObject* object, Value key);
 
 /**
  * @brief Removes a key from an object, this does safely destroy the value and the key of the object.
  * @param object The object to remove the key from.
  * @param key The key to remove.
  */
-extern void removeFromKey(ValueObject* object, char* key);
+extern void removeFromKey(ValueObject* object, Value key);
 
 /// virtual-machine.h
 /// This part of the library is responsible for handling virtual machine gc generation and running.
