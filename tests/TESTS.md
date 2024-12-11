@@ -24,8 +24,8 @@
     - [x] Constructors
     - [x] Methods
     - [x] Inheritance
+- [x] Arrays
 - [ ] Objects
-- [ ] Arrays
 - [ ] Operators
     - [ ] Arithmetic
     - [ ] Comparison

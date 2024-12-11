@@ -160,7 +160,10 @@ bool valueEquals (Value* a, Value* b) {
                 return false;
             }
             Value* val = getValueAtKey(bObject, key);
-            if (!valueEquals(&aObject->values[i], val)) {
+
+            Value a = aObject->values[i];
+            Value b = *val;
+            if (!valueEquals(&a, &b)) {
                 return false;
             }
         }
@@ -175,7 +178,9 @@ bool valueEquals (Value* a, Value* b) {
         }
 
         for (size_t i = 0; i < aArray->count; i++) {
-            if (!valueEquals(&aArray->values[i], &bArray->values[i])) {
+            Value a = aArray->values[i];
+            Value b = bArray->values[i];
+            if (!valueEquals(&a, &b)) {
                 return false;
             }
         }
