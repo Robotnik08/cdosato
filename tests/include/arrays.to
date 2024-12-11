@@ -58,3 +58,29 @@ do assert(typeOf(types_arr#1), "double")
 do assert(typeOf(types_arr#2), "float")
 do assert(typeOf(types_arr#3), "string")
 do assert(typeOf(types_arr#4), "bool")
+
+/// Nested arrays
+
+make nested_arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+do assert(nested_arr, [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+do assert(nested_arr#0, [1, 2, 3])
+do assert(nested_arr#1, [4, 5, 6])
+do assert(nested_arr#2, [7, 8, 9])
+
+do assert(nested_arr#0#0, 1)
+do assert(nested_arr#0#1, 2)
+do assert(nested_arr#0#2, 3)
+do assert(nested_arr#1#0, 4)
+do assert(nested_arr#1#1, 5)
+do assert(nested_arr#1#2, 6)
+do assert(nested_arr#2#0, 7)
+do assert(nested_arr#2#1, 8)
+do assert(nested_arr#2#2, 9)
+
+make arr2 = [0]
+
+set arr2#0 = arr2
+
+do assert((string)arr2, "[[...]]")

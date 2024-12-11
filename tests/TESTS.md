@@ -25,7 +25,7 @@
     - [x] Methods
     - [x] Inheritance
 - [x] Arrays
-- [ ] Objects
+- [x] Objects
 - [ ] Operators
     - [ ] Arithmetic
     - [ ] Comparison

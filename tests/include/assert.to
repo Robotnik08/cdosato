@@ -11,13 +11,13 @@ define void assert(var value, var expected) {
 }
 
 define void expectNoError(function func) {
-    do func() catch push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected no errors, but got {_}`)
+    do func() catch push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected no errors, but got code {_}`)
     set test_id++
 }
 
 define void expectError(function func, int code) {
     do func() then push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected error code {code}, but it ran without errors`) catch {
-        do push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected error code {code}, got {_}`) when _ != code
+        do push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected error code {code}, got code {_}`) when _ != code
     }
     set test_id++
 }

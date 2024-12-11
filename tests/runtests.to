@@ -7,5 +7,6 @@ include "include/loops.to"
 include "include/comments.to"
 include "include/conditionals.to"
 include "include/arrays.to"
+include "include/objects.to"
 
 do formReport()
