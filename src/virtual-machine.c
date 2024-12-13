@@ -1403,7 +1403,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     Value result = BUILD_DOUBLE(a.as.doubleValue * b.as.doubleValue);
                     pushValue(&vm->stack, result);
                     break;
-                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                }
+                if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ValueArray* a_array = AS_ARRAY(a);
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
@@ -1424,7 +1425,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
-                } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                }
+                if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    char* string = AS_STRING(a);
+                    ErrorType code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    long long int multiply_amount = b.as.longValue;
+                    if (multiply_amount < 0) {
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+                    char* new_string = malloc(strlen(string) * multiply_amount + 10);
+                    new_string[0] = '\0';
+                    for (int i = 0; i < multiply_amount; i++) {
+                        strcat(new_string, string);
+                    }
+                    Value result = BUILD_STRING(new_string, true);
+                    pushValue(&vm->stack, result);
+                    break;
+                } 
+                if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
