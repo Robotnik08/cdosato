@@ -8,5 +8,6 @@ include "include/comments.to"
 include "include/conditionals.to"
 include "include/arrays.to"
 include "include/objects.to"
+include "include/template_strings.to"
 
 do formReport()

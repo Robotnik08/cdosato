@@ -1,0 +1,40 @@
+do setNameSpace("template_strings.to")
+
+make t_i = 0
+
+do assert(`{t_i}`, "0")
+
+do assert(`{t_i + 1}`, "1")
+
+do assert(`{t_i + 1 + 2}`, "3")
+
+do assert(`{(t_i)}`, "0")
+
+do assert(`{(t_i + 1)}`, "1")
+
+do assert(`{{t_i}}`, "{\"t_i\": 0}")
+
+do assert(`{`{t_i}`}`, "0")
+
+do assert(`{`{t_i + 1}`}`, "1")
+
+do assert(`{`{t_i + 1 + 2}`}`, "3")
+
+do assert(`{`{{t_i}}`}`, "{\"t_i\": 0}")
+
+do assert(`{`{`{t_i}`}`}`, "0")
+do assert(`{`{`{`{t_i}`}`}`}`, "0")
+do assert(`{`{`{`{`{t_i}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{t_i}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{t_i}`}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{`{t_i}`}`}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{`{`{t_i}`}`}`}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{`{`{`{t_i}`}`}`}`}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{`{`{`{`{t_i}`}`}`}`}`}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{`{`{`{`{`{t_i}`}`}`}`}`}`}`}`}`}`}`}`, "0")
+do assert(`{`{`{`{`{`{`{`{`{`{`{`{`{t_i}`} `}`}`}`}`}`}`}`}`}`}`}`, "0 ")
+
+do assert(`{"My string"}`, "My string")
+do assert(`"{"My string" + " is cool"}"`, "\"My string is cool\"")
+do assert(`"{"My string" + " is cool"}" + "!"`, "\"My string is cool\" + \"!\"")
+do assert(`{[`{[`{[]}`]}`]}`, "[\"[\"[]\"]\"]")

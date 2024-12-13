@@ -37,7 +37,7 @@
     - [ ] Strings
     - [ ] Arrays
     - [ ] Objects
-- [ ] Template strings
+- [x] Template strings
 - [ ] Catch statements
 - [ ] Switch statements
 - [ ] Type Conversions
