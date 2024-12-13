@@ -116,18 +116,47 @@ do assert("Hello" - 4, "H")
 do assert("Hello" - 5, "")
 do assert("Hello" - 6, "")
 
+set test_string = "Hello"
+set test_string -= 1
+do assert(test_string, "Hell")
+set test_string -= 1
+do assert(test_string, "Hel")
+set test_string -= 1
+do assert(test_string, "He")
+set test_string -= 1
+do assert(test_string, "H")
+set test_string -= 1
+do assert(test_string, "")
+set test_string -= 1
+do assert(test_string, "")
+
 // String multiplication
 
 do assert("Hello" * 3, "HelloHelloHello")
 do assert("Hello" * 0, "")
 do expectError(void () => { do ("Hello" * -1) () }, 38)
 
+set test_string = "Hello"
+set test_string *= 3
+do assert(test_string, "HelloHelloHello")
+set test_string *= 0
+do assert(test_string, "")
+
 // Array concatenation
 
+make test_array = [1, 2, 3]
 do assert([1, 2, 3] + [4, 5, 6], [1, 2, 3, 4, 5, 6])
 do assert([1, 2, 3] + [4, 5, 6] + [7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9])
 do assert([1, 2, 3] + [], [1, 2, 3])
 do assert([] + [1, 2, 3], [1, 2, 3])
+
+set test_array += [4, 5, 6]
+do assert(test_array, [1, 2, 3, 4, 5, 6])
+set test_array += [7, 8, 9]
+do assert(test_array, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+set test_array += []
+do assert(test_array, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+
 
 // Array cutting
 
@@ -138,11 +167,29 @@ do assert([1, 2, 3, 4, 5] - 4, [1])
 do assert([1, 2, 3, 4, 5] - 5, [])
 do assert([1, 2, 3, 4, 5] - 6, [])
 
+set test_array = [1, 2, 3, 4, 5]
+set test_array -= 1
+do assert(test_array, [1, 2, 3, 4])
+set test_array -= 1
+do assert(test_array, [1, 2, 3])
+set test_array -= 1
+do assert(test_array, [1, 2])
+set test_array -= 1
+do assert(test_array, [1])
+set test_array -= 1
+do assert(test_array, [])
+
 // Array multiplication
 
 do assert([1, 2, 3] * 3, [1, 2, 3, 1, 2, 3, 1, 2, 3])
 do assert([1, 2, 3] * 0, [])
 do expectError(void () => { do ([1, 2, 3] * -1) () }, 38)
+
+set test_array = [1, 2, 3]
+set test_array *= 3
+do assert(test_array, [1, 2, 3, 1, 2, 3, 1, 2, 3])
+set test_array *= 0
+do assert(test_array, [])
 
 //// Bitwise operators
 
@@ -151,15 +198,45 @@ do assert(0b1010 & 0b1100, 0b1000)
 do assert(0b1010 & 0b0011, 0b0010)
 do assert(0b1010 & 0b0001, 0b0000)
 
+set test_int = 0b1010
+set test_int &= 0b1100
+do assert(test_int, 0b1000)
+set test_int = 0b1010
+set test_int &= 0b0011
+do assert(test_int, 0b0010)
+set test_int = 0b1010
+set test_int &= 0b0001
+do assert(test_int, 0b0000)
+
 // OR
 do assert(0b1010 | 0b1100, 0b1110)
 do assert(0b1010 | 0b0011, 0b1011)
 do assert(0b1010 | 0b0001, 0b1011)
 
+set test_int = 0b1010
+set test_int |= 0b1100
+do assert(test_int, 0b1110)
+set test_int = 0b1010
+set test_int |= 0b0011
+do assert(test_int, 0b1011)
+set test_int = 0b1010
+set test_int |= 0b0001
+do assert(test_int, 0b1011)
+
 // XOR
 do assert(0b1010 ^ 0b1100, 0b0110)
 do assert(0b1010 ^ 0b0011, 0b1001)
 do assert(0b1010 ^ 0b0001, 0b1011)
+
+set test_int = 0b1010
+set test_int ^= 0b1100
+do assert(test_int, 0b0110)
+set test_int = 0b1010
+set test_int ^= 0b0011
+do assert(test_int, 0b1001)
+set test_int = 0b1010
+set test_int ^= 0b0001
+do assert(test_int, 0b1011)
 
 // NOT
 do assert(~0b1010, -11)
@@ -172,7 +249,260 @@ do assert(0b1010 << 1, 0b10100)
 do assert(0b1010 << 2, 0b101000)
 do assert(0b1010 << 3, 0b1010000)
 
+set test_int = 0b1010
+set test_int <<= 1
+do assert(test_int, 0b10100)
+set test_int = 0b1010
+set test_int <<= 2
+do assert(test_int, 0b101000)
+set test_int = 0b1010
+set test_int <<= 3
+do assert(test_int, 0b1010000)
+
 // Right shift
 do assert(0b1010 >> 1, 0b101)
 do assert(0b1010 >> 2, 0b10)
 do assert(0b1010 >> 3, 0b1)
+
+set test_int = 0b1010
+set test_int >>= 1
+do assert(test_int, 0b101)
+set test_int = 0b1010
+set test_int >>= 2
+do assert(test_int, 0b10)
+set test_int = 0b1010
+set test_int >>= 3
+do assert(test_int, 0b1)
+
+//// Comparison operators
+
+// Equals
+
+do assert(1 == 1, true)
+do assert(1 == 2, false)
+do assert(1 == 1.0, true)
+do assert(1 == 1.1, false)
+do assert(1 == "1", true)
+do assert(1 == "2", false)
+do assert(1 == true, true)
+do assert(1 == false, false)
+do assert(1 == null, false)
+do assert(1 == [2], true)
+do assert(1 == [1], true)
+do assert(1 == {a: 1}, false)
+
+// Strict equals
+
+do assert(1 === 1, true)
+do assert(1 === 2, false)
+do assert(1 === 1.0, false)
+do assert(1 === 1.1, false)
+do assert(1 === "1", false)
+do assert(1 === "2", false)
+do assert(1 === true, false)
+do assert(1 === false, false)
+do assert(1 === null, false)
+do assert(1 === [2], false)
+do assert(1 === [1], false)
+do assert(1 === {a: 1}, false)
+
+// Not equals
+
+do assert(1 != 1, false)
+do assert(1 != 2, true)
+do assert(1 != 1.0, false)
+do assert(1 != 1.1, true)
+do assert(1 != "1", false)
+do assert(1 != "2", true)
+do assert(1 != true, false)
+do assert(1 != false, true)
+do assert(1 != null, true)
+do assert(1 != [2], false)
+do assert(1 != [1], false)
+do assert(1 != {a: 1}, true)
+
+// Strict not equals
+
+do assert(1 !== 1, false)
+do assert(1 !== 2, true)
+do assert(1 !== 1.0, true)
+do assert(1 !== 1.1, true)
+do assert(1 !== "1", true)
+do assert(1 !== "2", true)
+do assert(1 !== true, true)
+do assert(1 !== false, true)
+do assert(1 !== null, true)
+do assert(1 !== [2], true)
+do assert(1 !== [1], true)
+do assert(1 !== {a: 1}, true)
+
+// Greater than
+
+do assert(1 > 1, false)
+do assert(1 > 2, false)
+do assert(1 > 0, true)
+do assert(1 > 1.0, false)
+do assert(1 > 1.1, false)
+do assert(1 > 0.9, true)
+
+// Greater than or equal
+
+do assert(1 >= 1, true)
+do assert(1 >= 2, false)
+do assert(1 >= 0, true)
+do assert(1 >= 1.0, true)
+do assert(1 >= 1.1, false)
+do assert(1 >= 0.9, true)
+
+// Less than
+
+do assert(1 < 1, false)
+do assert(1 < 2, true)
+do assert(1 < 0, false)
+do assert(1 < 1.0, false)
+do assert(1 < 1.1, true)
+do assert(1 < 0.9, false)
+
+// Less than or equal
+
+do assert(1 <= 1, true)
+do assert(1 <= 2, true)
+do assert(1 <= 0, false)
+do assert(1 <= 1.0, true)
+do assert(1 <= 1.1, true)
+do assert(1 <= 0.9, false)
+
+//// Logical operators
+
+// AND
+do assert(true && true, true)
+do assert(true && false, false)
+do assert(false && true, false)
+do assert(false && false, false)
+
+// OR
+do assert(true || true, true)
+do assert(true || false, true)
+do assert(false || true, true)
+do assert(false || false, false)
+
+// NOT
+do assert(!true, false)
+do assert(!false, true)
+
+/**   Unary operators   **/
+
+// Negation
+
+do assert(-1, -1)
+do assert(-1.0, -1.0)
+do assert(-1.1, -1.1)
+do assert(- - 1.1, 1.1)
+
+// Square root
+
+do assert(^/9, 3)
+do assert(^/9.0, 3.0)
+do assert(^/81, 9)
+do assert(^/81.0, 9.0)
+
+// Absolute value
+
+do assert(!- -1, 1)
+do assert(!- -1.0, 1.0)
+do assert(!- -1.1, 1.1)
+
+/**   Special operators   **/
+
+// Hashing operator
+
+do assert([1, 2, 3]#1, 2)
+do assert([1, 2, 3]#2, 3)
+
+// Object access
+
+make test_obj = {a: 1, b: 2, c: 3}
+do assert(test_obj->a, 1)
+do assert(test_obj->b, 2)
+do assert(test_obj->c, 3)
+
+set test_obj->a = 10
+do assert(test_obj->a, 10)
+
+// Min Max operators
+
+do assert(1 <| 2, 1)
+do assert(2 <| 1, 1)
+do assert(1 <| 1, 1)
+
+do assert(1 >| 2, 2)
+do assert(2 >| 1, 2)
+do assert(1 >| 1, 1)
+
+set test_int = 1
+set test_int <|= 2
+do assert(test_int, 1)
+set test_int = 1
+set test_int <|= 0
+do assert(test_int, 0)
+set test_int = 1
+set test_int >|= 2
+do assert(test_int, 2)
+set test_int >|= 0
+do assert(test_int, 2)
+
+// Nullish coalescing operator
+
+do assert(null ?? 1, 1)
+do assert(0 ?? 1, 0)
+do assert(false ?? 1, false)
+do assert(true ?? 1, true)
+do assert("String" ?? 1, "String")
+do assert([1, 2, 3] ?? 1, [1, 2, 3])
+do assert({a: 1} ?? 1, {a: 1})
+
+set test_obj = null
+set test_obj ??= {a: 1}
+do assert(test_obj, {a: 1})
+set test_obj ??= {b: 2}
+do assert(test_obj, {a: 1})
+set test_obj = null
+set test_obj ??= 1
+do assert(test_obj, 1)
+set test_obj ??= 2
+do assert(test_obj, 1)
+
+// Nullish access operator
+
+do assert(null?->a, null)
+do assert({a: 1}?->a, 1)
+do assert({a: 1}?->b, null)
+do assert({a: {b: 2}}?->a?->b, 2)
+do assert({a: {b: 2}}?->a?->c, null)
+
+// Pipe operator
+
+do assert(1 |> (var (x) => { return x + 1}), 2)
+do assert(1 |> typeOf, "ulong")
+
+set test_int = 1
+set test_int |>= (var (x) => { return x + 1})
+do assert(test_int, 2)
+set test_int |>= typeOf
+do assert(test_int, "long")
+
+// Range operators
+
+do assert(1:>5, [1, 2, 3, 4])
+do assert(1:>=5, [1, 2, 3, 4, 5])
+do assert(5:<1, [5, 4, 3, 2])
+do assert(5:<=1, [5, 4, 3, 2, 1])
+
+/**   Ternary operator   **/
+
+do assert(true ? 1 : 2, 1)
+do assert(false ? 1 : 2, 2)
+
+do assert(true ? true ? 1 : 2 : 3, 1)
+do assert(true ? false ? 1 : 2 : 3, 2)
+do assert(false ? true ? 1 : 2 : 3, 3)

@@ -26,23 +26,20 @@
     - [x] Inheritance
 - [x] Arrays
 - [x] Objects
-- [ ] Operators
-    - [ ] Arithmetic
-    - [ ] Comparison
-    - [ ] Logical
-    - [ ] Bitwise
-    - [ ] Assignment
-    - [ ] Ternary
-    - [ ] Range
-    - [ ] Strings
-    - [ ] Arrays
-    - [ ] Objects
+- [x] Operators
+    - [x] Arithmetic
+    - [x] Comparison
+    - [x] Logical
+    - [x] Bitwise
+    - [x] Assignment
+    - [x] Ternary
+    - [x] Range
 - [x] Template strings
 - [x] Catch statements
 - [x] Switch statements
+- [x] Enums
 - [ ] Type Conversions
     - [ ] Type casting
-- [x] Enums
 - [ ] Built-ins
     - [ ] Math
     - [ ] Arrays
