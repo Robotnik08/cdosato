@@ -412,6 +412,20 @@ do assert(!- -1, 1)
 do assert(!- -1.0, 1.0)
 do assert(!- -1.1, 1.1)
 
+// Copy
+
+do assert(*1, 1)
+do assert(*1.0, 1.0)
+do assert(*"String", "String")
+do assert(*[1, 2, 3], [1, 2, 3])
+make new_arr = [1, 2, 3]
+do assert(*new_arr, [1, 2, 3])
+make other_arr = *new_arr
+do assert(other_arr, [1, 2, 3])
+set other_arr#0 = 10
+do assert(other_arr, [10, 2, 3])
+do assert(new_arr, [1, 2, 3])
+
 /**   Special operators   **/
 
 // Hashing operator
