@@ -13,5 +13,6 @@ include "include/catch.to"
 include "include/switch.to"
 include "include/enums.to"
 include "include/operators.to"
+include "include/types.to"
 
 do formReport()

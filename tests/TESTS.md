@@ -38,8 +38,8 @@
 - [x] Catch statements
 - [x] Switch statements
 - [x] Enums
-- [ ] Type Conversions
-    - [ ] Type casting
+- [x] Type Conversions
+    - [x] Type casting
 - [ ] Built-ins
     - [ ] Math
     - [ ] Arrays
