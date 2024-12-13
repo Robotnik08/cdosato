@@ -1351,22 +1351,22 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     }
                     removeFromKey(a_obj, key_to_remove);
                     pushValue(&vm->stack, a);
-                } else if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || ISFLOATTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                } else if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     char* string = AS_STRING(a);
-                    long long int pop_amount = 0;
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pop_amount = b.as.longValue;
+                    long long int pop_amount = b.as.longValue;
                     if (pop_amount < 0) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
                     if (pop_amount > strlen(string)) {
                         pop_amount = strlen(string);
                     }
-                    char* new_string = malloc(strlen(string) - pop_amount + 1);
+                    char* new_string = malloc(strlen(string) - pop_amount + 10);
                     strncpy(new_string, string, strlen(string) - pop_amount);
+                    new_string[strlen(string) - pop_amount] = '\0';
                     Value result = BUILD_STRING(new_string, true);
                     pushValue(&vm->stack, result);
                     break;
