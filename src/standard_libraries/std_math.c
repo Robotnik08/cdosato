@@ -297,3 +297,38 @@ Value math_digits(ValueArray args, bool debug) {
         return BUILD_LONG((long long int)log10(AS_LONG(arg)) + 1);
     }
 }
+
+long long int gcd(long long int a, long long int b) {
+    if (a && b) for(;(a %= b) && (b %= a););
+    return a | b;
+}
+
+long long int lcm(long long int a, long long int b) {
+    return a / gcd(a, b) * b;
+}
+
+Value math_gdc(ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value a = GET_ARG(args, 0);
+    Value b = GET_ARG(args, 1);
+
+    CAST_SAFE(a, TYPE_LONG);
+    CAST_SAFE(b, TYPE_LONG);
+    return BUILD_LONG(gcd(AS_LONG(a), AS_LONG(b)));
+}
+
+Value math_lcm(ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value a = GET_ARG(args, 0);
+    Value b = GET_ARG(args, 1);
+
+    CAST_SAFE(a, TYPE_LONG);
+    CAST_SAFE(b, TYPE_LONG);
+    return BUILD_LONG(lcm(AS_LONG(a), AS_LONG(b)));
+}
