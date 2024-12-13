@@ -2,18 +2,14 @@
 
 #include "../include/lexer.h"
 
+int tokencmpfunc (const void* a, const void* b) {
+    return ((Token*)a)->start - ((Token*)b)->start;
+}
+
 void sortTokens (TokenList* list) {
     Token* tokens = list->tokens;
     int tokenCount = list->count;
-    for (int i = 0; i < tokenCount; i++) {
-        for (int j = 0; j < tokenCount - i - 1; j++) {
-            if (tokens[j].start > tokens[j + 1].start) {
-                Token temp = tokens[j];
-                tokens[j] = tokens[j + 1];
-                tokens[j + 1] = temp;
-            }
-        }
-    }
+    qsort(tokens, tokenCount, sizeof(Token), tokencmpfunc);
 }
 
 void trimComments (TokenList* list) {

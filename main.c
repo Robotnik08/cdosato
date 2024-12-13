@@ -147,7 +147,16 @@ int main (int argc, char** argv) {
 
     loadConstants(vm, argv, argc);
 
-    compile(vm, main_ast);
+    clock_t start_compile = clock();
+    clock_t end_compile = clock();
+    double time_compile = 0;
+    if (!debug) {
+        compile(vm, main_ast);
+    } else {
+        compile(vm, main_ast);
+        end_compile = clock();
+        time_compile = (double)(end_compile - start_compile) / CLOCKS_PER_SEC;
+    }
 
 
     if (debug & DEBUG_COMPILE) {
@@ -175,7 +184,7 @@ int main (int argc, char** argv) {
         exit_code = runVirtualMachine(vm, debug, true);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
-        printf("\nExecution time: %f\n", time);
+        printf("Compilation time: %.3f seconds\nExecution time: %.3f seconds\n", time_compile, time);
         printf("Stack size: %d (%s)\n", vm->stack.count, vm->stack.count == 0 ? "passed" : "failed");
         if ((int)vm->stack.count > 0) {
             printf("%s", "Left over stack:\n");

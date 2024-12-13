@@ -1,0 +1,212 @@
+do setNameSpace("functions.to")
+
+/// Global function with define
+define f_blank() {}
+
+do expectNoError(void () => { do f_blank() })
+
+/// Return type
+define int returnInt() { return 1 }
+
+do assert(returnInt(), 1)
+do returnInt()
+do {
+    do returnInt() // discard return value
+}
+
+/// Return type conversion
+define int returnInt2() {
+    return "NotInt" // 6
+}
+
+do assert(returnInt2(), 6)
+
+/// Arguments
+define argInt(a) { return a}
+
+do expectNoError(void () => { do argInt(1) })
+do expectNoError(void () => { do argInt("NotInt") })
+
+do expectError(void () => { do argInt() }, 51)
+do expectError(void () => { do argInt(1, 2)}, 51)
+
+/// Multiple arguments
+define f_add(a, b) { return a + b }
+
+do assert(f_add(1, 2), 3)
+do assert(f_add("1", 2), "12")
+do assert(f_add(1, "2"), "12")
+
+/// Typed arguments
+define addTyped(int a, int b) { return a + b }
+
+do assert(addTyped(1, 2), 3)
+do assert(addTyped("1", 2), 3)
+do assert(addTyped(1, "2"), 2)
+
+/// Void return type
+define void voidReturn() {
+    return 1
+}
+
+do assert(voidReturn(), null)
+
+/// Default arguments
+define defaultArg(a = 1) { return a }
+
+do assert(defaultArg(), 1)
+do assert(defaultArg(2), 2)
+
+/// Typed default arguments
+define defaultArgTyped(int a = 1) { return a }
+
+do assert(defaultArgTyped(), 1)
+do assert(defaultArgTyped(2), 2)
+do assert(defaultArgTyped("2"), 1)
+
+/// Multiple default arguments Mixed with normal arguments
+define defaultArgMixed(a, b = 1, c = 2) { return a + b + c }
+
+do assert(defaultArgMixed(1), 4)
+do assert(defaultArgMixed(1, 2), 5)
+do assert(defaultArgMixed(1, 2, 3), 6)
+do assert(defaultArgMixed(1, 2, "3"), "33")
+
+do expectError(void () => { do defaultArgMixed() }, 51)
+
+/// Typed multiple default arguments Mixed with normal arguments
+define defaultArgMixedTyped(int a, int b = 1, int c = 2) { return a + b + c }
+
+do assert(defaultArgMixedTyped(1), 4)
+do assert(defaultArgMixedTyped(1, 2), 5)
+do assert(defaultArgMixedTyped(1, 2, 3), 6)
+do assert(defaultArgMixedTyped(1, 2, "3"), 4)
+
+do expectError(void () => { do defaultArgMixedTyped() }, 51)
+do expectError(void () => { do defaultArgMixedTyped(1, 2, "3", 4) }, 51)
+
+/// Recursive function
+define int factorial(int n) {
+    return 1 when n == 0
+    return n * factorial(n - 1)
+}
+
+do assert(factorial(5), 120)
+do assert(factorial(0), 1)
+
+/// Lambda
+const lblank = void () => {}
+
+do expectNoError(lblank)
+
+/// Lambda Return type
+const lreturnInt = int () => { return 1 }
+
+do assert(lreturnInt(), 1)
+do lreturnInt()
+do {
+    do lreturnInt() // discard return value
+}
+
+/// Lambda Return type conversion
+const lreturnInt2 = int () => {
+    return "NotInt" // 6
+}
+
+do assert(lreturnInt2(), 6)
+
+/// Lambda Arguments
+const largInt = var (a) => { return a }
+
+do expectNoError(void () => { do largInt(1) })
+do expectNoError(void () => { do largInt("NotInt") })
+
+do expectError(void () => { do largInt() }, 51)
+do expectError(void () => { do largInt(1, 2) }, 51)
+
+/// Lambda Multiple arguments
+const ladd = var (a, b) => { return a + b }
+
+do assert(ladd(1, 2), 3)
+do assert(ladd("1", 2), "12")
+do assert(ladd(1, "2"), "12")
+
+/// Lambda Typed arguments
+const laddTyped = var (int a, int b) => { return a + b }
+
+do assert(laddTyped(1, 2), 3)
+do assert(laddTyped("1", 2), 3)
+do assert(laddTyped(1, "2"), 2)
+
+/// Lambda Void return type
+const lvoidReturn = void () => {
+    return 1
+}
+
+do assert(lvoidReturn(), null)
+
+/// Lambda Default arguments
+const ldefaultArg = var (a = 1) => { return a }
+
+do assert(ldefaultArg(), 1)
+do assert(ldefaultArg(2), 2)
+
+/// Lambda Typed default arguments
+const ldefaultArgTyped = var (int a = 1) => { return a }
+
+do assert(ldefaultArgTyped(), 1)
+do assert(ldefaultArgTyped(2), 2)
+do assert(ldefaultArgTyped("2"), 1)
+
+/// Lambda Multiple default arguments Mixed with normal arguments
+const ldefaultArgMixed = var (a, b = 1, c = 2) => { return a + b + c }
+
+do assert(ldefaultArgMixed(1), 4)
+do assert(ldefaultArgMixed(1, 2), 5)
+do assert(ldefaultArgMixed(1, 2, 3), 6)
+do assert(ldefaultArgMixed(1, 2, "3"), "33")
+
+do expectError(void () => { do ldefaultArgMixed() }, 51)
+
+/// Lambda Typed multiple default arguments Mixed with normal arguments
+const ldefaultArgMixedTyped = var (int a, int b = 1, int c = 2) => { return a + b + c }
+
+do assert(ldefaultArgMixedTyped(1), 4)
+do assert(ldefaultArgMixedTyped(1, 2), 5)
+do assert(ldefaultArgMixedTyped(1, 2, 3), 6)
+do assert(ldefaultArgMixedTyped(1, 2, "3"), 4)
+
+do expectError(void () => { do ldefaultArgMixedTyped() }, 51)
+do expectError(void () => { do ldefaultArgMixedTyped(1, 2, "3", 4) }, 51)
+
+/// Lambda Recursive function
+const lfactorial = int (int n) => {
+    return 1 when n == 0
+    return n * lfactorial(n - 1)
+}
+
+do assert(lfactorial(5), 120)
+do assert(lfactorial(0), 1)
+
+
+/// Capturing variables
+make global_lambda = null
+
+do {
+    make a = 1
+    make b = 2
+    make c = 3
+
+    set global_lambda = var () => { return a + b + c }
+}
+
+do assert(global_lambda(), 6)
+
+do {
+    make a = 4
+    make b = 5
+    make c = 6
+}
+
+make a, b, c = 7, 8, 9
+do assert(global_lambda(), 6)

@@ -1,0 +1,412 @@
+do setNameSpace("standard_library.to")
+
+// Math
+do assert(abs(-1), 1)
+do assert(abs(1), 1)
+do assert(abs(0), 0)
+do assert(abs(-1.5), 1.5)
+do assert(abs(1.5), 1.5)
+
+do assert(round(1.5), 2)
+do assert(round(1.4), 1)
+do assert(round(1.6), 2)
+
+do assert(floor(1.5), 1)
+do assert(floor(1.4), 1)
+do assert(floor(1.6), 1)
+
+do assert(ceil(1.5), 2)
+do assert(ceil(1.4), 2)
+do assert(ceil(1.6), 2)
+
+do assert(pow(2, 3), 8)
+do assert(pow(2, 0), 1)
+do assert(pow(2.0, -1), 0.5)
+
+do assert(sqrt(4), 2)
+do assert(sqrt(9), 3)
+
+do assert(log(10, 100), 2)
+do assert(log(2, 8), 3)
+
+do assert(log10(100), 2)
+do assert(log10(1000), 3)
+
+do assert(log2(8), 3)
+do assert(log2(16), 4)
+
+do assert(exp(1), 2.718281828459045)
+do assert(exp(0), 1)
+
+do assert(sin(0), 0)
+do assert(sin(math_pi/2), 1)
+
+do assert(cos(0), 1)
+
+do assert(tan(0), 0)
+
+do assert(asin(0), 0)
+
+do assert(acos(1), 0)
+
+do assert(atan(0), 0)
+
+do assert(asin(0), 0)
+
+do assert(clamp(0, 1, 2), 1)
+do assert(clamp(1, 1, 2), 1)
+do assert(clamp(2, 1, 2), 2)
+do assert(clamp(3, 1, 2), 2)
+
+do assert(countDigits(0), 1)
+do assert(countDigits(1), 1)
+do assert(countDigits(10), 2)
+do assert(countDigits(100), 3)
+do assert(countDigits(1000), 4)
+do assert(countDigits(maxint), 10)
+
+do assert(gcd(10, 5), 5)
+do assert(gcd(10, 3), 1)
+do assert(gcd(10, 0), 10)
+do assert(gcd(0, 10), 10)
+
+do assert(lcm(10, 5), 10)
+do assert(lcm(10, 3), 30)
+do assert(lcm(10, 0), 0)
+do assert(lcm(0, 10), 0)
+
+// Strings
+
+do assert(stringSplit("a,b,c", ","), ["a", "b", "c"])
+do assert(stringSplit("a,b,c", ""), ["a", ",", "b", ",", "c"])
+do assert(stringSplit("a,b,c", ",b,"), ["a", "c"])
+
+do assert(stringLower("HELLO"), "hello")
+do assert(stringLower("hello"), "hello")
+do assert(stringLower("HeLlO"), "hello")
+
+do assert(stringUpper("hello"), "HELLO")
+do assert(stringUpper("HELLO"), "HELLO")
+do assert(stringUpper("HeLlO"), "HELLO")
+
+do assert(substring("hello", 0, 1), "he")
+do assert(substring("hello", 1, 3), "ell")
+do assert(substring("hello", 2, 4), "llo")
+
+do assert(stringIndexOf("hello", "l"), 2)
+do assert(stringIndexOf("hello", "o"), 4)
+do assert(stringIndexOf("hello", "a"), -1)
+
+do assert(stringLastIndexOf("hello", "l"), 3)
+do assert(stringLastIndexOf("hello", "o"), 4)
+do assert(stringLastIndexOf("hello", "a"), -1)
+
+do assert(stringStartsWith("hello", "he"), true)
+do assert(stringStartsWith("hello", "lo"), false)
+do assert(stringStartsWith("hello", "hello"), true)
+
+do assert(stringEndsWith("hello", "lo"), true)
+do assert(stringEndsWith("hello", "he"), false)
+do assert(stringEndsWith("hello", "hello"), true)
+
+do assert(stringReplace("hello", "l", "a"), "heaao")
+do assert(stringReplace("hello", "hell", "heaven"), "heaveno")
+do assert(stringReplace("hello", "a", "b"), "hello")
+
+do assert(stringTrim(" hello "), "hello")
+do assert(stringTrim("hello "), "hello")
+do assert(stringTrim(" hello"), "hello")
+do assert(stringTrim("hello"), "hello")
+do assert(stringTrim("\thello world \n"), "hello world")
+
+do assert(stringReverse("hello"), "olleh")
+do assert(stringReverse("world"), "dlrow")
+do assert(stringReverse("hello world"), "dlrow olleh")
+do assert(stringReverse("h"), "h")
+do assert(stringReverse(""), "")
+
+do assert(stringContains("hello", "l"), true)
+do assert(stringContains("hello", "o"), true)
+do assert(stringContains("hello", "a"), false)
+
+do assert(stringRemove("hello", "l"), "heo")
+do assert(stringRemove("hello", "o"), "hell")
+do assert(stringRemove("hello", "a"), "hello")
+
+do assert(stringInsert("hello", 1, "a"), "haello")
+do assert(stringInsert("hello", 4, "a"), "hellao")
+do assert(stringInsert("hello", 5, "a"), "helloa")
+do assert(stringInsert("hello", 0, "a"), "ahello")
+do assert(stringInsert("hello", 2, "aaa"), "heaaallo")
+
+do assert(stringToInt("123"), 123)
+do assert(stringToInt("0"), 0)
+do assert(stringToInt("-123"), -123)
+do assert(stringToInt("123.0"), 123)
+do assert(stringToInt("123.5"), 123)
+do assert(stringToInt("123.9"), 123)
+do assert(stringToInt("abc"), 0)
+
+do assert(stringToDouble("123"), 123.0)
+do assert(stringToDouble("0"), 0.0)
+do assert(stringToDouble("-123"), -123.0)
+do assert(stringToDouble("123.0"), 123.0)
+do assert(stringToDouble("123.5"), 123.5)
+do assert(stringToDouble("123.9"), 123.9)
+do assert(stringToDouble("1233.5.3"), 1233.5)
+do assert(stringToDouble("abc"), 0.0)
+
+do assert(stringCount("hello", "l"), 2)
+do assert(stringCount("hello", "o"), 1)
+do assert(stringCount("hello", "a"), 0)
+
+do assert(stringJoin(["a", "b", "c"], ","), "a,b,c")
+do assert(stringJoin(["a", "b", "c"], ""), "abc")
+do assert(stringJoin(["a", "b", "c"], "b"), "abbbc")
+
+do assert(stringFormat("Hello {}", "world"), "Hello world")
+do assert(stringFormat("Hello {} {}", "world", "again"), "Hello world again")
+
+do assert(toString(123), "123")
+do assert(toString(0), "0")
+do assert(toString(-123), "-123")
+do assert(toString(123.0), "123")
+do assert(toString(123.5), "123.5")
+do assert(toString(true), "true")
+do assert(toString(false), "false")
+do assert(toString(null), "null")
+
+// Arrays
+
+define std_cmp (a, b) {
+    return a - b
+}
+define std_cmp_desc (a, b) {
+    return b - a
+}
+
+do assert(sort([3, 2, 1], std_cmp), [1, 2, 3])
+do assert(sort([3, 2, 1]), [1, 2, 3])
+do assert(sort([3, 2, 1], std_cmp_desc), [3, 2, 1])
+do assert(sort([3, 2, 1], int (a, b) => { return b - a }), [3, 2, 1])
+
+make std_arr = []
+
+do assert(push(std_arr, 1), 1)
+do assert(push(std_arr, 2), 2)
+do assert(push(std_arr, 3), 3)
+
+do assert(std_arr, [1, 2, 3])
+
+do assert(pop(std_arr), 3)
+do assert(pop(std_arr), 2)
+do assert(pop(std_arr), 1)
+
+do assert(std_arr, [])
+
+do expectError(void () => { do pop(std_arr) }, 38)
+
+set std_arr = [1, 2, 3]
+
+do assert(shift(std_arr), 1)
+do assert(shift(std_arr), 2)
+do assert(shift(std_arr), 3)
+
+do assert(std_arr, [])
+
+do expectError(void () => { do shift(std_arr) }, 38)
+
+do assert(unshift(std_arr, 3), [3])
+do assert(unshift(std_arr, 2), [2, 3])
+do assert(unshift(std_arr, 1), [1, 2, 3])
+
+do assert(std_arr, [1, 2, 3])
+
+do assert(slice([1, 2, 3, 4, 5], 1, 3), [2, 3])
+do assert(slice([1, 2, 3, 4, 5], 0, 3), [1, 2, 3])
+do assert(slice([1, 2, 3, 4, 5], 1, 5), [2, 3, 4, 5])
+
+do assert(splice([1, 2, 3, 4, 5], 1, 2), [1, 4, 5])
+do assert(splice([1, 2, 3, 4, 5], 0, 3), [4, 5])
+do assert(splice([1, 2, 3, 4, 5], 1, 4), [1])
+
+do assert(indexOf([1, 2, 3, 4, 5], 1), 0)
+do assert(indexOf([1, 2, 3, 4, 5], 2), 1)
+do assert(indexOf([1, 2, 3, 4, 5], 3), 2)
+do assert(indexOf([1, 2, 3, 4, 5], 4), 3)
+do assert(indexOf([1, 2, 3, 4, 5], 5), 4)
+do assert(indexOf([1, 2, 3, 4, 5], 6), -1)
+
+do assert(lastIndexOf([1, 2, 3, 4, 5], 1), 0)
+do assert(lastIndexOf([1, 2, 3, 4, 5], 2), 1)
+do assert(lastIndexOf([1, 2, 3, 4, 5], 3), 2)
+do assert(lastIndexOf([1, 2, 3, 4, 5], 4), 3)
+do assert(lastIndexOf([1, 2, 3, 4, 5], 5), 4)
+do assert(lastIndexOf([1, 2, 3, 4, 5], 6), -1)
+do assert(lastIndexOf([1, 2, 3, 4, 5, 1], 1), 5)
+
+do assert(reverse([1, 2, 3, 4, 5]), [5, 4, 3, 2, 1])
+do assert(reverse([1, 2, 3, 4, 5, 6]), [6, 5, 4, 3, 2, 1])
+do assert(reverse([1]), [1])
+do assert(reverse([]), [])
+
+do assert(fill(0, 5), [0, 0, 0, 0, 0])
+do assert(fill(1, 5), [1, 1, 1, 1, 1])
+do assert(fill(2, 5), [2, 2, 2, 2, 2])
+do assert(fill(5, 0), [])
+do assert(fill(5, -1), [])
+
+do assert(range(10), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+do assert(range(5, 10), [5, 6, 7, 8, 9])
+do assert(range(5, 10, 2), [5, 7, 9])
+do assert(range(5, 10, 3), [5, 8])
+do assert(range(5, 10, 4), [5, 9])
+do assert(range(5, 10, 5), [5])
+do assert(range(10, 5), [])
+do assert(range(10, 5, -1), [10, 9, 8, 7, 6])
+do assert(range(10, 5, -2), [10, 8, 6])
+do assert(range(0, 10, -1), [])
+
+do assert(rangef(10), [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
+do assert(rangef(5, 10), [5.0, 6.0, 7.0, 8.0, 9.0])
+do assert(rangef(5, 10, 2), [5.0, 7.0, 9.0])
+do assert(rangef(5, 10, 3), [5.0, 8.0])
+do assert(rangef(5, 10, 4), [5.0, 9.0])
+do assert(rangef(5, 10, 5), [5.0])
+do assert(rangef(10, 5), [])
+do assert(rangef(10, 5, -1), [10.0, 9.0, 8.0, 7.0, 6.0])
+do assert(rangef(10, 5, -2), [10.0, 8.0, 6.0])
+do assert(rangef(0, 10, -1), [])
+do assert(rangef(0, 10, 1.5), [0.0, 1.5, 3.0, 4.5, 6.0, 7.5, 9.0])
+do assert(rangef(0, 10, 1.5), [0.0, 1.5, 3.0, 4.5, 6.0, 7.5, 9.0])
+
+do assert(setCounter(0), 0)
+do assert(setCounter(1), 1)
+do assert(counter(), 2)
+do assert(counter(), 3)
+do assert(counter(), 4)
+
+do expectError(void () => { do map([1, 2, 3], int (a) => { return a * i }) }, 51)
+do assert(map([1, 2, 3], int (a, i) => { return a * 2 }), [2, 4, 6])
+do assert(map([1, 2, 3], int (a, i) => { return a * i }), [0, 2, 6])
+
+do expectError(void () => { do reduce([1, 2, 3], int (a) => { return a * i }) }, 51)
+do expectError(void () => { do reduce([1, 2, 3], int (a, v) => { return a + b }) }, 51)
+do assert(reduce([1, 2, 3], int (a, v, i) => { return a + v }, 0), 6)
+do assert(reduce([1, 2, 3], int (a, v, i) => { return a + v }, 1), 7)
+do assert(reduce([1, 2, 3], int (a, v, i) => { return a + v }, 2), 8)
+do assert(reduce([1, 2, 3], int (a, v, i) => { return a * v + 1 }, 0), 10)
+
+do expectError(void () => { do some([1, 2, 3], int (a) => { return a * i }) }, 51)
+do assert(some([1, 2, 3], bool (a, i) => { return a == 2 }), true)
+do assert(some([1, 2, 3], bool (a, i) => { return a == 4 }), false)
+
+do expectError(void () => { do every([1, 2, 3], int (a) => { return a * i }) }, 51)
+do assert(every([1, 2, 3], bool (a, i) => { return a < 4 }), true)
+do assert(every([1, 2, 3], bool (a, i) => { return a < 3 }), false)
+
+do expectError(void () => { do filter([1, 2, 3], int (a) => { return a * i }) }, 51)
+do assert(filter([1, 2, 3], bool (a, i) => { return a == 2 }), [2])
+do assert(filter([1, 2, 3], bool (a, i) => { return a == 4 }), [])
+
+do assert(count([1, 2, 3], 1), 1)
+do assert(count([1, 2, 3], 2), 1)
+do assert(count([1, 2, 3], 3), 1)
+do assert(count([1, 2, 3], 4), 0)
+do assert(count([1, 2, 2, 2, 3], 2), 3)
+
+do assert(sum([1, 2, 3]), 6)
+do assert(sum([1, 2, 3, 4]), 10)
+do assert(sum([1, 2, 3, 4, 5]), 15)
+do assert(sum([1, 2, 3, 4, -5, 6]), 11)
+
+do expectError(void () => { do find([1, 2, 3], int (a) => { return a * i }) }, 51)
+do assert(find([1, 2, 3], bool (a, i) => { return a == 2 }), 2)
+do assert(find([1, 2, 3], bool (a, i) => { return a == 4 }), null)
+
+do assert(combinations([1, 2, 3], 2), [[1, 2], [1, 3], [2, 3]])
+do assert(combinations([1, 2, 3], 3), [[1, 2, 3]])
+do assert(combinations([1, 2, 3], 1), [[1], [2], [3]])
+do assert(combinations([1, 2, 3], 0), [[]])
+
+do assert(permutations([1, 2, 3], 2), [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]])
+do assert(permutations([1, 2, 3], 3), [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]])
+do assert(permutations([1, 2, 3], 1), [[1], [2], [3]])
+do assert(permutations([1, 2, 3], 0), [[]])
+
+do assert(removeDuplicates([1, 2, 3, 2, 1, 4, 5, 6, 5, 4, 3]), [1, 2, 3, 4, 5, 6])
+do assert(removeDuplicates([1, 2, 3, 4, 5, 6]), [1, 2, 3, 4, 5, 6])
+do assert(removeDuplicates([1, 1, 1, 1, 1, 1]), [1])
+do assert(removeDuplicates([]), [])
+
+do assert(len([1, 2, 3]), 3)
+do assert(len([1, 2, 3, 4]), 4)
+do assert(len([1, 2, 3, 4, 5]), 5)
+do assert(len([]), 0)
+
+// Type
+
+do assert(typeOf(1), "ulong")
+do assert(typeOf(1.0), "double")
+do assert(typeOf(1.0F), "float")
+do assert(typeOf("1"), "string")
+do assert(typeOf(true), "bool")
+do assert(typeOf(false), "bool")
+do assert(typeOf(null), "null")
+do assert(typeOf([1, 2, 3]), "array")
+do assert(typeOf({a: 1, b: 2}), "object")
+do assert(typeOf(typeOf), "function")
+
+do assert(isNull(null), true)
+do assert(isNull(1), false)
+do assert(isNull(0), false)
+
+do assert(isNaN(NaN), true)
+do assert(isNaN(1), false)
+do assert(isNaN(0), false)
+do assert(isNaN(1.0), false)
+do assert(isNaN(0.0), false)
+do assert(isNaN(1.0F), false)
+do assert(isNaN(0.0F), false)
+do assert(isNaN("1"), true)
+do assert(isNaN(true), false)
+do assert(isNaN(false), false)
+do assert(isNaN(null), true)
+do assert(isNaN([1, 2, 3]), true)
+do assert(isNaN({a: 1, b: 2}), true)
+do assert(isNaN(typeOf), true)
+
+do assert(typeIntOf(1), 13)
+do assert(typeIntOf(1.0), 4)
+do assert(typeIntOf(1.0F), 3)
+do assert(typeIntOf("1"), 2)
+do assert(typeIntOf(true), 1)
+do assert(typeIntOf(false), 1)
+do assert(typeIntOf(null), -1)
+do assert(typeIntOf([1, 2, 3]), 10)
+
+do expectError(void () => { do throw(100) }, 100)
+
+
+// Objects
+
+make std_obj = {a: 1, b: 2, c: 3}
+
+do assert(keys(std_obj), ["a", "b", "c"])
+do assert(values(std_obj), [1, 2, 3])
+do assert(entries(std_obj), [["a", 1], ["b", 2], ["c", 3]])
+
+// // Constants
+do assert(math_pi, 3.141592653589793)
+do assert(math_e, 2.718281828459045)
+
+do assert(maxbyte, 127)
+do assert(minbyte, -128)
+do assert(maxshort, 32767)
+do assert(minshort, -32768)
+do assert(maxint, 2147483647)
+do assert(minint, -2147483648)
+do assert(maxlong, 9223372036854775807)
+do assert(minlong, -9223372036854775808)
+
+

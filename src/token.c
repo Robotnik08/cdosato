@@ -119,6 +119,7 @@ int isAssignmentOperator (OperatorType operator) {
         case OPERATOR_DECREMENT:
         case OPERATOR_NULL_COALESCE_ASSIGN:
         case OPERATOR_ROOT_ASSIGN:
+        case OPERATOR_PIPE_ASSIGN:
             return true;
         default:
             return false;

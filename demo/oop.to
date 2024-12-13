@@ -8,7 +8,7 @@ class Person (name, age) {
 }
 
 class Student (name, age, grade) {
-    set self += Person(name, age)
+    inherit Person(name, age)
     set self->grade = grade
 
     implement sayGrade () {

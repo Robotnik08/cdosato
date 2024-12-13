@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM", "IF"}
+#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM", "IF", "INHERIT"}
 #define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "UNLESS", "UNTIL"}
 #define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR", "FUNCTION"}
 #define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
@@ -16,13 +16,13 @@
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
                    "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";", ":>",":<",":>=",":<=","??",\
-                   "?\?=","?->","^/=","|>"}
+                   "?\?=","?->","^/=","|>", "===","!==","|>="}
 // operator precedence is mostly borrowed from C, lower means higher precedence
 #define OPERATOR_PRECEDENCE \
                   { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  1,   15,  1,   \
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
                     2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13,  13,  13,  13,   13,   12,\
-                    14,    1,    14,   12}
+                    14,    1,    14,   12,   7,    7,    14}
 #define UNARY_PRECEDENCE 0
 
 typedef enum {
@@ -117,7 +117,10 @@ typedef enum {
     OPERATOR_NULL_COALESCE_ASSIGN,
     OPERATOR_NULL_COALESCE_ACCESS,
     OPERATOR_ROOT_ASSIGN,
-    OPERATOR_PIPE
+    OPERATOR_PIPE,
+    OPERATOR_TRIPLE_EQUAL,
+    OPERATOR_TRIPLE_NOT_EQUAL,
+    OPERATOR_PIPE_ASSIGN,
 } OperatorType;
 
 typedef enum {

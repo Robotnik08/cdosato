@@ -33,14 +33,17 @@ Value type_isnan(ValueArray args, bool debug) {
     }
 
     Value value = GET_ARG(args, 0);
+    if (value.type == D_NULL) {
+        return BUILD_BOOL(true);
+    }
     if (ISFLOATTYPE(value.type)) {
         CAST_SAFE(value, TYPE_DOUBLE);
         return BUILD_BOOL(isnan(AS_DOUBLE(value)));
-    } else if (ISINTTYPE(value.type) || value.type == TYPE_CHAR || value.type == TYPE_BOOL) {
+    } 
+    if (ISINTTYPE(value.type) || value.type == TYPE_CHAR || value.type == TYPE_BOOL) {
         return BUILD_BOOL(false);
-    } else {
-        return BUILD_BOOL(true); // not a number
-    }
+    } 
+    return BUILD_BOOL(true); // not a number
 }
 
 Value type_throw(ValueArray args, bool debug) {

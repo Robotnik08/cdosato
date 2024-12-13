@@ -1,0 +1,185 @@
+do setNameSpace("switch.to")
+
+define s_test (value) {
+    switch value => {
+        1 => {
+            return "One"
+        }
+        2 => {
+            return "Two"
+        }
+        3 => {
+            return "Three"
+        }
+    }
+}
+
+do assert(s_test(1), "One")
+do assert(s_test(2), "Two")
+do assert(s_test(3), "Three")
+
+define s_test2 (value) {
+    switch value => {
+        1 => {
+            return "One"
+        }
+        2 => {
+            return "Two"
+        }
+        3 => {
+            return "Three"
+        }
+        other => {
+            return "Other"
+        }
+    }
+}
+
+do assert(s_test2(1), "One")
+do assert(s_test2(2), "Two")
+do assert(s_test2(3), "Three")
+do assert(s_test2(4), "Other")
+
+define s_test3 (value) {
+    make total = 0
+
+    switch value => {
+        1 => {
+            set total += 1
+            break
+        }
+        2 => {
+            set total += 2
+            break
+        }
+        3 => {
+            set total += 3
+        } // Fallthrough
+        other => {
+            set total += 4
+        }
+    }
+
+    return total
+}
+
+do assert(s_test3(1), 1)
+do assert(s_test3(2), 2)
+do assert(s_test3(3), 7)
+do assert(s_test3(4), 4)
+
+define s_test4 (value) {
+    switch value => {
+        1, 3, 5, 7, 9 => {
+            return "Odd"
+        }
+        2, 4, 6, 8, 10 => {
+            return "Even"
+        }
+        other => {
+            return "Too big"
+        }
+    }
+}
+
+do assert(s_test4(1), "Odd")
+do assert(s_test4(2), "Even")
+do assert(s_test4(3), "Odd")
+do assert(s_test4(4), "Even")
+do assert(s_test4(5), "Odd")
+do assert(s_test4(6), "Even")
+do assert(s_test4(7), "Odd")
+do assert(s_test4(8), "Even")
+do assert(s_test4(9), "Odd")
+do assert(s_test4(10), "Even")
+do assert(s_test4(11), "Too big")
+
+define s_test5 (value) {
+    switch value => {
+        "a" => {
+            return "Apple"
+        }
+        "b" => {
+            return "Banana"
+        }
+        "c" => {
+            return "Cherry"
+        }
+        other => {
+            return "Other"
+        }
+    }
+}
+
+do assert(s_test5("a"), "Apple")
+do assert(s_test5("b"), "Banana")
+do assert(s_test5("c"), "Cherry")
+do assert(s_test5("d"), "Other")
+
+define s_test6 (value) {
+    switch value => {
+        [1, 2, 3] => {
+            return "One, Two, Three"
+        }
+        [4, 5, 6] => {
+            return "Four, Five, Six"
+        }
+        [7, 8, 9] => {
+            return "Seven, Eight, Nine"
+        }
+        other => {
+            return "Other"
+        }
+    }
+}
+
+do assert(s_test6([1, 2, 3]), "One, Two, Three")
+do assert(s_test6([4, 5, 6]), "Four, Five, Six")
+do assert(s_test6([7, 8, 9]), "Seven, Eight, Nine")
+do assert(s_test6([10, 11, 12]), "Other")
+
+define s_test7 (value) {
+    switch value => {
+        {a: 1, b: 2, c: 3} => {
+            return "One, Two, Three"
+        }
+        {d: 4, e: 5, f: 6} => {
+            return "Four, Five, Six"
+        }
+        {g: 7, h: 8, i: 9} => {
+            return "Seven, Eight, Nine"
+        }
+        other => {
+            return "Other"
+        }
+    }
+}
+
+do assert(s_test7({a: 1, b: 2, c: 3}), "One, Two, Three")
+do assert(s_test7({d: 4, e: 5, f: 6}), "Four, Five, Six")
+do assert(s_test7({g: 7, h: 8, i: 9}), "Seven, Eight, Nine")
+do assert(s_test7({j: 10, k: 11, l: 12}), "Other")
+
+make s_res = 0
+switch 1 => {
+    1 => {
+        set s_res = 1
+        break
+    }
+    1 => {
+        set s_res = 2
+    }
+}
+
+do assert(s_res, 1)
+
+set s_res = 0
+
+switch 1 => {
+    1, 1, 1 => {
+        set s_res = 1
+        break
+    }
+}
+
+do assert(s_res, 1)

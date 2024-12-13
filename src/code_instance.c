@@ -127,6 +127,10 @@ int getOffset(OpCode instruction) {
         case OP_INCLUDE:
         case OP_STORE_FAST_POP:
         case OP_STORE_FAST_CONSTANT:
+        case OP_STORE_FAST_POP_CONSTANT:
+        case OP_DEFINE_CONSTANT:
+        case OP_DEFINE_POP_CONSTANT:
+        case OP_STORE_FAST_FORCED:
             return 3;
 
         case OP_JUMP_PEEK_IF_DEFINED:

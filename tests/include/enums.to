@@ -1,0 +1,51 @@
+do setNameSpace("enums.to")
+
+enum TestEnum {
+    A,
+    B,
+    C
+}
+
+do assert(TestEnum->A, 0)
+do assert(TestEnum->B, 1)
+do assert(TestEnum->C, 2)
+
+enum TestEnum2 {
+    A = 1,
+    B = 2,
+    C = 3
+}
+
+do assert(TestEnum2->A, 1)
+do assert(TestEnum2->B, 2)
+do assert(TestEnum2->C, 3)
+
+enum TestEnum3 {
+    A = 1,
+    B,
+    C
+}
+
+do assert(TestEnum3->A, 1)
+do assert(TestEnum3->B, 2)
+do assert(TestEnum3->C, 3)
+
+enum TestEnum4 {
+    A = 1,
+    B = 2,
+    C
+}
+
+do assert(TestEnum4->A, 1)
+do assert(TestEnum4->B, 2)
+do assert(TestEnum4->C, 3)
+
+enum TestEnum5 {
+    A,
+    B = 20,
+    C
+}
+
+do assert(TestEnum5->A, 0)
+do assert(TestEnum5->B, 20)
+do assert(TestEnum5->C, 21)

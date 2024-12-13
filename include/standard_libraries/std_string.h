@@ -7,7 +7,6 @@
 Value string_split(ValueArray args, bool debug);
 Value string_lower(ValueArray args, bool debug);
 Value string_upper(ValueArray args, bool debug);
-Value string_length(ValueArray args, bool debug);
 Value string_substr(ValueArray args, bool debug);
 Value string_indexof(ValueArray args, bool debug);
 Value string_lastindexof(ValueArray args, bool debug);
