@@ -38,12 +38,11 @@
     - [ ] Arrays
     - [ ] Objects
 - [x] Template strings
-- [ ] Catch statements
-- [ ] Switch statements
+- [x] Catch statements
+- [x] Switch statements
 - [ ] Type Conversions
     - [ ] Type casting
-- [ ] Error handling
-- [ ] Enums
+- [x] Enums
 - [ ] Built-ins
     - [ ] Math
     - [ ] Arrays
@@ -54,3 +53,4 @@
     - [ ] Random
     - [ ] Types
     - [ ] System
+- [ ] Exceptions

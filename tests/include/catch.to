@@ -1,0 +1,67 @@
+do setNameSpace("catch.to")
+
+/// Assert kinda already proves that catch works, but let's test it anyway
+
+make bool pass = false
+set undefined = 1 catch {
+    set pass = true
+}
+
+do assert(pass, true)
+
+set pass = true
+
+make code = 0
+
+set code = 1 catch {
+    set pass = false
+}
+
+do assert(pass, true)
+
+set pass = true
+
+set code = 0
+
+const e_a = 1
+
+set e_a = 2 catch {
+    set pass = true
+    set code = _
+}
+
+do assert(pass, true)
+do assert(code, 54)
+
+do {
+    make bool pass = false
+    set undefined = 1 catch {
+        set pass = true
+    }
+
+    do assert(pass, true)
+
+    set pass = true
+
+    make code = 0
+
+    set code = 1 catch {
+        set pass = false
+    }
+
+    do assert(pass, true)
+
+    set pass = true
+
+    set code = 0
+
+    const e_a = 1
+
+    set e_a = 2 catch {
+        set pass = true
+        set code = _
+    }
+
+    do assert(pass, true)
+    do assert(code, 54)
+}

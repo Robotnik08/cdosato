@@ -9,5 +9,9 @@ include "include/conditionals.to"
 include "include/arrays.to"
 include "include/objects.to"
 include "include/template_strings.to"
+include "include/catch.to"
+include "include/switch.to"
+include "include/enums.to"
+include "include/operators.to"
 
 do formReport()

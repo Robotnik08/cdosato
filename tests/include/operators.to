@@ -1,0 +1,178 @@
+do setNameSpace("operators.to")
+
+/**   Binary operators   **/
+
+//// Arithmetic operators
+
+// integer
+make test_int = 1
+do assert(1 + 1, 2)
+do assert(1 - 1, 0)
+do assert(1 * 1, 1)
+do assert(1 / 1, 1)
+do assert(1 % 1, 0)
+do assert(1 ** 1, 1)
+do assert(1 ^/ 1, 1)
+
+set test_int += 1
+do assert(test_int, 2)
+set test_int -= 1
+do assert(test_int, 1)
+set test_int *= 1
+do assert(test_int, 1)
+set test_int /= 1
+do assert(test_int, 1)
+set test_int %= 1
+do assert(test_int, 0)
+set test_int **= 1
+do assert(test_int, 0)
+set test_int = 1
+
+do assert(100 + 100, 200)
+do assert(100 - 100, 0)
+do assert(100 * 100, 10000)
+do assert(100 / 100, 1)
+do assert(100 % 100, 0)
+do assert(10 ** 10, 10000000000)
+do assert(2 ^/ 81, 9)
+
+set test_int += 100
+do assert(test_int, 101)
+set test_int -= 100
+do assert(test_int, 1)
+set test_int *= 100
+do assert(test_int, 100)
+set test_int /= 100
+do assert(test_int, 1)
+set test_int %= 100
+do assert(test_int, 1)
+set test_int **= 100
+do assert(test_int, 1)
+set test_int = 1
+
+// float
+make test_float = 1.0
+do assert(1.0 + 2.5, 3.5)
+do assert(1.0 - 2.5, -1.5)
+do assert(1.0 * 2.5, 2.5)
+do assert(1.0 / 2.5, 0.4)
+do assert(1.0 % 2.5, 1.0)
+do assert(1.0 ** 2.5, 1.0)
+do assert(1.0 ^/ 2.5, 2.5)
+
+set test_float += 1.0
+do assert(test_float, 2.0)
+set test_float -= 1.0
+do assert(test_float, 1.0)
+set test_float *= 1.0
+do assert(test_float, 1.0)
+set test_float /= 1.0
+do assert(test_float, 1.0)
+set test_float %= 1.0
+do assert(test_float, 0.0)
+set test_float **= 1.0
+do assert(test_float, 0.0)
+set test_float = 1.0
+
+do assert(100.0 + 200.0, 300.0)
+do assert(100.0 - 200.0, -100.0)
+do assert(100.0 * 200.0, 20000.0)
+do assert(100.0 / 200.0, 0.5)
+do assert(100.0 % 200.0, 100.0)
+do assert(10.0 ** 10.0, 10000000000.0)
+do assert(2.0 ^/ 81.0, 9.0)
+
+set test_float += 100.0
+do assert(test_float, 101.0)
+set test_float -= 100.0
+do assert(test_float, 1.0)
+set test_float *= 100.0
+do assert(test_float, 100.0)
+set test_float /= 100.0
+do assert(test_float, 1.0)
+set test_float %= 100.0
+do assert(test_float, 1.0)
+set test_float **= 100.0
+do assert(test_float, 1.0)
+set test_float = 1.0
+
+// String concatenation
+make test_string = "Hello"
+
+do assert("Hello" + " " + "World", "Hello World")
+do assert("Hello" + " " + "World" + "!", "Hello World!")
+
+set test_string += " World"
+do assert(test_string, "Hello World")
+set test_string += "!"
+do assert(test_string, "Hello World!")
+
+// String cutting
+
+do assert("Hello" - 1, "Hell")
+do assert("Hello" - 2, "Hel")
+do assert("Hello" - 3, "He")
+do assert("Hello" - 4, "H")
+do assert("Hello" - 5, "")
+do assert("Hello" - 6, "")
+
+// String multiplication
+
+do assert("Hello" * 3, "HelloHelloHello")
+do assert("Hello" * 0, "")
+do expectError(void () => { do ("Hello" * -1) () }, 38)
+
+// Array concatenation
+
+do assert([1, 2, 3] + [4, 5, 6], [1, 2, 3, 4, 5, 6])
+do assert([1, 2, 3] + [4, 5, 6] + [7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9])
+do assert([1, 2, 3] + [], [1, 2, 3])
+do assert([] + [1, 2, 3], [1, 2, 3])
+
+// Array cutting
+
+do assert([1, 2, 3, 4, 5] - 1, [1, 2, 3, 4])
+do assert([1, 2, 3, 4, 5] - 2, [1, 2, 3])
+do assert([1, 2, 3, 4, 5] - 3, [1, 2])
+do assert([1, 2, 3, 4, 5] - 4, [1])
+do assert([1, 2, 3, 4, 5] - 5, [])
+do assert([1, 2, 3, 4, 5] - 6, [])
+
+// Array multiplication
+
+do assert([1, 2, 3] * 3, [1, 2, 3, 1, 2, 3, 1, 2, 3])
+do assert([1, 2, 3] * 0, [])
+do expectError(void () => { do ([1, 2, 3] * -1) () }, 38)
+
+//// Bitwise operators
+
+// AND
+do assert(0b1010 & 0b1100, 0b1000)
+do assert(0b1010 & 0b0011, 0b0010)
+do assert(0b1010 & 0b0001, 0b0000)
+
+// OR
+do assert(0b1010 | 0b1100, 0b1110)
+do assert(0b1010 | 0b0011, 0b1011)
+do assert(0b1010 | 0b0001, 0b1011)
+
+// XOR
+do assert(0b1010 ^ 0b1100, 0b0110)
+do assert(0b1010 ^ 0b0011, 0b1001)
+do assert(0b1010 ^ 0b0001, 0b1011)
+
+// NOT
+do assert(~0b1010, -11)
+do assert(~0b1100, -13)
+do assert(~0b0011, -4)
+do assert(~0b0001, -2)
+
+// Left shift
+do assert(0b1010 << 1, 0b10100)
+do assert(0b1010 << 2, 0b101000)
+do assert(0b1010 << 3, 0b1010000)
+
+// Right shift
+do assert(0b1010 >> 1, 0b101)
+do assert(0b1010 >> 2, 0b10)
+do assert(0b1010 >> 3, 0b1)
