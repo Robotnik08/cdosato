@@ -406,11 +406,11 @@ Value string_insert(ValueArray args, bool debug) {
     long long int index = AS_LONG(arg2);
     char* substr = AS_STRING(arg3);
 
-    if (index < 0 || index >= strlen(str)) {
+    if (index < 0 || index >= strlen(str) + 1) {
         return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
     }
 
-    char* result = malloc(strlen(str) + strlen(substr) + 1);
+    char* result = malloc(strlen(str) + strlen(substr) + 10);
     for (size_t i = 0; i < index; i++) {
         result[i] = str[i];
     }

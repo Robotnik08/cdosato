@@ -40,14 +40,11 @@
 - [x] Enums
 - [x] Type Conversions
     - [x] Type casting
-- [ ] Built-ins
-    - [ ] Math
-    - [ ] Arrays
-    - [ ] Strings
-    - [ ] Objects
-    - [ ] IO
-    - [ ] Time
-    - [ ] Random
-    - [ ] Types
-    - [ ] System
-- [ ] Exceptions
+- [x] Built-ins
+    - [x] Math
+    - [x] Arrays
+    - [x] Strings
+    - [x] Objects
+    - [x] Types
+    - [x] System
+- [x] Exceptions

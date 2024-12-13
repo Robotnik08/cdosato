@@ -482,15 +482,21 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 // cast arguments
+                bool error = false;
                 for (int i = 0; i < function->arity; i++) {
                     Value* arg = &vm->stack.values[vm->stack.count - function->arity + i];
                     ErrorType code = castValue(arg, function->argt[i]);
                     if (code != E_NULL) {
+                        error = true;
                         PRINT_ERROR(code);
                     }
                     if (i < arity) {
                         arg->defined = true;
                     }
+                }
+
+                if (error) {
+                    break;
                 }
                 
                 // push new frame
@@ -972,15 +978,20 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
                 ValueObject* obj = malloc(sizeof(ValueObject));
                 init_ValueObject(obj);
+                bool error = false;
                 for (int i = vm->stack.count - count; i < vm->stack.count; i++) {
                     Value key = vm->stack.values[i];
                     Value value = vm->stack.values[++i];
                     if (hasKey(obj, key)) {
+                        error = true;
                         PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                     }
                     write_ValueObject(obj, key, value);
                 }
 
+                if (error) {
+                    break;
+                }
                 vm->stack.count -= count;
 
                 pushValue(&vm->stack, BUILD_OBJECT(obj, true));
@@ -1278,12 +1289,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                         Value val = a_obj->values[i];
                         write_ValueObject(new_obj, a_obj->keys[i], val);
                     }
+                    bool error = false;
                     for (int i = 0; i < b_obj->count; i++) {
                         if (hasKey(new_obj, b_obj->keys[i])) {
+                            error = true;
                             PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                         }
                         Value val = b_obj->values[i];
                         write_ValueObject(new_obj, b_obj->keys[i], val);
+                    }
+                    if (error) {
+                        break;
                     }
                     Value result = BUILD_OBJECT(new_obj, false);
                     pushValue(&vm->stack, result);
