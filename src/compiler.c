@@ -1819,7 +1819,8 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             break;
         }
 
-        case OPERATOR_PIPE: {
+        case OPERATOR_PIPE:
+        case OPERATOR_PIPE_ASSIGN: {
             writeInstruction(ci, token_index, OP_CALL, 1);
             break;
         }
