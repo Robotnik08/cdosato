@@ -288,7 +288,6 @@ break;
 } while(0);
 
 int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
-    if (debug) printf("%s", "Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
     CodeInstance* active_instance = vm->instance;
