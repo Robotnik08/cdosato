@@ -133,6 +133,7 @@ void markValue(Value* value) {
             ValueObject* objectList = AS_OBJECT(*value);
             for (size_t i = 0; i < objectList->count; i++) {
                 markValue(&objectList->values[i]);
+                markValue(&objectList->keys[i]);
             }
             break;
         } 
