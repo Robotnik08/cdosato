@@ -990,6 +990,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 if (error) {
+                    free_ValueObject(obj);
+                    free(obj);
                     break;
                 }
                 vm->stack.count -= count;

@@ -497,6 +497,8 @@ Value array_map (ValueArray args, bool debug) {
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            free_ValueArray(new_array);
+            free(new_array);
             return result;
         }
         write_ValueArray(new_array, result);
@@ -605,6 +607,8 @@ Value array_filter (ValueArray args, bool debug) {
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            free_ValueArray(new_array);
+            free(new_array);
             return result;
         }
         CAST_SAFE(result, TYPE_BOOL);
@@ -756,6 +760,8 @@ Value array_combinations (ValueArray args, bool debug) {
     int* data = malloc(r * sizeof(int));
     combinationUtil(obj->values, n, r, 0, data, 0, new_array);
 
+    free(data);
+
     return BUILD_ARRAY(new_array, true);
 }
 
@@ -808,6 +814,9 @@ Value array_permutations (ValueArray args, bool debug) {
     }
 
     permutationUtil(obj->values, n, r, 0, data, used, new_array);
+
+    free(used);
+    free(data);
 
     return BUILD_ARRAY(new_array, true);
 }

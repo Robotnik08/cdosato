@@ -3,14 +3,14 @@
 
 #include "common.h"
 
-#define MASTER_KEYWORDS {"DO", "MAKE", "SET", "DEFINE", "INCLUDE", "IMPORT", "RETURN", "BREAK", "CONTINUE", "SWITCH", "CONST", "CLASS", "IMPLEMENT", "ENUM", "IF", "INHERIT"}
-#define EXTENSION_KEYWORDS {"WHEN", "WHILE", "ELSE", "CATCH", "THEN", "FOR", "UNLESS", "UNTIL"}
-#define VAR_TYPES {"INT", "BOOL", "STRING", "FLOAT", "DOUBLE", "CHAR", "SHORT", "LONG", "BYTE", "VOID", "ARRAY", "UINT", "USHORT", "ULONG", "UBYTE", "OBJECT", "VAR", "FUNCTION"}
-#define BOOLEAN_KEYWORDS {"FALSE", "TRUE"}
-#define NULL_KEYWORDS {"NULL"}
-#define INFINITY_KEYWORDS {"INFINITY"}
-#define NAN_KEYWORDS {"NAN"}
-#define RESERVED_KEYWORDS {"OTHER", "IN"}
+#define MASTER_KEYWORDS {"do", "make", "set", "define", "include", "import", "return", "break", "continue", "switch", "const", "class", "implement", "enum", "if", "inherit"}
+#define EXTENSION_KEYWORDS {"when", "while", "else", "catch", "then", "for", "unless", "until"}
+#define VAR_TYPES {"int", "bool", "string", "float", "double", "char", "short", "long", "byte", "void", "array", "uint", "ushort", "ulong", "ubyte", "object", "var", "function"}
+#define BOOLEAN_KEYWORDS {"false", "true"}
+#define NULL_KEYWORDS {"null"}
+#define INFINITY_KEYWORDS {"Infinity"}
+#define NAN_KEYWORDS {"NaN"}
+#define RESERVED_KEYWORDS {"other", "in"}
 
 #define BRACKETS {"()", "{}", "[]"}
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \

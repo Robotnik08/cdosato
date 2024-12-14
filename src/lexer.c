@@ -153,7 +153,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     start = end + 1;
                     i = code_length;
                 }
-                goto end_loop;
+                continue;
             }
 
             if (full_code[i] == '/' && full_code[i + 1] == '*') {
@@ -176,7 +176,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     start = end + 1;
                     i = code_length;
                 }
-                goto end_loop;
+                continue;
             }
         } else {
             // handle string literals
@@ -207,6 +207,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                 start = end + 1;
                 quotationtype = '\0';
                 free(lit);
+                continue;
             }
         }
 
@@ -219,6 +220,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
 
         if (quotationtype == '"' || quotationtype == '\'' || in_template) continue;
 
+        char* next_word = getWord(full_code, i);
         for (int j = 0; j < sizeof(mastertokens)/sizeof(char*); j++) {
             // check if the previous char is not alphanumeric
             if (i > 0) {
@@ -228,15 +230,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(mastertokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, mastertokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_MASTER_KEYWORD, full_code + i, strlen(mastertokens[j]) - 1, j);
                 i += strlen(mastertokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         for (int j = 0; j < sizeof(var_typetokens)/sizeof(char*); j++) {
@@ -248,15 +245,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(var_typetokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, var_typetokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_VAR_TYPE, full_code + i, strlen(var_typetokens[j]) - 1, j);
                 i += strlen(var_typetokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         for (int j = 0; j < sizeof(extension_tokens)/sizeof(char*); j++) {
@@ -268,15 +260,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(extension_tokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, extension_tokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_EXT, full_code + i, strlen(extension_tokens[j]) - 1, j);
                 i += strlen(extension_tokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         
@@ -458,7 +445,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     id = getName(&vm->constants_map, lit);
                 } else {
                     id = addName(&vm->constants_map, lit);
-                constant_types[constant_count++] = TOKEN_NUMBER;
+                    constant_types[constant_count++] = TOKEN_NUMBER;
                 }
                 DOSATO_ADD_TOKEN(list, TOKEN_NUMBER, full_code + start, end - start, id);
                 free(lit);
@@ -499,15 +486,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(booltokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, booltokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_BOOLEAN, full_code + i, strlen(booltokens[j]) - 1, j);
                 i += strlen(booltokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         for (int j = 0; j < sizeof(nulltokens)/sizeof(char*); j++) {
@@ -519,15 +501,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(nulltokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, nulltokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_NULL_KEYWORD, full_code + i, strlen(nulltokens[j]) - 1, j);
                 i += strlen(nulltokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         for (int j = 0; j < sizeof(infinitytokens)/sizeof(char*); j++) {
@@ -539,15 +516,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(infinitytokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, infinitytokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_INFINITY_KEYWORD, full_code + i, strlen(infinitytokens[j]) - 1, j);
                 i += strlen(infinitytokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         for (int j = 0; j < sizeof(nantokens)/sizeof(char*); j++) {
@@ -559,15 +531,10 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(nantokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, nantokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_NAN_KEYWORD, full_code + i, strlen(nantokens[j]) - 1, j);
                 i += strlen(nantokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         for (int j = 0; j < sizeof(reservedtokens)/sizeof(char*); j++) {
@@ -579,34 +546,28 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     if (IS_ALPHANAMERIC(full_code[i + strlen(reservedtokens[j])])) continue; // not a break, since the next type could differ in length
                 }
             }
-            char* next_word = getWord(full_code, i);
-            toUpper(next_word);
             if (!strcmp(next_word, reservedtokens[j])) {
-                free(next_word);
                 DOSATO_ADD_TOKEN(list, TOKEN_RESERVED_KEYWORD, full_code + i, strlen(reservedtokens[j]) - 1, j);
                 i += strlen(reservedtokens[j]) - 1;
                 goto end_loop;
-            } else {
-                free(next_word);
             }
         }
         if (IS_ALPHANUMERIC(full_code[i])) {
-            char* word = getWord(full_code, i);
-            if (strlen(word) > 0) {
+            if (strlen(next_word) > 0) {
                 int id = 0;
-                if (hasName(&vm->mappings, word)) {
-                    id = getName(&vm->mappings, word);
+                if (hasName(&vm->mappings, next_word)) {
+                    id = getName(&vm->mappings, next_word);
                 } else {
-                    id = addName(&vm->mappings, word);
+                    id = addName(&vm->mappings, next_word);
                 }
-                DOSATO_ADD_TOKEN(list, TOKEN_IDENTIFIER, full_code + i, strlen(word) - 1, id);
-                i += strlen(word) - 1;
+                DOSATO_ADD_TOKEN(list, TOKEN_IDENTIFIER, full_code + i, strlen(next_word) - 1, id);
+                i += strlen(next_word) - 1;
                 goto end_loop;
             }
-            free(word);
         }
 
         end_loop:
+        free(next_word);
     }
 
     if (quotationtype) {
@@ -789,6 +750,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
         }
     }
+
+    free(constant_types);
 
     return 0;
 }
