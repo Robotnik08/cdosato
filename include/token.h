@@ -160,9 +160,10 @@ void init_TokenList (TokenList* list);
 void write_TokenList (TokenList* list, Token token);
 void free_TokenList (TokenList* list);
 
-#define DOSATO_ADD_TOKEN(list, type, start, end, carry) \
+#define DOSATO_ADD_TOKEN(list, type, start, end, carry) do {\
     Token token = { start, end + 1, type, carry }; \
-    write_TokenList(list, token);
+    write_TokenList(list, token); \
+} while (0)
 
 
 #define DOSATO_TOKEN_START (source, start) (start - source)
