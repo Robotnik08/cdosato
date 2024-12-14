@@ -28,7 +28,7 @@ typedef enum {
     TYPE_FUNCTION
 } DataType;
 
-#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE)
+#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE || type == D_NULL)
 #define ISFLOATTYPE(type) (type == TYPE_FLOAT || type == TYPE_DOUBLE)
 
 
@@ -103,7 +103,8 @@ void markDefined(Value* value);
 Value hardCopyValue(Value value);
 Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count);
 ErrorType castValue(Value* value, DataType type);
-bool valueEquals (Value* a, Value* b);
+bool valueEquals (Value* aPtr, Value* bPtr);
+bool valueEqualsStrict (Value* a, Value* b);
 ErrorType incValue (Value* value, int amount);
 
 
@@ -121,7 +122,7 @@ typedef struct {
     size_t count;
     size_t capacity;
     Value* values;
-    char** keys;
+    Value* keys;
 } ValueObject;
 
 typedef struct {
@@ -134,6 +135,7 @@ typedef struct {
     uint8_t* error_jump_loc;
     size_t error_stack_count;
     size_t error_active_index_count;
+    size_t error_stack_frame_count;
 } ErrorJump;
 
 typedef struct {
@@ -155,11 +157,11 @@ void free_ValueArray(ValueArray* array);
 void destroyValueArray(ValueArray* array);
 
 void init_ValueObject(ValueObject* object);
-void write_ValueObject(ValueObject* object, char* key, Value value);
+void write_ValueObject(ValueObject* object, Value key, Value value);
 void free_ValueObject(ValueObject* object);
-bool hasKey(ValueObject* object, char* key);
-Value* getValueAtKey(ValueObject* object, char* key);
-void removeFromKey(ValueObject* object, char* key);
+bool hasKey(ValueObject* object, Value key);
+Value* getValueAtKey(ValueObject* object, Value key);
+void removeFromKey(ValueObject* object, Value key);
 
 ValueArray* buildArray(size_t count, ...);
 ValueObject* buildObject(size_t count, ...);

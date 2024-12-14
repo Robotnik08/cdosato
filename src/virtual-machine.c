@@ -133,6 +133,7 @@ void markValue(Value* value) {
             ValueObject* objectList = AS_OBJECT(*value);
             for (size_t i = 0; i < objectList->count; i++) {
                 markValue(&objectList->values[i]);
+                markValue(&objectList->keys[i]);
             }
             break;
         } 
@@ -261,18 +262,15 @@ void pushValue(ValueArray* array, Value value) {
 #define PRINT_ERROR(e_code) do { \
     if (vm->error_jumps.count > 0) { \
         ErrorJump jump = vm->error_jumps.jumps[--vm->error_jumps.count]; \
-        while (vm->stack.count > jump.error_stack_count) { \
-            POP_VALUE(); \
-        } \
+        vm->stack.count = jump.error_stack_count; \
+        vm->stack_frames.count = jump.error_stack_frame_count; \
         vm->ip = jump.error_jump_loc; \
         vm->globals.values[0].as.longValue = e_code; \
         if (ip_stack_count == jump.error_active_index_count) { \
             break; \
         } \
         ip_stack_count = jump.error_active_index_count; \
-        if (jump.error_active_index_count > 0) { \
-            active_instance = active_stack[ip_stack_count]; \
-        } \
+        active_instance = active_stack[ip_stack_count]; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
         printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code, ((AST*)active_instance->ast)->tokens.tokens[token_index].length);\
@@ -291,7 +289,6 @@ break;
 } while(0);
 
 int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
-    if (debug) printf("%s", "Running virtual machine\n");
     bool halt = false;
     vm->ip = vm->instance->code;
     CodeInstance* active_instance = vm->instance;
@@ -401,7 +398,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_JUMP_IF_EXCEPTION: {
                 uint16_t offset = NEXT_SHORT();
                 size_t stack_count = vm->stack.count;
-                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count, .error_active_index_count = ip_stack_count });
+                write_ErrorJumps(&vm->error_jumps, (ErrorJump){ .error_jump_loc = active_instance->code + offset, .error_stack_count = stack_count, .error_active_index_count = ip_stack_count, .error_stack_frame_count = vm->stack_frames.count });
                 break;
             }
 
@@ -485,15 +482,21 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 // cast arguments
+                bool error = false;
                 for (int i = 0; i < function->arity; i++) {
                     Value* arg = &vm->stack.values[vm->stack.count - function->arity + i];
                     ErrorType code = castValue(arg, function->argt[i]);
                     if (code != E_NULL) {
+                        error = true;
                         PRINT_ERROR(code);
                     }
                     if (i < arity) {
                         arg->defined = true;
                     }
+                }
+
+                if (error) {
+                    break;
                 }
                 
                 // push new frame
@@ -566,6 +569,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_LOAD_UNDERSCORE: {
                 // underscore is global variable 0
                 Value underscore = vm->globals.values[0];
+                underscore.is_constant = false;
                 pushValue(&vm->stack, underscore);
                 break;
             }
@@ -621,22 +625,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     // push NULL
                     pushValue(&vm->stack, UNDEFINED_VALUE);
                     break;
                 }
 
-                Value value = *getValueAtKey(obj, AS_STRING(key));
+                Value value = *getValueAtKey(obj, key);
 
                 pushValue(&vm->stack, value);
 
@@ -652,22 +648,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     break;
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     // push NULL
                     pushValue(&vm->stack, UNDEFINED_VALUE);
                     break;
                 }
 
-                Value value = *getValueAtKey(obj, AS_STRING(key));
+                Value value = *getValueAtKey(obj, key);
 
                 pushValue(&vm->stack, value);
 
@@ -677,6 +665,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
             case OP_LOAD_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
                 Value local = vm->stack.values[index];
+                local.is_constant = false;
 
                 pushValue(&vm->stack, local);
                 break;
@@ -684,9 +673,10 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_STORE_FAST_POP:
             case OP_STORE_FAST_CONSTANT:
+            case OP_STORE_FAST_POP_CONSTANT:
             case OP_STORE_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                Value value = instruction == OP_STORE_FAST ? PEEK_VALUE() : POP_VALUE();
+                Value value = instruction == OP_STORE_FAST || instruction == OP_STORE_FAST_CONSTANT ? PEEK_VALUE() : POP_VALUE();
 
                 if (vm->stack.values[index].is_constant) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
@@ -703,10 +693,32 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     value.is_variable_type = true;
                 }
 
-                value.is_constant = instruction == OP_STORE_FAST_CONSTANT;
+                value.is_constant = instruction == OP_STORE_FAST_CONSTANT || instruction == OP_STORE_FAST_POP_CONSTANT;
                 vm->stack.values[index] = value; // store to local
                 markDefined(&vm->stack.values[index]);
 
+                break;
+            }
+
+            case OP_STORE_FAST_FORCED: {
+                uint16_t index = NEXT_SHORT() + PEEK_STACK();
+                Value value = POP_VALUE();
+
+                bool was_constant = vm->stack.values[index].is_constant;
+
+                if (!vm->stack.values[index].is_variable_type && vm->stack.values[index].defined) {
+                    DataType type = vm->stack.values[index].type;
+                    ErrorType castRes = castValue(&value, type);
+                    if (castRes != E_NULL) {
+                        PRINT_ERROR(castRes);
+                    }
+                } else if (vm->stack.values[index].defined) {
+                    value.is_variable_type = true;
+                }
+
+                vm->stack.values[index] = value; // store to local
+                value.is_constant = was_constant;
+                markDefined(&vm->stack.values[index]);
                 break;
             }
 
@@ -810,6 +822,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 if (!global.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
+                global.is_constant = false;
 
                 pushValue(&vm->stack, global);
 
@@ -845,27 +858,20 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
+            case OP_DEFINE_CONSTANT:
+            case OP_DEFINE_POP_CONSTANT:
+            case OP_DEFINE_POP:
             case OP_DEFINE: {
                 uint16_t index = NEXT_SHORT();
-                Value value = PEEK_VALUE();
+                Value value = instruction == OP_DEFINE || instruction == OP_DEFINE_CONSTANT ? PEEK_VALUE() : POP_VALUE();
                 if (vm->globals.values[index].defined) {
                     PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
                 }
-                
-                vm->globals.values[index] = value;
-                markDefined(&vm->globals.values[index]);
 
-                break;
-            }
-            
-            case OP_DEFINE_POP: {
-                uint16_t index = NEXT_SHORT();
-                Value value = POP_VALUE();
-                if (vm->globals.values[index].defined) {
-                    PRINT_ERROR(E_ALREADY_DEFINED_VARIABLE);
-                }
-                
+
+                value.is_constant = instruction == OP_DEFINE_CONSTANT || instruction == OP_DEFINE_POP_CONSTANT;
                 vm->globals.values[index] = value;
+    	        
                 markDefined(&vm->globals.values[index]);
 
                 break;
@@ -936,26 +942,18 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 markDefined(&value);
 
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     // add key
-                    write_ValueObject(obj, AS_STRING(key), value);
+                    write_ValueObject(obj, key, value);
                 } else {
                     // destroy old value
-                    removeFromKey(obj, AS_STRING(key));
+                    removeFromKey(obj, key);
 
                     // set new value
-                    write_ValueObject(obj, AS_STRING(key), value);
+                    write_ValueObject(obj, key, value);
                 }
 
 
@@ -980,21 +978,22 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
                 ValueObject* obj = malloc(sizeof(ValueObject));
                 init_ValueObject(obj);
+                bool error = false;
                 for (int i = vm->stack.count - count; i < vm->stack.count; i++) {
                     Value key = vm->stack.values[i];
                     Value value = vm->stack.values[++i];
-                    if (key.type != TYPE_STRING) {
-                        ErrorType code = castValue(&key, TYPE_STRING);
-                        if (code != E_NULL) {
-                            PRINT_ERROR(code);
-                        }
-                    }
-                    if (hasKey(obj, AS_STRING(key))) {
+                    if (hasKey(obj, key)) {
+                        error = true;
                         PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                     }
-                    write_ValueObject(obj, AS_STRING(key), value);
+                    write_ValueObject(obj, key, value);
                 }
 
+                if (error) {
+                    free_ValueObject(obj);
+                    free(obj);
+                    break;
+                }
                 vm->stack.count -= count;
 
                 pushValue(&vm->stack, BUILD_OBJECT(obj, true));
@@ -1143,20 +1142,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
-                Value* value = getValueAtKey(obj, AS_STRING(key));
+                Value* value = getValueAtKey(obj, key);
                 // to do type checking
                 ErrorType code = incValue(value, 1);
                 if (code != E_NULL) {
@@ -1172,20 +1163,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_OBJECT);
                 }
 
-                // cast key to string
-                if (key.type != TYPE_STRING) {
-                    ErrorType code = castValue(&key, TYPE_STRING);
-                    if (code != E_NULL) {
-                        PRINT_ERROR(code);
-                    }
-                }
-
                 ValueObject* obj = AS_OBJECT(object);
-                if (!hasKey(obj, AS_STRING(key))) {
+                if (!hasKey(obj, key)) {
                     PRINT_ERROR(E_KEY_NOT_FOUND);
                 }
 
-                Value* value = getValueAtKey(obj, AS_STRING(key));
+                Value* value = getValueAtKey(obj, key);
                 // to do type checking
                 ErrorType code = incValue(value, -1);
                 if (code != E_NULL) {
@@ -1308,12 +1291,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                         Value val = a_obj->values[i];
                         write_ValueObject(new_obj, a_obj->keys[i], val);
                     }
+                    bool error = false;
                     for (int i = 0; i < b_obj->count; i++) {
                         if (hasKey(new_obj, b_obj->keys[i])) {
+                            error = true;
                             PRINT_ERROR(E_KEY_ALREADY_DEFINED);
                         }
                         Value val = b_obj->values[i];
                         write_ValueObject(new_obj, b_obj->keys[i], val);
+                    }
+                    if (error) {
+                        break;
                     }
                     Value result = BUILD_OBJECT(new_obj, false);
                     pushValue(&vm->stack, result);
@@ -1373,30 +1361,30 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
-                } else if (a.type == TYPE_OBJECT && b.type == TYPE_STRING) {
+                } else if (a.type == TYPE_OBJECT) {
                     ValueObject* a_obj = AS_OBJECT(a);
-                    char* key_to_remove = AS_STRING(b);
+                    Value key_to_remove = b;
                     if (!hasKey(a_obj, key_to_remove)) {
                         PRINT_ERROR(E_KEY_NOT_FOUND);
                     }
                     removeFromKey(a_obj, key_to_remove);
                     pushValue(&vm->stack, a);
-                } else if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || ISFLOATTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                } else if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     char* string = AS_STRING(a);
-                    long long int pop_amount = 0;
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
                     }
-                    pop_amount = b.as.longValue;
+                    long long int pop_amount = b.as.longValue;
                     if (pop_amount < 0) {
                         PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                     }
                     if (pop_amount > strlen(string)) {
                         pop_amount = strlen(string);
                     }
-                    char* new_string = malloc(strlen(string) - pop_amount + 1);
+                    char* new_string = malloc(strlen(string) - pop_amount + 10);
                     strncpy(new_string, string, strlen(string) - pop_amount);
+                    new_string[strlen(string) - pop_amount] = '\0';
                     Value result = BUILD_STRING(new_string, true);
                     pushValue(&vm->stack, result);
                     break;
@@ -1433,7 +1421,8 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     Value result = BUILD_DOUBLE(a.as.doubleValue * b.as.doubleValue);
                     pushValue(&vm->stack, result);
                     break;
-                } else if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                }
+                if (a.type == TYPE_ARRAY && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ValueArray* a_array = AS_ARRAY(a);
                     ErrorType code = castValue(&b, TYPE_LONG);
                     if (code != E_NULL) {
@@ -1454,7 +1443,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     Value result = BUILD_ARRAY(new_array, true);
                     pushValue(&vm->stack, result);
                     break;
-                } if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                }
+                if (a.type == TYPE_STRING && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
+                    char* string = AS_STRING(a);
+                    ErrorType code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    long long int multiply_amount = b.as.longValue;
+                    if (multiply_amount < 0) {
+                        PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                    }
+                    char* new_string = malloc(strlen(string) * multiply_amount + 10);
+                    new_string[0] = '\0';
+                    for (int i = 0; i < multiply_amount; i++) {
+                        strcat(new_string, string);
+                    }
+                    Value result = BUILD_STRING(new_string, true);
+                    pushValue(&vm->stack, result);
+                    break;
+                } 
+                if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) && (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
                     ErrorType code = castValue(&a, TYPE_LONG);
                     if (code != E_NULL) {
                         PRINT_ERROR(code);
@@ -2042,6 +2051,24 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 } else {
                     pushValue(&vm->stack, a);
                 }
+                break;
+            }
+
+            case OP_BINARY_STRICT_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                bool result = valueEqualsStrict(&a, &b);
+                pushValue(&vm->stack, BUILD_BOOL(result));
+                break;
+            }
+
+            case OP_BINARY_STRICT_NOT_EQUAL: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                bool result = !valueEqualsStrict(&a, &b);
+                pushValue(&vm->stack, BUILD_BOOL(result));
                 break;
             }
             

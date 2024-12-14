@@ -497,6 +497,8 @@ Value array_map (ValueArray args, bool debug) {
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            free_ValueArray(new_array);
+            free(new_array);
             return result;
         }
         write_ValueArray(new_array, result);
@@ -605,6 +607,8 @@ Value array_filter (ValueArray args, bool debug) {
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
+            free_ValueArray(new_array);
+            free(new_array);
             return result;
         }
         CAST_SAFE(result, TYPE_BOOL);
@@ -730,4 +734,161 @@ Value array_find (ValueArray args, bool debug) {
     }
 
     return UNDEFINED_VALUE;
+}
+
+// Generate all possible combinations of an array
+Value array_combinations (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value count = GET_ARG(args, 1);
+    CAST_SAFE(count, TYPE_LONG);
+
+    ValueArray* obj = AS_ARRAY(array);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    int n = obj->count;
+    int r = AS_LONG(count);
+    
+    int* data = malloc(r * sizeof(int));
+    combinationUtil(obj->values, n, r, 0, data, 0, new_array);
+
+    free(data);
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+void combinationUtil(Value* arr, int n, int r, int index, int* data, int i, ValueArray* new_array) {
+    if (index == r) {
+        ValueArray* combination = malloc(sizeof(ValueArray));
+        init_ValueArray(combination);
+        for (int j = 0; j < r; j++) {
+            write_ValueArray(combination, arr[data[j]]);
+        }
+        write_ValueArray(new_array, BUILD_ARRAY(combination, true));
+        return;
+    }
+
+    if (i >= n) {
+        return;
+    }
+
+    data[index] = i;
+    combinationUtil(arr, n, r, index + 1, data, i + 1, new_array);
+    combinationUtil(arr, n, r, index, data, i + 1, new_array);
+}
+
+// Generate all possible permutations of an array
+Value array_permutations (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value count = GET_ARG(args, 1);
+    CAST_SAFE(count, TYPE_LONG);
+
+    ValueArray* obj = AS_ARRAY(array);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    int n = obj->count;
+    int r = AS_LONG(count);
+
+    int* data = malloc(r * sizeof(int));
+    bool* used = malloc(n * sizeof(bool));
+    for (int i = 0; i < n; i++) {
+        used[i] = false;
+    }
+
+    permutationUtil(obj->values, n, r, 0, data, used, new_array);
+
+    free(used);
+    free(data);
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+void permutationUtil(Value* arr, int n, int r, int index, int* data, bool* used, ValueArray* new_array) {
+    if (index == r) {
+        ValueArray* permutation = malloc(sizeof(ValueArray));
+        init_ValueArray(permutation);
+        for (int j = 0; j < r; j++) {
+            write_ValueArray(permutation, arr[data[j]]);
+        }
+        write_ValueArray(new_array, BUILD_ARRAY(permutation, true));
+        return;
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (used[i]) {
+            continue;
+        }
+
+        data[index] = i;
+        used[i] = true;
+        permutationUtil(arr, n, r, index + 1, data, used, new_array);
+        used[i] = false;
+    }
+}
+
+Value array_remove_duplicates (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* obj = AS_ARRAY(array);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    for (int i = 0; i < obj->count; i++) {
+        bool found = false;
+        for (int j = 0; j < new_array->count; j++) {
+            if (valueEquals(&obj->values[i], &new_array->values[j])) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            write_ValueArray(new_array, obj->values[i]);
+        }
+    }
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+Value array_length (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type == TYPE_ARRAY) {
+        return BUILD_LONG(AS_ARRAY(array)->count);
+    }
+    if (array.type == TYPE_STRING) {
+        return BUILD_LONG(strlen(AS_STRING(array)));
+    }
+    if (array.type == TYPE_OBJECT) {
+        return BUILD_LONG(AS_OBJECT(array)->count);
+    }
+
+    return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
 }

@@ -1,3 +1,0 @@
-include "0_assert.to"
-
-do assert(false, true) when false else assert(true, true)

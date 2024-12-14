@@ -1,0 +1,91 @@
+do setNameSpace("objects.to")
+
+make obj = {a: 1, b: 2, c: 3}
+
+do assert(obj, {a: 1, b: 2, c: 3})
+
+set obj = {a: 1, b: 2, c: 3, d: 4}
+
+do assert(obj, {a: 1, b: 2, c: 3, d: 4})
+
+do assert(obj->a, 1)
+do assert(obj->b, 2)
+do assert(obj->c, 3)
+do assert(obj->d, 4)
+
+do assert(obj->"a", 1)
+do assert(obj->"b", 2)
+do assert(obj->"c", 3)
+do assert(obj->"d", 4)
+
+set obj->a = 10
+set obj->b = 20
+set obj->c = 30
+set obj->d = 40
+
+do assert(obj, {a: 10, b: 20, c: 30, d: 40})
+
+do assert(obj->a, 10)
+do assert(obj->b, 20)
+do assert(obj->c, 30)
+do assert(obj->d, 40)
+
+set obj = {a: 1, b: 2, c: 3, d: 4}
+
+set obj += {e: 5, f: 6, g: 7}
+
+do assert(obj, {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7})
+
+make x, y, z = 1, 2, 3
+
+set obj = {x, y, z}
+
+do assert(obj, {x: 1, y: 2, z: 3})
+
+set obj = {x, y, z, a: 4, b: 5, c: 6}
+
+do assert(obj, {x: 1, y: 2, z: 3, a: 4, b: 5, c: 6})
+
+set obj->x = 10
+
+do assert(obj, {x: 10, y: 2, z: 3, a: 4, b: 5, c: 6})
+
+set obj->x, obj->y++
+
+do assert(obj, {x: 11, y: 3, z: 3, a: 4, b: 5, c: 6})
+
+do assert(obj->aaa, null)
+
+set obj->aaa = 100
+
+do assert(obj->aaa, 100)
+
+make obj2 = null
+
+do assert(obj2, null)
+
+do expectError(void () => { return obj2->a }, 37)
+
+do expectNoError(void () => { return obj2?->a })
+
+do expectNoError(void () => { return obj2?->a?->b })
+
+set obj2 = {1: 1, 2.3: 2, "3": 3, true: 4}
+
+do assert(obj2, {1: 1, 2.3: 2, "3": 3, true: 4})
+
+do assert(obj2->1, 1)
+do assert(obj2->2.3, 2)
+do assert(obj2->"3", 3)
+do assert(obj2->true, 4)
+
+do assert(obj2->"1", null)
+do assert(obj2->2, null)
+do assert(obj2->"2.3", null)
+do assert(obj2->3, null)
+do assert(obj2->"true", null)
+
+make obj3 = {}
+set obj3->a = obj3
+
+do assert((string)obj3, "{\"a\": {...}}")

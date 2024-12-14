@@ -1,0 +1,80 @@
+do setNameSpace("comments.to")
+
+// DO NOT PARSE
+
+//// This is a comment
+
+/* Comment */
+
+/*
+w
+w
+w
+w
+Comment
+w
+w
+w
+w
+*/
+
+// Comment
+
+/*
+
+
+Comment
+
+//*/
+
+
+
+/****************************************************
+ * Comment
+ ****************************************************/
+
+/****************************************************
+    * Comment
+    ****************************************************
+    */
+
+           /****************************************************
+            * Comment
+            ****************************************************
+            */
+
+make c_string = "String // Not a comment"
+do assert(c_string, "String // Not a comment")
+
+make c_string_complex = `"String" {
+    1 + 1 // Comment
+}`
+
+do assert(c_string_complex, "\"String\" 2")
+
+set c_string_complex = `"String" {
+    1 + 1 // Comment }`
+}`
+
+do assert(c_string_complex, "\"String\" 2")
+
+set c_string_complex = `"String" {1 + /* Comment */ 1}`
+
+do assert(c_string_complex, "\"String\" 2")
+
+/* [Comment ending at end of file]
+
+Once upon a time in the land of Dosato, there was a programmer named Byte.
+Byte loved to write code, but had a peculiar habit of talking to his code.
+One day, Byte wrote a function that refused to work.
+Byte asked, "Function, why won't you work?"
+The function replied, "Because you forgot a semicolon!"
+Byte laughed and said, "Oh, you silly function, always needing your semicolons."
+And so, Byte added the semicolon, and the function worked perfectly.
+From that day on, Byte always remembered to add semicolons, and they coded happily ever after.
+
+But the thing is, Dosato doesn't use semicolons.
+
+Byte made a horrible mistake.
+
+The end.

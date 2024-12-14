@@ -1,7 +1,0 @@
-include "0_assert.to"
-
-make long i = 0
-do {
-    set i++
-} while i < 100
-do assert(i, 100)

@@ -97,85 +97,101 @@ Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count) {
     return value;
 }
 
-bool valueEquals (Value* a, Value* b) {
-    if (a->type == D_NULL && b->type == D_NULL) {
+bool valueEqualsStrict (Value* a, Value* b) {
+    if (a->type != b->type) {
+        return false;
+    }
+
+    return valueEquals(a, b);
+}
+
+bool valueEquals (Value* aPtr, Value* bPtr) {
+    if (aPtr->type == D_NULL && bPtr->type == D_NULL) {
         return true;
     }
 
-    if (a->type == TYPE_FUNCTION || b->type == TYPE_FUNCTION) {
+    if (aPtr->type == TYPE_FUNCTION || bPtr->type == TYPE_FUNCTION) {
         return false; // can't compare functions
     }
+
+    Value a = *aPtr;
+    Value b = *bPtr;
     
-    if (ISFLOATTYPE(a->type) || ISFLOATTYPE(b->type)) {
+    if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
         double aValue = 0;
         double bValue = 0;
 
-        ErrorType aError = castValue(a, TYPE_DOUBLE);
+        ErrorType aError = castValue(&a, TYPE_DOUBLE);
         if (aError != 0) {
             return false;
         }
-        aValue = a->as.doubleValue;
-        ErrorType bError = castValue(b, TYPE_DOUBLE);
+        aValue = a.as.doubleValue;
+        ErrorType bError = castValue(&b, TYPE_DOUBLE);
         if (bError != 0) {
             return false;
         }
-        bValue = b->as.doubleValue;
+        bValue = b.as.doubleValue;
 
         return aValue == bValue;
 
-    } else if (a->type == TYPE_STRING || b->type == TYPE_STRING) {
-        char* aStr = valueToString(*a, false);
-        char* bStr = valueToString(*b, false);
+    } else if (a.type == TYPE_STRING || b.type == TYPE_STRING) {
+        char* aStr = valueToString(a, false);
+        char* bStr = valueToString(b, false);
         bool result = strcmp(aStr, bStr) == 0;
         free(aStr);
         free(bStr);
         return result;
-    } else if ((ISINTTYPE(a->type) || a->type == TYPE_CHAR || a->type == TYPE_BOOL) || (ISINTTYPE(b->type) || b->type == TYPE_CHAR || b->type == TYPE_BOOL)) {
+    } else if ((ISINTTYPE(a.type) || a.type == TYPE_CHAR || a.type == TYPE_BOOL) || (ISINTTYPE(b.type) || b.type == TYPE_CHAR || b.type == TYPE_BOOL)) {
         long long int aValue = 0;
         long long int bValue = 0;
 
-        ErrorType aError = castValue(a, TYPE_LONG);
+        ErrorType aError = castValue(&a, TYPE_LONG);
         if (aError != 0) {
             return false;
         }
-        aValue = a->as.longValue;
-        ErrorType bError = castValue(b, TYPE_LONG);
+        aValue = a.as.longValue;
+        ErrorType bError = castValue(&b, TYPE_LONG);
         if (bError != 0) {
             return false;
         }
-        bValue = b->as.longValue;
+        bValue = b.as.longValue;
 
         return aValue == bValue;
-    } else if (a->type == TYPE_OBJECT && b->type == TYPE_OBJECT) {
-        ValueObject* aObject = AS_OBJECT(*a);
-        ValueObject* bObject = AS_OBJECT(*b);
+    } else if (a.type == TYPE_OBJECT && b.type == TYPE_OBJECT) {
+        ValueObject* aObject = AS_OBJECT(a);
+        ValueObject* bObject = AS_OBJECT(b);
 
         if (aObject->count != bObject->count) {
             return false;
         }
 
         for (size_t i = 0; i < aObject->count; i++) {
-            char* key = aObject->keys[i];
+            Value key = aObject->keys[i];
             if (!hasKey(bObject, key)) {
                 return false;
             }
             Value* val = getValueAtKey(bObject, key);
-            if (!valueEquals(&aObject->values[i], val)) {
+
+            Value a = aObject->values[i];
+            Value b = *val;
+            if (!valueEquals(&a, &b)) {
                 return false;
             }
         }
 
         return true;
-    } else if (a->type == TYPE_ARRAY && b->type == TYPE_ARRAY) {
-        ValueArray* aArray = AS_ARRAY(*a);
-        ValueArray* bArray = AS_ARRAY(*b);
+    } else if (a.type == TYPE_ARRAY && b.type == TYPE_ARRAY) {
+        ValueArray* aArray = AS_ARRAY(a);
+        ValueArray* bArray = AS_ARRAY(b);
 
         if (aArray->count != bArray->count) {
             return false;
         }
 
         for (size_t i = 0; i < aArray->count; i++) {
-            if (!valueEquals(&aArray->values[i], &bArray->values[i])) {
+            Value a = aArray->values[i];
+            Value b = bArray->values[i];
+            if (!valueEquals(&a, &b)) {
                 return false;
             }
         }
@@ -511,7 +527,7 @@ ValueObject* buildObject(size_t count, ...) {
     va_start(args, count);
 
     for (size_t i = 0; i < count; i++) {
-        char* key = va_arg(args, char*);
+        Value key = va_arg(args, Value);
         Value value = va_arg(args, Value);
         write_ValueObject(object, key, value);
     }
@@ -548,10 +564,10 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
             strcat(string, "{");
             ValueObject* object = AS_OBJECT(value);
             for (size_t i = 0; i < object->count; i++) {
-                string = realloc(string, strlen(string) + strlen(object->keys[i]) + 5);
-                strcat(string, "\"");
-                strcat(string, object->keys[i]);
-                strcat(string, "\": ");
+                char* keyString = valueToStringSafe(object->keys[i], true, pointers, count);
+                string = realloc(string, strlen(string) + strlen(keyString) + 10);
+                strcat(string, keyString);
+                strcat(string, ": ");
                 char* valueString = valueToStringSafe(object->values[i], true, pointers, count);
                 string = realloc(string, strlen(string) + strlen(valueString) + 3);
                 strcat(string, valueString);
@@ -903,50 +919,45 @@ void init_ValueObject(ValueObject* object) {
     object->capacity = 0;
 }
 
-void write_ValueObject(ValueObject* object, char* key, Value value) {
+void write_ValueObject(ValueObject* object, Value key, Value value) {
     if (object->capacity < object->count + 1) {
         size_t oldCapacity = object->capacity;
         object->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
         object->values = DOSATO_RESIZE_LIST(Value, object->values, oldCapacity, object->capacity);
-        object->keys = DOSATO_RESIZE_LIST(char*, object->keys, oldCapacity, object->capacity);
+        object->keys = DOSATO_RESIZE_LIST(Value, object->keys, oldCapacity, object->capacity);
     }
     object->values[object->count] = value;
-    // Copy the key
-    object->keys[object->count] = COPY_STRING(key);
+    object->keys[object->count] = key;
     object->count++;
 }
 
 void free_ValueObject(ValueObject* object) {
-    for (size_t i = 0; i < object->count; i++) {
-        free(object->keys[i]);
-    }
     free(object->values);
     free(object->keys);
     init_ValueObject(object);
 }
 
-bool hasKey(ValueObject* object, char* key) {
+bool hasKey(ValueObject* object, Value key) {
     for (size_t i = 0; i < object->count; i++) {
-        if (strcmp(object->keys[i], key) == 0) {
+        if (valueEqualsStrict(&object->keys[i], &key)) {
             return true;
         }
     }
     return false;
 }
 
-Value* getValueAtKey(ValueObject* object, char* key) {
+Value* getValueAtKey(ValueObject* object, Value key) {
     for (size_t i = 0; i < object->count; i++) {
-        if (strcmp(object->keys[i], key) == 0) {
+        if (valueEqualsStrict(&object->keys[i], &key)) {
             return &object->values[i];
         }
     }
     return NULL;
 }
 
-void removeFromKey (ValueObject* object, char* key) {
+void removeFromKey (ValueObject* object, Value key) {
     for (size_t i = 0; i < object->count; i++) {
-        if (strcmp(object->keys[i], key) == 0) {
-            free(object->keys[i]);
+        if (valueEqualsStrict(&object->keys[i], &key)) {
             for (size_t j = i; j < object->count - 1; j++) {
                 object->keys[j] = object->keys[j + 1];
                 object->values[j] = object->values[j + 1];

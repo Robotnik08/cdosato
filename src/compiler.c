@@ -69,6 +69,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_ENUM:
         case NODE_MASTER_IMPLEMENT:
         case NODE_MASTER_CLASS:
+        case NODE_MASTER_INHERIT:
         case NODE_MASTER_CONST:
         case NODE_MASTER_IMPORT:
         case NODE_MASTER_INCLUDE:
@@ -239,7 +240,38 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_INHERIT_BODY: {
+            if (scope == NULL) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+            if (!scope->is_class) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+
+            // load self
+            int self_index = getScopeIndex(scope, 1);
+            
+            writeInstruction(ci, node.start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(self_index));
+
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+
+            // add them together
+            writeInstruction(ci, node.start, OP_BINARY_ADD, 0);
+
+            // store the result
+            writeInstruction(ci, node.start, OP_STORE_FAST_FORCED, DOSATO_SPLIT_SHORT(self_index));
+
+            break;
+        }
+
         case NODE_MASTER_IMPLEMENT_BODY: {
+            if (scope == NULL) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+            if (!scope->is_class) {
+                PRINT_ERROR(E_MASTER_MUST_BE_IN_CLASS, node.start - 1);
+            }
+
             // a method is like a lambda, it assigns it to the self object after
 
             DataType data_type = TYPE_VAR;
@@ -484,7 +516,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             writeByteCode(instance, OP_PUSH_NULL, node.start);
             writeInstruction(instance, node.body.nodes[2].start - 1, OP_BUILD_OBJECT, DOSATO_SPLIT_SHORT(0));
-            writeInstruction(instance, node.body.nodes[2].start - 1, OP_STORE_FAST_CONSTANT, DOSATO_SPLIT_SHORT(arity));
+            writeInstruction(instance, node.body.nodes[2].start - 1, OP_STORE_FAST_POP_CONSTANT, DOSATO_SPLIT_SHORT(arity));
 
             compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
 
@@ -699,23 +731,27 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_INVALID_AMOUNT_SET_EXPRESSION, node.start + identifier_index);
             }
 
-            
+            OpCode op_normal = OP_STORE_FAST;
+            OpCode op_pop = OP_STORE_FAST_POP;
             for (int i = node.body.count - 1; i >= operator_index + 1; i--) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
                 writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
 
                 if (type == NODE_MASTER_CONST_BODY) {
-                    writeByteCode(ci, OP_MARK_CONSTANT, node.start);
+                    op_normal = OP_STORE_FAST_CONSTANT;
+                    op_pop = OP_STORE_FAST_POP_CONSTANT;
                 }
             }
 
 
             if (scope == NULL) { // global scope
+                op_normal = op_normal == OP_STORE_FAST ? OP_DEFINE : OP_DEFINE_CONSTANT;
+                op_pop = op_pop == OP_STORE_FAST_POP ? OP_DEFINE_POP : OP_DEFINE_POP_CONSTANT;
                 for (int i = identifier_index; i < operator_index; i++) {
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? OP_DEFINE_POP : OP_DEFINE, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? op_pop : op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
                 }
             } else {
                 for (int i = identifier_index; i < operator_index; i++) {
@@ -725,7 +761,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? OP_STORE_FAST_POP : OP_STORE_FAST, DOSATO_SPLIT_SHORT(scope->locals_count));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? op_pop : op_normal, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
                 }
             }
@@ -1518,7 +1554,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(type == NODE_MASTER_BREAK_BODY ? E_BREAK_OUTSIDE_LOOP : E_CONTINUE_OUTSIDE_LOOP, node.start - 1);
             }
             size_t top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 1];
-            if (ci->code[top_jump_index] == OP_JUMP_IF_FALSE && type == NODE_MASTER_CONTINUE_BODY) {
+            if ((ci->code[top_jump_index] == OP_JUMP_IF_FALSE || ci->code[top_jump_index] == OP_JUMP_IF_TRUE) && type == NODE_MASTER_CONTINUE_BODY) {
                 top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 2]; // get the condition start index instead of the jump index
             }
 
@@ -1612,8 +1648,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // add the constant to the object
                 char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
-                write_ValueObject(obj, enum_name, BUILD_ULONG(index));
-                free(enum_name);
+                write_ValueObject(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
 
                 index++;
             }
@@ -1784,8 +1819,19 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             break;
         }
 
-        case OPERATOR_PIPE: {
+        case OPERATOR_PIPE:
+        case OPERATOR_PIPE_ASSIGN: {
             writeInstruction(ci, token_index, OP_CALL, 1);
+            break;
+        }
+
+        case OPERATOR_TRIPLE_EQUAL: {
+            writeByteCode(ci, OP_BINARY_STRICT_EQUAL, token_index);
+            break;
+        }
+
+        case OPERATOR_TRIPLE_NOT_EQUAL: {
+            writeByteCode(ci, OP_BINARY_STRICT_NOT_EQUAL, token_index);
             break;
         }
         

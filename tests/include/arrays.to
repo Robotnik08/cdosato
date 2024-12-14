@@ -1,0 +1,86 @@
+do setNameSpace("arrays.to")
+
+make arr = [1, 2, 3, 4, 5]
+
+do assert(arr, [1, 2, 3, 4, 5])
+
+set arr = [1, 2, 3, 4, 5, 6]
+
+do assert(arr, [1, 2, 3, 4, 5, 6])
+
+do assert(arr#0, 1)
+do assert(arr#1, 2)
+do assert(arr#2, 3)
+do assert(arr#3, 4)
+do assert(arr#4, 5)
+do assert(arr#5, 6)
+
+set arr#0 = 10
+set arr#1 = 20
+set arr#2 = 30
+set arr#3 = 40
+set arr#4 = 50
+set arr#5 = 60
+
+do assert(arr, [10, 20, 30, 40, 50, 60])
+
+do assert(arr#0, 10)
+do assert(arr#1, 20)
+do assert(arr#2, 30)
+do assert(arr#3, 40)
+do assert(arr#4, 50)
+do assert(arr#5, 60)
+
+set arr = [1, 2, 3, 4, 5, 6]
+
+set arr += [7, 8, 9]
+
+do assert(arr, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+set arr = []
+
+do assert(arr, [])
+
+set arr += [1, 2, 3, 4, 5, 6]
+
+do assert(arr, [1, 2, 3, 4, 5, 6])
+
+set arr = []
+
+do expectError(void () => { set arr#0 = 1 }, 38)
+
+make types_arr = [1, 2.0, 3.0F, "4", true]
+
+do assert(types_arr, [1, 2.0, 3.0, "4", true])
+
+do assert(typeOf(types_arr#0), "ulong")
+do assert(typeOf(types_arr#1), "double")
+do assert(typeOf(types_arr#2), "float")
+do assert(typeOf(types_arr#3), "string")
+do assert(typeOf(types_arr#4), "bool")
+
+/// Nested arrays
+
+make nested_arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+do assert(nested_arr, [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+do assert(nested_arr#0, [1, 2, 3])
+do assert(nested_arr#1, [4, 5, 6])
+do assert(nested_arr#2, [7, 8, 9])
+
+do assert(nested_arr#0#0, 1)
+do assert(nested_arr#0#1, 2)
+do assert(nested_arr#0#2, 3)
+do assert(nested_arr#1#0, 4)
+do assert(nested_arr#1#1, 5)
+do assert(nested_arr#1#2, 6)
+do assert(nested_arr#2#0, 7)
+do assert(nested_arr#2#1, 8)
+do assert(nested_arr#2#2, 9)
+
+make arr2 = [0]
+
+set arr2#0 = arr2
+
+do assert((string)arr2, "[[...]]")
