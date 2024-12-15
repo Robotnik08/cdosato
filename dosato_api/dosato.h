@@ -161,7 +161,7 @@ typedef enum {
     TYPE_FUNCTION
 } DataType;
 
-#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE)
+#define ISINTTYPE(type) (type == TYPE_INT || type == TYPE_SHORT || type == TYPE_LONG || type == TYPE_BYTE || type == TYPE_UINT || type == TYPE_USHORT || type == TYPE_ULONG || type == TYPE_UBYTE || type == D_NULL)
 #define ISFLOATTYPE(type) (type == TYPE_FLOAT || type == TYPE_DOUBLE)
 
 typedef struct {
@@ -249,6 +249,12 @@ extern ErrorType castValue(Value* value, DataType type);
 extern bool valueEquals (Value* a, Value* b);
 
 /**
+ * @brief Compares two values and returns true if they are equal.
+ * This is based on the same logic as the === operator in the Language.
+ */
+extern bool valueEqualsStrict (Value* a, Value* b);
+
+/**
  * @brief Increments a value by a specific amount.
  * @param value The value to increment.
  * @param amount The amount to increment by.
@@ -282,7 +288,7 @@ typedef struct {
     size_t count;
     size_t capacity;
     Value* values;
-    char** keys;
+    Value* keys;
 } ValueObject;
 
 /**
@@ -296,7 +302,7 @@ extern ValueArray* buildArray(size_t count, ...);
 /**
  * @brief Builds an object value from a list of key-value pairs.
  * @param count The number of key-value pairs to include in the object.
- * @param ... The key-value pairs to include in the object, must be of type 'char*' and 'Value'. Make sure to include the key first, then the value. Take note that the key is copied internally, so you are still the owner of the key.
+ * @param ... The key-value pairs to include in the object, must be of type 'Value'. Make sure to include the key first, then the value.
  * @return The built object value.
  */
 extern ValueObject* buildObject(size_t count, ...);
