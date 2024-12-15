@@ -3,9 +3,9 @@ make array board = [0] * 9
 define void printBoard () {
     do {
         do say(board#i ? (board#i == 1 ? "X" : "O") : i)
-        if i % 3 == 2 then say("\n")
+        if i % 3 == 2 then sayln()
     } for i in range(9)
-    do say("\n")
+    do sayln()
 }
 
 define bool checkWin (int player) {
@@ -27,10 +27,10 @@ define int playGame () {
         
         make int pos = -1
         do sayln("Enter position (0-8): ")
-        set pos = stringtoint(listen()) % 9
+        set pos = stringToInt(listen()) % 9
         do {
             do sayln("Enter position (0-8): ")
-            set pos = stringtoint(listen()) % 9
+            set pos = stringToInt(listen()) % 9
         } while board#pos != 0
 
         set board#pos = player == 1 ? 1 : -1
