@@ -402,7 +402,7 @@ Value array_range (ValueArray args, bool debug) {
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (int i = AS_LONG(start); (AS_LONG(step) > 0 && i < AS_LONG(end)) || (AS_LONG(step) < 0 && i > AS_LONG(end)); i += AS_LONG(step)) {
+    for (long long int i = AS_LONG(start); (AS_LONG(step) > 0 && i < AS_LONG(end)) || (AS_LONG(step) < 0 && i > AS_LONG(end)); i += AS_LONG(step)) {
         write_ValueArray(new_array, BUILD_LONG(i));
     }
 
