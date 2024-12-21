@@ -11,7 +11,7 @@ FinishMessage=Installation complete. Press OK to exit.
 Setup=cmd /c setup.bat
 Text
 {
-    <h1>Dosato Installer 0.6.7</h1>
+    <h1>Dosato Installer 0.6.8</h1>
     This installer will install or update Dosato on your computer. <br>
     Click "Install" to begin.
 }
