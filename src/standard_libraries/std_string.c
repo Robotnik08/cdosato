@@ -561,3 +561,17 @@ Value string_to_string(ValueArray args, bool debug) {
 
     return arg;
 }
+
+Value string_compare (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value a = GET_ARG(args, 0);
+    Value b = GET_ARG(args, 1);
+
+    CAST_SAFE(a, TYPE_STRING);
+    CAST_SAFE(b, TYPE_STRING);
+
+    return BUILD_LONG(strcmp(AS_STRING(a), AS_STRING(b)));
+}
