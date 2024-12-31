@@ -56,3 +56,34 @@ Value io_random_bool (ValueArray args, bool debug) {
     bool result = rand() % 2;
     return BUILD_BOOL(result);
 }
+
+Value io_get_random (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY && arg.type != TYPE_STRING) {
+        return BUILD_EXCEPTION(E_NOT_ITERABLE);
+    }
+
+    if (arg.type == TYPE_ARRAY) {
+        ValueArray* array = AS_ARRAY(arg);
+        if (array->count == 0) {
+            return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
+        }
+
+        int index = rand() % array->count;
+        return array->values[index];
+    }
+
+    if (arg.type == TYPE_STRING) {
+        char* string = AS_STRING(arg);
+        if (strlen(string) == 0) {
+            return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
+        }
+
+        int index = rand() % strlen(string);
+        return BUILD_CHAR(string[index]);
+    }
+}

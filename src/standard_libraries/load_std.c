@@ -29,6 +29,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"randomInt", io_random_int},
         {"randomRange", io_random_range},
         {"randomBool", io_random_bool},
+        {"getRandom", io_get_random},
 
         {"time", io_time},
         {"sleep", io_sleep},
