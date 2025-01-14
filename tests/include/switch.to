@@ -152,7 +152,7 @@ define s_test7 (value) {
         other => {
             return "Other"
         }
-    }
+    } 
 }
 
 do assert(s_test7({a: 1, b: 2, c: 3}), "One, Two, Three")

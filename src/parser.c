@@ -84,7 +84,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_IMPLEMENT:
         case NODE_MASTER_ENUM:
         case NODE_MASTER_IF:
-        case NODE_MASTER_INHERIT: {
+        case NODE_MASTER_INHERIT:
+        case NODE_MASTER_MATCH: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = type == NODE_MASTER_IF ? EXT_IF : EXT_NULL;
             if (type == NODE_MASTER_IF) {
@@ -405,7 +406,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             break;
         }
 
-        case NODE_MASTER_SWITCH_BODY: {
+        case NODE_MASTER_SWITCH_BODY:
+        case NODE_MASTER_MATCH_BODY: {
             // everything before the first '=>' operator is the expression
             int i = start;
             for (i = start; i < end; i++) {
