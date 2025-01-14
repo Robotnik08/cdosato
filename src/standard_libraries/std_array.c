@@ -402,7 +402,7 @@ Value array_range (ValueArray args, bool debug) {
 
     ValueArray* new_array = malloc(sizeof(ValueArray));
     init_ValueArray(new_array);
-    for (int i = AS_LONG(start); (AS_LONG(step) > 0 && i < AS_LONG(end)) || (AS_LONG(step) < 0 && i > AS_LONG(end)); i += AS_LONG(step)) {
+    for (long long int i = AS_LONG(start); (AS_LONG(step) > 0 && i < AS_LONG(end)) || (AS_LONG(step) < 0 && i > AS_LONG(end)); i += AS_LONG(step)) {
         write_ValueArray(new_array, BUILD_LONG(i));
     }
 
@@ -891,4 +891,73 @@ Value array_length (ValueArray args, bool debug) {
     }
 
     return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+}
+
+// Remove elements from an array that are present in another array
+Value array_difference (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array1 = GET_ARG(args, 0);
+    if (array1.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value array2 = GET_ARG(args, 1);
+    if (array2.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* obj1 = AS_ARRAY(array1);
+    ValueArray* obj2 = AS_ARRAY(array2);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    for (int i = 0; i < obj1->count; i++) {
+        bool found = false;
+        for (int j = 0; j < obj2->count; j++) {
+            if (valueEquals(&obj1->values[i], &obj2->values[j])) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            write_ValueArray(new_array, obj1->values[i]);
+        }
+    }
+
+    return BUILD_ARRAY(new_array, true);
+}
+
+Value array_intersection (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array1 = GET_ARG(args, 0);
+    if (array1.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value array2 = GET_ARG(args, 1);
+    if (array2.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* obj1 = AS_ARRAY(array1);
+    ValueArray* obj2 = AS_ARRAY(array2);
+    ValueArray* new_array = malloc(sizeof(ValueArray));
+    init_ValueArray(new_array);
+
+    for (int i = 0; i < obj1->count; i++) {
+        for (int j = 0; j < obj2->count; j++) {
+            if (valueEquals(&obj1->values[i], &obj2->values[j])) {
+                write_ValueArray(new_array, obj1->values[i]);
+                break;
+            }
+        }
+    }
+
+    return BUILD_ARRAY(new_array, true);
 }

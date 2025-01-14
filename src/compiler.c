@@ -82,6 +82,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_MATCH:
         case NODE_MASTER_IF:
         case NODE_MASTER_SWITCH:
         case NODE_MASTER_CONTINUE:
@@ -358,7 +359,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     case OP_INCREMENT_FAST:
                     case OP_DECREMENT_FAST:
                     case OP_STORE_FAST_POP:
-                    case OP_STORE_FAST_CONSTANT: {
+                    case OP_STORE_FAST_CONSTANT:
+                    case OP_STORE_FAST_POP_CONSTANT: {
                         size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
                         if (index < arity) {
                             continue;
@@ -737,10 +739,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
                 writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
 
-                if (type == NODE_MASTER_CONST_BODY) {
-                    op_normal = OP_STORE_FAST_CONSTANT;
-                    op_pop = OP_STORE_FAST_POP_CONSTANT;
-                }
+            }
+            if (type == NODE_MASTER_CONST_BODY) {
+                op_normal = OP_STORE_FAST_CONSTANT;
+                op_pop = OP_STORE_FAST_POP_CONSTANT;
             }
 
 
@@ -1250,7 +1252,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // each OP_LOAD_FAST must be offset by the capture_index_count and OP_TEMP must be changed to OP_LOAD_FAST
             for (int i = 0; i < instance->count; i += getOffset(instance->code[i])) {
-                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST || instance->code[i] == OP_STORE_FAST_POP) {
+                if (instance->code[i] == OP_LOAD_FAST || instance->code[i] == OP_STORE_FAST || instance->code[i] == OP_INCREMENT_FAST || instance->code[i] == OP_DECREMENT_FAST || instance->code[i] == OP_STORE_FAST_POP || instance->code[i] == OP_STORE_FAST_CONSTANT || instance->code[i] == OP_STORE_FAST_POP_CONSTANT) {
                     size_t index = DOSATO_GET_ADDRESS_SHORT(instance->code, i + 1);
                     if (index < arity) {
                         continue;
@@ -1468,6 +1470,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
         
+        case NODE_MASTER_MATCH_BODY:
         case NODE_MASTER_SWITCH_BODY: {
             // compile the condition
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
@@ -1509,6 +1512,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             bool is_local = scope != NULL;
             // store the loop location data
             write_LocationList(&ci->loop_jump_locations, jump_end_index, is_local ? scope->locals_count : 0);
+            size_t top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 1];
 
             // compile the bodies
             for (int i = 0; i < switch_body.body.count; i++) {
@@ -1529,6 +1533,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // last node is the body
                 compileNode(vm, ci, case_node.body.nodes[case_node.body.count - 1], ast, scope);
+
+                size_t top_stack_amount = ci->loop_jump_locations.stack_count[ci->loop_jump_locations.count - 1];
+                int offset = 0;
+                if (type == NODE_MASTER_MATCH_BODY) {
+                    writeInstruction(ci, node.start, OP_BREAK, DOSATO_SPLIT_SHORT(top_jump_index), DOSATO_SPLIT_SHORT((scope->locals_count - top_stack_amount + offset)));
+                }
             }
 
             // pop the loop location data

@@ -885,10 +885,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_NOT_AN_ARRAY);
                 }
 
-                if (!list.defined) {
-                    PRINT_ERROR(E_UNDEFINED_VARIABLE);
-                }
-
                 ErrorType code = castValue(&index, TYPE_LONG);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);

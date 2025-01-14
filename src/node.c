@@ -32,6 +32,7 @@ static const char* NODE_NAMES[] = {
     "NODE_MASTER_ENUM",
     "NODE_MASTER_IF",
     "NODE_MASTER_INHERIT",
+    "NODE_MASTER_MATCH",
 
     "NODE_MASTER_DO_BODY",
     "NODE_MASTER_MAKE_BODY",
@@ -49,6 +50,7 @@ static const char* NODE_NAMES[] = {
     "NODE_MASTER_ENUM_BODY",
     "NODE_MASTER_IF_BODY",
     "NODE_MASTER_INHERIT_BODY",
+    "NODE_MASTER_MATCH_BODY",
     
 
     "NODE_WHEN_BODY",

@@ -29,6 +29,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"randomInt", io_random_int},
         {"randomRange", io_random_range},
         {"randomBool", io_random_bool},
+        {"getRandom", io_get_random},
 
         {"time", io_time},
         {"sleep", io_sleep},
@@ -78,6 +79,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"stringCount", string_count},
         {"stringJoin", string_join},
         {"stringFormat", string_format},
+        {"stringCompare", string_compare},
         {"toString", string_to_string},
 
         {"sort", array_sort},
@@ -106,6 +108,8 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"combinations", array_combinations},
         {"permutations", array_permutations},
         {"removeDuplicates", array_remove_duplicates},
+        {"difference", array_difference},
+        {"intersection", array_intersection},
         {"len", array_length},
 
         {"typeOf", type_typeof},

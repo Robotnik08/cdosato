@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define MASTER_KEYWORDS {"do", "make", "set", "define", "include", "import", "return", "break", "continue", "switch", "const", "class", "implement", "enum", "if", "inherit"}
+#define MASTER_KEYWORDS {"do", "make", "set", "define", "include", "import", "return", "break", "continue", "switch", "const", "class", "implement", "enum", "if", "inherit", "match"}
 #define EXTENSION_KEYWORDS {"when", "while", "else", "catch", "then", "for", "unless", "until"}
 #define VAR_TYPES {"int", "bool", "string", "float", "double", "char", "short", "long", "byte", "void", "array", "uint", "ushort", "ulong", "ubyte", "object", "var", "function"}
 #define BOOLEAN_KEYWORDS {"false", "true"}

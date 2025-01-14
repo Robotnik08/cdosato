@@ -1,0 +1,88 @@
+define interpret_brainfck (code) {
+    const registers = [0] * 10000
+    make pointer = 0
+    make memory_pointer = 0
+    make output = ""
+
+    do {
+        make c = code#pointer
+        set pointer++
+        switch c => {
+            '>' => {
+                set memory_pointer++
+                break
+            }
+            '<' => {
+                set memory_pointer--
+                break
+            }
+            '+' => {
+                set registers#memory_pointer++
+                break
+            }
+            '-' => {
+                set registers#memory_pointer--
+                break
+            }
+            '.' => {
+                make char r = registers#memory_pointer
+                set output += r
+                break
+            }
+            ',' => {
+                // TODO: Implement input
+                make char r = listen()#0
+                set registers#memory_pointer = r
+                break
+            }
+            '[' => {
+                make loop = 1
+                make start = pointer
+                if registers#memory_pointer == 0 then {
+                    break
+                }
+                do {
+                    make ch = code#pointer
+                    set pointer++
+                    if ch == '[' then {
+                        set loop++
+                    } else if ch == ']' then {
+                        set loop--
+                    }
+                    do sayln(ch)
+                } while loop > 0
+                break
+            }
+            ']' => {
+                make loop = 1
+                make start = pointer
+                if registers#memory_pointer == 0 then {
+                    break
+                }
+                do {
+                    make ch = code#pointer
+                    set pointer--
+                    if ch == '[' then {
+                        set loop--
+                    } else if ch == ']' then {
+                        set loop++
+                    }
+                } while loop > 0
+                set pointer--
+                break
+            }
+
+            other => {
+                break
+            }
+        }
+    } while pointer < len(code)
+
+    return output
+}
+
+do sayln(map(stringSplit(interpret_brainfck("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."), ""), 
+    int (x, _i) => {
+        return (int)x#0
+    }
+))

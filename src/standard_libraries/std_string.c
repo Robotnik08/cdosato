@@ -118,24 +118,37 @@ Value string_upper(ValueArray args, bool debug) {
 }
 
 Value string_substr(ValueArray args, bool debug) {
-    if (args.count != 3) {
+    if (args.count > 3 || args.count < 2) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
     Value arg1 = GET_ARG(args, 0);
     Value arg2 = GET_ARG(args, 1);
-    Value arg3 = GET_ARG(args, 2);
 
     CAST_SAFE(arg1, TYPE_STRING);
     CAST_SAFE(arg2, TYPE_LONG);
-    CAST_SAFE(arg3, TYPE_LONG);
+
+    
 
     char* str = AS_STRING(arg1);
     long long int start = AS_LONG(arg2);
-    long long int end = AS_LONG(arg3);
+    long long int end = strlen(str) - 1;
+    if (args.count == 3) {
+        Value arg3 = GET_ARG(args, 2);
+        CAST_SAFE(arg3, TYPE_LONG);
+        end = AS_LONG(arg3);
+    }
 
-    if (start < 0 || start >= strlen(str) || end < 0 || end >= strlen(str) || start > end) {
-        return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
+    if (end < 0) {
+        end = strlen(str) + end;
+    }
+
+    if (start < 0) {
+        start = end + start;
+    }
+
+    if (start > end) {
+        return BUILD_STRING(COPY_STRING(""), true);
     }
 
     char* result = malloc(end - start + 2);
@@ -560,4 +573,18 @@ Value string_to_string(ValueArray args, bool debug) {
     CAST_COPY_TO_STRING(arg);
 
     return arg;
+}
+
+Value string_compare (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value a = GET_ARG(args, 0);
+    Value b = GET_ARG(args, 1);
+
+    CAST_SAFE(a, TYPE_STRING);
+    CAST_SAFE(b, TYPE_STRING);
+
+    return BUILD_LONG(strcmp(AS_STRING(a), AS_STRING(b)));
 }

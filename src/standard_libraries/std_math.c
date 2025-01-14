@@ -82,40 +82,100 @@ Value math_sqrt(ValueArray args, bool debug) {
 }
 
 Value math_min(ValueArray args, bool debug) {
-    if (args.count != 2) {
-        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
-    }
+    if (args.count == 2) {
+        Value a = GET_ARG(args, 0);
+        Value b = GET_ARG(args, 1);
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+        if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+            CAST_SAFE(a, TYPE_DOUBLE);
+            CAST_SAFE(b, TYPE_DOUBLE);
+            return BUILD_DOUBLE(fmin(AS_DOUBLE(a), AS_DOUBLE(b)));
+        } else {
+            CAST_SAFE(a, TYPE_LONG);
+            CAST_SAFE(b, TYPE_LONG);
+            return BUILD_LONG(AS_LONG(a) < AS_LONG(b) ? AS_LONG(a) : AS_LONG(b));
+        }
+    } else if (args.count == 1) {
+        Value arg = GET_ARG(args, 0);
+        if (arg.type != TYPE_ARRAY) {
+            return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+        }
 
-    if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
-        CAST_SAFE(a, TYPE_DOUBLE);
-        CAST_SAFE(b, TYPE_DOUBLE);
-        return BUILD_DOUBLE(fmin(AS_DOUBLE(a), AS_DOUBLE(b)));
+        ValueArray* arr = AS_ARRAY(arg);
+        if (arr->count == 0) {
+            return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
+        }
+
+        Value min = arr->values[0];
+        for (size_t i = 1; i < arr->count; i++) {
+            Value current = arr->values[i];
+            if (ISFLOATTYPE(current.type) || ISFLOATTYPE(min.type)) {
+                CAST_SAFE(current, TYPE_DOUBLE);
+                CAST_SAFE(min, TYPE_DOUBLE);
+                if (AS_DOUBLE(current) < AS_DOUBLE(min)) {
+                    min = current;
+                }
+            } else {
+                CAST_SAFE(current, TYPE_LONG);
+                CAST_SAFE(min, TYPE_LONG);
+                if (AS_LONG(current) < AS_LONG(min)) {
+                    min = current;
+                }
+            }
+        }
+
+        return min;
     } else {
-        CAST_SAFE(a, TYPE_LONG);
-        CAST_SAFE(b, TYPE_LONG);
-        return BUILD_LONG(AS_LONG(a) < AS_LONG(b) ? AS_LONG(a) : AS_LONG(b));
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 }
 
 Value math_max(ValueArray args, bool debug) {
-    if (args.count != 2) {
-        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
-    }
+    if (args.count == 2) {
+        Value a = GET_ARG(args, 0);
+        Value b = GET_ARG(args, 1);
 
-    Value a = GET_ARG(args, 0);
-    Value b = GET_ARG(args, 1);
+        if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+            CAST_SAFE(a, TYPE_DOUBLE);
+            CAST_SAFE(b, TYPE_DOUBLE);
+            return BUILD_DOUBLE(fmax(AS_DOUBLE(a), AS_DOUBLE(b)));
+        } else {
+            CAST_SAFE(a, TYPE_LONG);
+            CAST_SAFE(b, TYPE_LONG);
+            return BUILD_LONG(AS_LONG(a) > AS_LONG(b) ? AS_LONG(a) : AS_LONG(b));
+        }
+    } else if (args.count == 1) {
+        Value arg = GET_ARG(args, 0);
+        if (arg.type != TYPE_ARRAY) {
+            return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+        }
 
-    if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
-        CAST_SAFE(a, TYPE_DOUBLE);
-        CAST_SAFE(b, TYPE_DOUBLE);
-        return BUILD_DOUBLE(AS_DOUBLE(a) > AS_DOUBLE(b) ? AS_DOUBLE(a) : AS_DOUBLE(b));
+        ValueArray* arr = AS_ARRAY(arg);
+        if (arr->count == 0) {
+            return BUILD_EXCEPTION(E_INDEX_OUT_OF_BOUNDS);
+        }
+
+        Value max = arr->values[0];
+        for (size_t i = 1; i < arr->count; i++) {
+            Value current = arr->values[i];
+            if (ISFLOATTYPE(current.type) || ISFLOATTYPE(max.type)) {
+                CAST_SAFE(current, TYPE_DOUBLE);
+                CAST_SAFE(max, TYPE_DOUBLE);
+                if (AS_DOUBLE(current) > AS_DOUBLE(max)) {
+                    max = current;
+                }
+            } else {
+                CAST_SAFE(current, TYPE_LONG);
+                CAST_SAFE(max, TYPE_LONG);
+                if (AS_LONG(current) > AS_LONG(max)) {
+                    max = current;
+                }
+            }
+        }
+
+        return max;
     } else {
-        CAST_SAFE(a, TYPE_LONG);
-        CAST_SAFE(b, TYPE_LONG);
-        return BUILD_LONG(AS_LONG(a) > AS_LONG(b) ? AS_LONG(a) : AS_LONG(b));
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
     }
 }
 
