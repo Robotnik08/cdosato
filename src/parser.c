@@ -981,7 +981,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         if (endofblock == -1) {
                             PRINT_ERROR(i, E_MISSING_CLOSING_PARENTHESIS);
                         }
-                        if (1 >= highest) {
+                        if (1 >= highest && !(is_unary || type_cast)) {
                             is_unary = false;
                             is_turnary = false;
                             highest = 1;
@@ -1011,7 +1011,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         }
                         all_type = all_type && startofblock + 1 != i - 1;
 
-                        if (UNARY_PRECEDENCE >= highest && all_type) {
+                        if ((UNARY_PRECEDENCE >= highest || func_call) && all_type) {
                             if (is_unary) {
                                 continue;
                             }

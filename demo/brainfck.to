@@ -49,13 +49,14 @@ define interpret_brainfck (code) {
                     } else if ch == ']' then {
                         set loop--
                     }
+                    do sayln(ch)
                 } while loop > 0
                 break
             }
             ']' => {
                 make loop = 1
                 make start = pointer
-                if registers#memory_pointer != 0 then {
+                if registers#memory_pointer == 0 then {
                     break
                 }
                 do {
@@ -80,4 +81,8 @@ define interpret_brainfck (code) {
     return output
 }
 
-do sayln(interpret_brainfck(">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++.------.--------.>>+.>++++++++++."))
+do sayln(map(stringSplit(interpret_brainfck("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."), ""), 
+    int (x, _i) => {
+        return (int)x#0
+    }
+))
