@@ -30,6 +30,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"randomRange", io_random_range},
         {"randomBool", io_random_bool},
         {"getRandom", io_get_random},
+        {"shuffle", io_array_shuffle},
 
         {"time", io_time},
         {"sleep", io_sleep},
@@ -111,6 +112,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"difference", array_difference},
         {"intersection", array_intersection},
         {"len", array_length},
+        {"contains", array_contains},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},

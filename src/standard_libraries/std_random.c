@@ -87,3 +87,24 @@ Value io_get_random (ValueArray args, bool debug) {
         return BUILD_CHAR(string[index]);
     }
 }
+
+Value io_array_shuffle (ValueArray args, bool debug) {
+    if (args.count != 1) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg = GET_ARG(args, 0);
+    if (arg.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    ValueArray* array = AS_ARRAY(arg);
+    for (int i = 0; i < array->count; i++) {
+        int index = rand() % array->count;
+        Value temp = array->values[i];
+        array->values[i] = array->values[index];
+        array->values[index] = temp;
+    }
+
+    return arg;
+}
