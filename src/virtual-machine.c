@@ -22,7 +22,6 @@ DosatoObject* buildDosatoObject(void* body, DataType type, bool sweep, void* vm)
 
     vm_instance->allocated_objects[vm_instance->allocated_objects_count++] = object;
 
-
     if (vm_instance->allocated_objects_count >= vm_instance->allocated_objects_capacity) {
         // mark and sweep
         if (sweep && vm_instance->allow_sweep) {
@@ -544,12 +543,11 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 uint16_t index = NEXT_SHORT();
                 Value constant = vm->constants.values[index];
 
-                constant.is_constant = false;
-
                 if (constant.type == TYPE_STRING) {
                     // copy the string so the original pointer stays intact
-                    constant = BUILD_STRING(COPY_STRING(AS_STRING(constant)), true);
+                    constant = BUILD_STRING(COPY_STRING(AS_STRING(constant)), false);
                 }
+                constant.is_constant = false;
                 pushValue(&vm->stack, constant);
                 break;
             }
