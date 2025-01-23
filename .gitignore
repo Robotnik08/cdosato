@@ -8,3 +8,4 @@ temp
 !test_library.dll
 installer_output
 build
+broken.json

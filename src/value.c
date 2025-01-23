@@ -840,6 +840,32 @@ char* dataTypeToString (DataType type) {
     }
 }
 
+bool isTruthy (Value value) {
+    switch (value.type) {
+        case D_NULL: return false;
+        case TYPE_BOOL: return value.as.boolValue;
+        case TYPE_BYTE: return value.as.byteValue != 0;
+        case TYPE_UBYTE: return value.as.ubyteValue != 0;
+        case TYPE_SHORT: return value.as.shortValue != 0;
+        case TYPE_USHORT: return value.as.ushortValue != 0;
+        case TYPE_INT: return value.as.intValue != 0;
+        case TYPE_UINT: return value.as.uintValue != 0;
+        case TYPE_LONG: return value.as.longValue != 0;
+        case TYPE_ULONG: return value.as.ulongValue != 0;
+        case TYPE_FLOAT: return value.as.floatValue != 0;
+        case TYPE_DOUBLE: return value.as.doubleValue != 0;
+        case TYPE_CHAR: return value.as.charValue != 0;
+        case TYPE_STRING: return strlen(AS_STRING(value)) != 0;
+        case TYPE_ARRAY: return AS_ARRAY(value)->count != 0;
+        case TYPE_OBJECT: return AS_OBJECT(value)->count != 0;
+        case TYPE_FUNCTION: return true;
+        case TYPE_EXCEPTION: return false;
+        case TYPE_HLT: return false;
+        case TYPE_VAR: return false;
+        default: return false;
+    }
+}
+
 void markDefined(Value* value) {
     value->defined = true;
     if (value->type == TYPE_ARRAY) {

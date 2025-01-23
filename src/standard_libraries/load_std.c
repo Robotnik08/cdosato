@@ -70,6 +70,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"stringStartsWith", string_startswith},
         {"stringEndsWith", string_endswith},
         {"stringReplace", string_replace},
+        {"stringReplaceFirst", string_replace_first},
         {"stringTrim", string_trim},
         {"stringReverse", string_reverse},
         {"stringContains", string_contains},

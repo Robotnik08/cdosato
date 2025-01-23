@@ -94,6 +94,8 @@ OPERATOR
     | '~'
     | '^/'
     | '!-'
+    | '!?'
+    | '!?='
     ;
 
 BINARY_ASSIGN_OPERATOR

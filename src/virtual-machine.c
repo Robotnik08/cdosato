@@ -2047,6 +2047,17 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
                 break;
             }
+            case OP_BINARY_FALSEY_COALESCE: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (isTruthy(a)) {
+                    pushValue(&vm->stack, a);
+                } else {
+                    pushValue(&vm->stack, b);
+                }
+                break;
+            }
 
             case OP_BINARY_STRICT_EQUAL: {
                 Value b = POP_VALUE();

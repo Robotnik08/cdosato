@@ -298,6 +298,55 @@ Value string_replace(ValueArray args, bool debug) {
     return BUILD_STRING(result, true);
 }
 
+Value string_replace_first(ValueArray args, bool debug) {
+    if (args.count != 3) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+    Value arg3 = GET_ARG(args, 2);
+
+    CAST_SAFE(arg1, TYPE_STRING);
+    CAST_SAFE(arg2, TYPE_STRING);
+    CAST_SAFE(arg3, TYPE_STRING);
+
+    char* str = AS_STRING(arg1);
+    char* substr = AS_STRING(arg2);
+    char* replacement = AS_STRING(arg3);
+
+    int replacement_len = strlen(replacement);
+    int substr_len = strlen(substr);
+
+    char* result = malloc(1);
+    result[0] = '\0';
+    bool replaced = false;
+    for (size_t i = 0; i < strlen(str); i++) {
+        bool match = true;
+        for (size_t j = 0; j < strlen(substr); j++) {
+            if (str[i + j] != substr[j]) {
+                match = false;
+                break;
+            }
+        }
+        if (match && !replaced) {
+            int len = strlen(result);
+            result = realloc(result, strlen(result) + replacement_len + 1);
+            strcat(result, replacement);
+            i += substr_len - 1;
+            result[len + replacement_len + 1] = '\0';
+            replaced = true;
+        } else {
+            result = realloc(result, strlen(result) + 2);
+            size_t len = strlen(result);
+            result[len] = str[i];
+            result[len + 1] = '\0';
+        }
+    }
+
+    return BUILD_STRING(result, true);
+}
+
 Value string_trim(ValueArray args, bool debug) {
     if (args.count != 1) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);

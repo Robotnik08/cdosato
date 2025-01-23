@@ -1812,6 +1812,12 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             break;
         }
 
+        case OPERATOR_FALSEY_COALESCE_ASSIGN:
+        case OPERATOR_FALSEY_COALESCE: {
+            writeByteCode(ci, OP_BINARY_FALSEY_COALESCE, token_index);
+            break;
+        }
+
         case OPERATOR_RANGE_UP: {
             writeByteCode(ci, OP_BINARY_RANGE_UP, token_index);
             break;

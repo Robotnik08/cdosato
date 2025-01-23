@@ -106,6 +106,7 @@ ErrorType castValue(Value* value, DataType type);
 bool valueEquals (Value* aPtr, Value* bPtr);
 bool valueEqualsStrict (Value* a, Value* b);
 ErrorType incValue (Value* value, int amount);
+bool isTruthy (Value value);
 
 
 char* valueToString (Value value, bool extensive);
