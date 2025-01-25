@@ -270,12 +270,17 @@ Value string_replace(ValueArray args, bool debug) {
 
     int replacement_len = strlen(replacement);
     int substr_len = strlen(substr);
+    int str_len = strlen(str);
 
     char* result = malloc(1);
     result[0] = '\0';
-    for (size_t i = 0; i < strlen(str); i++) {
+    for (size_t i = 0; i < str_len; i++) {
         bool match = true;
-        for (size_t j = 0; j < strlen(substr); j++) {
+        for (size_t j = 0; j < substr_len; j++) {
+            if (i + substr_len > str_len) {
+                match = false;
+                break;
+            }
             if (str[i + j] != substr[j]) {
                 match = false;
                 break;
@@ -283,10 +288,9 @@ Value string_replace(ValueArray args, bool debug) {
         }
         if (match) {
             int len = strlen(result);
-            result = realloc(result, strlen(result) + replacement_len + 1);
+            result = realloc(result, len + replacement_len + 1);
             strcat(result, replacement);
             i += substr_len - 1;
-            result[len + replacement_len + 1] = '\0';
         } else {
             result = realloc(result, strlen(result) + 2);
             size_t len = strlen(result);
