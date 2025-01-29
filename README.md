@@ -13,6 +13,8 @@ cDosato is the official implementation of the DOSATO programming language.<br>
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Demo](#demo)
+  - [Basic programs](#basic-programs)
+  - [Fun/interesting programs](#funinteresting-programs)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
@@ -68,13 +70,39 @@ This documentation is also available online [here](https://robotnik08.github.io/
 
 If you want to see what you can do with dosato, check out the demos directory. <br>
 
+### Available demos:
+
+#### Basic programs:
+- hello_world.to
+  - A simple hello world program
+- fizzbuzz.to
+  - A simple fizzbuzz program
+- fib.to
+  - Fast and compact fibonacci function
+- factorial.to
+  - Fast and compact factorial function
+- prime.to
+  - Fast and compact isprime function
+- oop.to
+  - A simple object oriented programming example
+
+#### Fun/interesting programs:
+- life.to
+  - A simple game of life implementation
+- life-compact.to
+  - A compact version of the game of life implementation
+- tictac.to
+  - A simple console based tic tac toe game
+- brainfck.to
+  - A brainfuck interpreter
+
 ## Testing
 
-Navigate to the tests directory and run rununittests.bat (for windows) or rununittests.sh (for unix) <br>
+Navigate to the tests directory and run `runtests.to` with Dosato <br>
 
 ## Contributing
 
-This language is still in its early stages of development, and I (Sebastiaan Heins) mainly work on it in my free time as a hobby project. I personally think Dosato has potential, but we are still a long way from reaching that potential. If you would like to contribute to the project, you are more than welcome to do so. You can contribute by fixing bugs, adding new features, improving the documentation, or even just by giving feedback on the language. Any kind of contribution is appreciated.<br>
+This language is still in its early stages of development, and I (Sebastiaan Heins) mainly work on it in my free time as a hobby project. I personally think Dosato has potential, but we are still a long (_long_) way from reaching that potential. If you would like to contribute to the project, you are more than welcome to do so. You can contribute by fixing bugs, adding new features, improving the documentation, or even just by giving feedback on the language. Any kind of contribution is appreciated.<br>
 I'm not that familiar with the open source community, so I'm not sure how to handle contributions. If you would like to contribute, please reach out. :p
 
 ## License
