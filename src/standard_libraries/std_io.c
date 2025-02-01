@@ -375,7 +375,6 @@ Value io_get_files_directory (ValueArray args, bool debug) {
     init_ValueArray(array);
     for (int i = 0; i < count; i++) {
         write_ValueArray(array, BUILD_STRING(COPY_STRING(files[i]), false));
-        free(files[i]);
     }
     
     free_files(files, count);

@@ -13,13 +13,15 @@ Value string_split(ValueArray args, bool debug) {
 
     char* str = AS_STRING(arg1);
     char* delim = AS_STRING(arg2);
+    int len = strlen(str);
+    int delim_len = strlen(delim);
 
-    if (strlen(delim) == 0) {
+    if (delim_len == 0) {
         // build an array of characters
         ValueArray* result = malloc(sizeof(ValueArray));
         init_ValueArray(result);
 
-        for (size_t i = 0; i < strlen(str); i++) {
+        for (size_t i = 0; i < len; i++) {
             char* new_token = malloc(2);
             new_token[0] = str[i];
             new_token[1] = '\0';
@@ -30,8 +32,9 @@ Value string_split(ValueArray args, bool debug) {
         return BUILD_ARRAY(result, true);
     }
 
-    if (strlen(delim) == 1) {
+    if (delim_len == 1) {
         char* str = COPY_STRING(AS_STRING(arg1));
+        char* ptr_cpy = str;
         char* token = strtok(str, delim);
         ValueArray* result = malloc(sizeof(ValueArray));
         init_ValueArray(result);
@@ -40,7 +43,7 @@ Value string_split(ValueArray args, bool debug) {
             write_ValueArray(result, value);
             token = strtok(NULL, delim);
         }
-        free(str);
+        free(ptr_cpy);
         
         return BUILD_ARRAY(result, true);
     }
@@ -50,9 +53,9 @@ Value string_split(ValueArray args, bool debug) {
     init_ValueArray(result);
 
     int last_index = 0;
-    for (size_t i = 0; i < strlen(str) - strlen(delim); i++) {
+    for (size_t i = 0; i <= len - delim_len; i++) {
         bool match = true;
-        for (size_t j = 0; j < strlen(delim); j++) {
+        for (size_t j = 0; j < delim_len; j++) {
             if (str[i + j] != delim[j]) {
                 match = false;
                 break;
@@ -60,24 +63,24 @@ Value string_split(ValueArray args, bool debug) {
         }
         if (match) {
             if (i - last_index == 0) {
-                last_index = i + strlen(delim);
-                i += strlen(delim) - 1;
+                last_index = i + delim_len;
+                i += delim_len - 1;
                 continue;
             }
-            char* new_token = malloc(i - last_index + 1);
+            char* new_token = calloc(i - last_index + 1, sizeof(char));
             strncpy(new_token, str + last_index, i - last_index);
             new_token[i - last_index] = '\0';
             Value value = BUILD_STRING(new_token, false);
             write_ValueArray(result, value);
-            last_index = i + strlen(delim);
-            i += strlen(delim) - 1;
+            last_index = i + delim_len;
+            i += delim_len - 1;
         }
     }
 
-    if (last_index < strlen(str)) {
-        char* new_token = malloc(strlen(str) - last_index + 1);
-        strncpy(new_token, str + last_index, strlen(str) - last_index);
-        new_token[strlen(str) - last_index] = '\0';
+    if (last_index < len) {
+        char* new_token = calloc(len - last_index + 1, sizeof(char));
+        strncpy(new_token, str + last_index, len - last_index);
+        new_token[len - last_index] = '\0';
         Value value = BUILD_STRING(new_token, false);
         write_ValueArray(result, value);
     }
@@ -277,23 +280,19 @@ Value string_replace(ValueArray args, bool debug) {
     for (size_t i = 0; i < str_len; i++) {
         bool match = true;
         for (size_t j = 0; j < substr_len; j++) {
-            if (i + substr_len > str_len) {
-                match = false;
-                break;
-            }
-            if (str[i + j] != substr[j]) {
+            if (i + substr_len > str_len || str[i + j] != substr[j]) {
                 match = false;
                 break;
             }
         }
         if (match) {
             int len = strlen(result);
-            result = realloc(result, len + replacement_len + 1);
+            result = realloc(result, len + replacement_len + 2);
             strcat(result, replacement);
             i += substr_len - 1;
         } else {
-            result = realloc(result, strlen(result) + 2);
             size_t len = strlen(result);
+            result = realloc(result, len + 2);
             result[len] = str[i];
             result[len + 1] = '\0';
         }

@@ -67,9 +67,9 @@ void get_files_in_directory(const char *path, char ***files, int *count) {
 }
 
 void free_files(char **files, int count) {
-    // for (int i = 0; i < count; i++) {
-    //     free(files[i]);
-    // }
+    for (int i = 0; i < count; i++) {
+        free(files[i]);
+    }
     free(files);
 }
 
