@@ -24,7 +24,7 @@ static const char* ERROR_MESSAGES[] = {
     "Expression can not be empty",
     "Operator cannot be used as unary operator (-, ~, !, *, !-, ^/)",
     "Incomplete Ternary Operator, expected ':'",
-    "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, <<, >>, ??, !?, **, ^/, <|, >|, :>, :<, :>=, :<=, #, ->, ?->)",
+    "Operator cannot be used as binary operator (+, -, *, /, %, =, >, <, &&, ||, &, ^, |, <<, >>, ??, !?, **, ^/, <|, >|, :>, :<, :>=, :<=, #, ->, ?->, <=>)",
     "Expected Hash Operator (#)",
     "Invalid Expression",
     "Expected Colon Operator (':')",

@@ -569,7 +569,7 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
                 strcat(string, keyString);
                 strcat(string, ": ");
                 char* valueString = valueToStringSafe(object->values[i], true, pointers, count);
-                string = realloc(string, strlen(string) + strlen(valueString) + 3);
+                string = realloc(string, strlen(string) + strlen(valueString) + 10);
                 strcat(string, valueString);
                 if (i < object->count - 1) {
                     strcat(string, ", ");
@@ -658,13 +658,13 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
         case TYPE_STRING: {
             if (extensive) {
                 char* str = AS_STRING(value);
-                string = realloc(string, strlen(string) + strlen(str) + 3);
+                string = realloc(string, strlen(string) + strlen(str) + 10);
                 strcat(string, "\"");
                 strcat(string, AS_STRING(value));
                 strcat(string, "\"");
             } else {
                 char* str = AS_STRING(value);
-                string = realloc(string, strlen(string) + strlen(str) + 1);
+                string = realloc(string, strlen(string) + strlen(str) + 10);
                 strcat(string, str);
             }
             break;
@@ -709,7 +709,7 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
                 }
             }
 
-            string = realloc(string, strlen(buffer) + 1);
+            string = realloc(string, strlen(buffer) + 10);
             strcpy(string, buffer);
             break;
         }
@@ -743,7 +743,7 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
                 }
             }
 
-            string = realloc(string, strlen(buffer) + 1);
+            string = realloc(string, strlen(buffer) + 10);
             strcpy(string, buffer);
             
             break;
@@ -932,7 +932,7 @@ size_t addName(NameMap* map, char* name) {
     if (hasName(map, name)) {
         return 0;
     }
-    char* newName = malloc(strlen(name) + 1);
+    char* newName = malloc(strlen(name) + 10);
     strcpy(newName, name);
     write_NameMap(map, newName);
     return map->count - 1;

@@ -1240,7 +1240,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 if (a.type == TYPE_STRING || b.type == TYPE_STRING) {
                     char* a_str = valueToString(a, false);
                     char* b_str = valueToString(b, false);
-                    char* new_string = malloc(strlen(a_str) + strlen(b_str) + 1);
+                    char* new_string = malloc(strlen(a_str) + strlen(b_str) + 2);
                     strcpy(new_string, a_str);
                     strcat(new_string, b_str);
                     free(a_str);
@@ -2075,6 +2075,35 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 bool result = !valueEqualsStrict(&a, &b);
                 pushValue(&vm->stack, BUILD_BOOL(result));
                 break;
+            }
+
+            case OP_BINARY_SPACE_SHIP: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                if (ISFLOATTYPE(a.type) || ISFLOATTYPE(b.type)) {
+                    ErrorType code = castValue(&a, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_DOUBLE);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    long long int result = a.as.doubleValue < b.as.doubleValue ? -1 : a.as.doubleValue > b.as.doubleValue ? 1 : 0;
+                    pushValue(&vm->stack, BUILD_LONG(result));
+                } else {
+                    ErrorType code = castValue(&a, TYPE_LONG);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    code = castValue(&b, TYPE_LONG);
+                    if (code != E_NULL) {
+                        PRINT_ERROR(code);
+                    }
+                    long long int result = a.as.longValue < b.as.longValue ? -1 : a.as.longValue > b.as.longValue ? 1 : 0;
+                    pushValue(&vm->stack, BUILD_LONG(result));
+                }
             }
             
             // unary operations

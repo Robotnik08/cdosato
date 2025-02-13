@@ -186,6 +186,9 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_BINARY_FALSEY_COALESCE:
             printf("%s", "OP_BINARY_FALSEY_COALESCE");
             break;
+        case OP_BINARY_SPACE_SHIP:
+            printf("%s", "OP_BINARY_SPACE_SHIP");
+            break;
 
         case OP_UNARY_NEGATE:
             printf("%s", "OP_UNARY_NEGATE");

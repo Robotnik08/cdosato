@@ -334,7 +334,7 @@ Value string_replace_first(ValueArray args, bool debug) {
         }
         if (match && !replaced) {
             int len = strlen(result);
-            result = realloc(result, strlen(result) + replacement_len + 1);
+            result = realloc(result, strlen(result) + replacement_len + 2);
             strcat(result, replacement);
             i += substr_len - 1;
             result[len + replacement_len + 1] = '\0';
