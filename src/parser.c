@@ -206,6 +206,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
                 }
                 
+                bool is_undef = false;
                 while (i < end) {
                     if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                         PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
@@ -217,10 +218,17 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
                         i++; // skip the comma
                     } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                        if (i >= end) {
+                            is_undef = true;
+                            break;
+                        }
                         PRINT_ERROR(i, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                     } else {
                         break;
                     }
+                }
+                if (is_undef) {
+                    break;
                 }
 
                 // write operator node
@@ -242,6 +250,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 }
 
                 int i = start;
+                bool is_undef = false;
                 while (i < end) {
                     if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                         PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
@@ -253,10 +262,17 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
                         i++; // skip the comma
                     } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                        if (i >= end) {
+                            is_undef = true;
+                            break;
+                        }
                         PRINT_ERROR(i, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                     } else {
                         break;
                     }
+                }
+                if (is_undef) {
+                    break;
                 }
                 // write operator node
                 write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_OPERATOR, file_name));

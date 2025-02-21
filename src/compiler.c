@@ -716,7 +716,23 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
 
             if (operator_index == -1) {
-                PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.start);
+                if (scope != NULL) { // local scope (push null to the stack, used for the local variable)
+                    for (int i = identifier_index; i < node.body.count; i++) {
+                        writeByteCode(ci, OP_PUSH_NULL, node.body.nodes[i].start);
+                        writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
+                        pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
+                    }
+                } else {
+                    OpCode op_normal = type == NODE_MASTER_MAKE_BODY ? OP_DEFINE : OP_DEFINE_CONSTANT;
+                    OpCode op_pop = type == NODE_MASTER_MAKE_BODY ? OP_DEFINE_POP : OP_DEFINE_POP_CONSTANT;
+                    writeByteCode(ci, OP_PUSH_NULL, node.body.nodes[0].start); // push the null
+                    writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
+                    for (int i = identifier_index; i < node.body.count - 1; i++) {
+                        writeInstruction(ci, node.body.nodes[i].start, op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
+                    }
+                    writeInstruction(ci, node.body.nodes[node.body.count - 1].start, op_pop, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[node.body.count - 1].start].carry));
+                }
+                break;
             }
 
             if (scope != NULL) { // local scope (push null to the stack, used for the local variable)

@@ -279,7 +279,11 @@ ErrorType castValue(Value* value, DataType type) {
             }
             case TYPE_STRING: {
                 char* str = AS_STRING(*value);
-                numberValue = strlen(str);
+                if (type == TYPE_CHAR && strlen(str) > 0) {
+                    numberValue = str[0];
+                } else {
+                    numberValue = strlen(str);
+                }
                 break;
             }
             case TYPE_ARRAY: {
