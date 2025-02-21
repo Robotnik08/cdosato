@@ -378,7 +378,7 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             i = end;
             goto end_loop;
         }
-        if (IS_FLOATERIC(full_code[i])) {
+        if (IS_FLOATERIC(full_code[i]) && full_code[i] != 'F') {
             if (!(IS_NUMERIC(full_code[i]) || full_code[i] == '.') || IS_ALPHANAMERIC(full_code[i-1]) || IS_ALPHANAMERIC(full_code[i+1])) {
                 if (IS_ALPHANAMERIC(full_code[i-1]) && full_code[i] == '.') printError(full_code, i, file_name, E_INVALID_NUMBER_LITERAL, 1);
                 for (int k = i; k < code_length && IS_FLOATERIC(full_code[i]); k++) {
