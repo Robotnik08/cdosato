@@ -1,6 +1,6 @@
 # Dosato 0.7.0 TODO
 
-- [ ] Hashable object keys
+- [X] Hashable object keys
 - [ ] ++ and -- operators work in expressions, not just set statements
 - [ ] `for`, `while` and `until` loops being able to be used as master keywords insteaf of only prefix keywords
 - [ ] Implicit return in arrow functions

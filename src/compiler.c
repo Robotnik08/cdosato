@@ -7,6 +7,7 @@
 #include "../include/code_instance.h"
 #include "../include/debug.h"
 #include "../include/dynamic_library_loader.h"
+#include "../include/hash.h"
 
 void compile(VirtualMachine* vm, AST* ast) {
 
@@ -1658,7 +1659,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // build the enum object
             ValueObject* obj = malloc(sizeof(ValueObject));
-            init_ValueObject(obj);
+            init_ValueObjectHashTable(obj);
 
             long long int index = 0;
             for (int i = 0; i < node.body.nodes[1].body.count; i++) {
@@ -1674,7 +1675,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // add the constant to the object
                 char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
-                write_ValueObject(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
+                write_ValueObjectHashTable(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
 
                 index++;
             }

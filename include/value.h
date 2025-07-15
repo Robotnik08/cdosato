@@ -122,13 +122,6 @@ typedef struct {
 typedef struct {
     size_t count;
     size_t capacity;
-    Value* values;
-    Value* keys;
-} ValueObject;
-
-typedef struct {
-    size_t count;
-    size_t capacity;
     size_t* stack;
 } StackFrames;
 
@@ -157,15 +150,8 @@ void write_ValueArray(ValueArray* array, Value value);
 void free_ValueArray(ValueArray* array);
 void destroyValueArray(ValueArray* array);
 
-void init_ValueObject(ValueObject* object);
-void write_ValueObject(ValueObject* object, Value key, Value value);
-void free_ValueObject(ValueObject* object);
-bool hasKey(ValueObject* object, Value key);
-Value* getValueAtKey(ValueObject* object, Value key);
-void removeFromKey(ValueObject* object, Value key);
-
 ValueArray* buildArray(size_t count, ...);
-ValueObject* buildObject(size_t count, ...);
+void* buildObject(size_t count, ...);
 
 void init_StackFrames(StackFrames* stack);
 void write_StackFrames(StackFrames* stack, size_t frame);

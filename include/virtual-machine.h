@@ -4,6 +4,7 @@
 #include "common.h"
 #include "code_instance.h"
 #include "value.h"
+#include "hash.h"
 
 #define GC_MIN_THRESHOLD 1024
 
