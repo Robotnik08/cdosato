@@ -2,7 +2,7 @@
 
 - [X] Hashable object keys
 - [ ] ++ and -- operators work in expressions, not just set statements
-- [ ] `for`, `while` and `until` loops being able to be used as master keywords insteaf of only prefix keywords
+- [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only prefix keywords
 - [ ] Implicit return in arrow functions
 - [ ] Arrow functions without type
 - [ ] Arrow functions without a type and without parentheses
