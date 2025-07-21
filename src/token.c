@@ -148,6 +148,8 @@ int isUnaryOperator (OperatorType operator) {
         case OPERATOR_ABSOLUTE:
         case OPERATOR_ROOT:
         case OPERATOR_MULTIPLY:
+        case OPERATOR_INCREMENT:
+        case OPERATOR_DECREMENT:
             return true;
         default:
             return false;

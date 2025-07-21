@@ -1,13 +1,14 @@
 # Dosato 0.7.0 TODO
 
 - [X] Hashable object keys
-- [ ] ++ and -- operators work in expressions, not just set statements
-- [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only prefix keywords
+- [X] ++ and -- operators work in expressions, not just set statements
+- [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only postfix keywords
 - [ ] Implicit return in arrow functions
 - [ ] Arrow functions without type
 - [ ] Arrow functions without a type and without parentheses
 - [ ] Edit array map functions and co to be able to ignore the index argument for convenience
 - [ ] `test` master keyword and assert functions
+- [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
 - [ ] Array unwrapping operators `#=` to be able to unwrap arrays in expressions
 - [ ] Add `\` operator (rounding operator)
 - [ ] `in` operator to check if a value is in a list
@@ -19,10 +20,10 @@
     - [ ] Retire `_` as a catch variable name
 - [ ] `delete` master keyword to delete a variable in an object
 - [ ] constant-folding optimizations
-- [ ] logical operators return the value of the last evaluated expression instead of a boolean, allows for it to stop evaluating if the result is alre/ady known.
+- [ ] logical operators return the value of the last evaluated expression instead of a boolean, allows for it to stop evaluating if the result is already known.
 - [ ] logical XOR operator `^^`
 - [ ] Logical assignment operators `&&=`, `||=`, `^^=`
 - [ ] allow trailing commas in array and object definitions
-- [ ] buildin macros for `__name__`, `__file__`, `__line__`, `__column__`
+- [ ] built-in macros for `__name__`, `__file__`, `__line__`, `__column__`
 - [ ] Better console mode
 - [ ] `loop` master keyword
