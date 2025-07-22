@@ -1228,7 +1228,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_LAMBDA_EXPRESSION: {
-            DataType data_type = ast->tokens.tokens[node.body.nodes[0].start].carry;
+            DataType data_type = TYPE_VAR;
+            int new_start = 0;
+            if (node.body.nodes[new_start].type == NODE_TYPE) {
+                data_type = ast->tokens.tokens[node.body.nodes[new_start].start].carry;
+                new_start = 1;
+            }
 
             char* name = COPY_STRING("lambda");
             size_t name_index = -1;
@@ -1239,12 +1244,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ScopeData* new_scope = malloc(sizeof(ScopeData));
             initScopeData(new_scope);
 
-            int arity = node.body.nodes[1].body.count;
+            int arity = node.body.nodes[new_start].body.count;
             int* hash_map = malloc(sizeof(int) * arity);
             bool found_default = false;
             int default_count = 0;
             for (int i = 0; i < arity; i++) {
-                Node arg = node.body.nodes[1].body.nodes[i];
+                Node arg = node.body.nodes[new_start].body.nodes[i];
                 int f_identifier_index = arg.body.nodes[0].type == NODE_TYPE ? 1 : 0;
                 int carry = ast->tokens.tokens[arg.body.nodes[f_identifier_index].start].carry;
                 for (int j = 0; j < i; j++) {
@@ -1267,7 +1272,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             for (int i = arity - default_count; i < arity; i++) {
                 // compile each default argument expression
-                Node arg = node.body.nodes[1].body.nodes[i];
+                Node arg = node.body.nodes[new_start].body.nodes[i];
                 int expression_index = arg.body.nodes[0].type == NODE_TYPE ? 2 : 1;
                 writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
                 int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
@@ -1277,7 +1282,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 instance->code[jump_index + 2] = instance->count >> 8;
             }
 
-            compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
+            compileNode(vm, instance, node.body.nodes[new_start + 1], ast, new_scope);
 
             size_t* capture_indexs = malloc(0);
             int capture_index_count = 0;
@@ -1321,12 +1326,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             freeScopeData(new_scope);
             free(new_scope);
 
-            writeInstruction(instance, node.body.nodes[2].end, OP_END_FUNC, arity + capture_index_count);
+            writeInstruction(instance, node.body.nodes[new_start + 1].end, OP_END_FUNC, arity + capture_index_count);
 
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
-                NodeList list = node.body.nodes[1].body.nodes[i].body;
+                NodeList list = node.body.nodes[new_start].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
                 types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }
@@ -1337,7 +1342,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             func.name_index = name_index;
             func.argv = name_indexs;
             func.argt = types;
-            func.arity = node.body.nodes[1].body.count;
+            func.arity = node.body.nodes[new_start].body.count;
             func.default_count = default_count;
             func.instance = instance;
             func.return_type = data_type;

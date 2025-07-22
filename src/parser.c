@@ -715,21 +715,22 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
         case NODE_LAMBDA_EXPRESSION: {
             // first token is the type
-            if (tokens.tokens[start].type != TOKEN_VAR_TYPE) {
-                PRINT_ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
+            int new_start = start;
+            if (tokens.tokens[new_start].type == TOKEN_VAR_TYPE) {
+                write_NodeList(&root.body, parse(source, length, new_start, new_start + 1, tokens, NODE_TYPE, file_name));
+                new_start++;
             }
-            write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_TYPE, file_name));
 
             // arguments
-            if (tokens.tokens[start + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[start + 1].carry, BRACKET_ROUND)) {
-                PRINT_ERROR(start + 1, E_EXPECTED_BRACKET_ROUND);
+            if (tokens.tokens[new_start].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[new_start].carry, BRACKET_ROUND)) {
+                PRINT_ERROR(new_start, E_EXPECTED_BRACKET_ROUND);
             }
 
-            int i = getEndOfBlock(tokens, start + 1);
+            int i = getEndOfBlock(tokens, new_start);
             if (i == -1) {
-                PRINT_ERROR(start + 1, E_MISSING_CLOSING_PARENTHESIS);
+                PRINT_ERROR(new_start + 1, E_MISSING_CLOSING_PARENTHESIS);
             }
-            write_NodeList(&root.body, parse(source, length, start + 2, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+            write_NodeList(&root.body, parse(source, length, new_start + 1, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
             i++;
             
             // body
@@ -1175,12 +1176,19 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
                     root.type = NODE_TERNARY_EXPRESSION;
                 } else {
+                    OperatorType op = tokens.tokens[highest_index].carry;
+
+                    if (op == OPERATOR_FAT_ARROW) {
+                        // lambda expression
+                        write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_LAMBDA_EXPRESSION, file_name));
+                        break;
+                    }
+
                     write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, type, file_name));
 
                     if (tokens.tokens[highest_index].type != TOKEN_OPERATOR) {
                         PRINT_ERROR(highest_index, E_UNEXPECTED_TOKEN);
                     }
-                    OperatorType op = tokens.tokens[highest_index].carry;
                     if (isAssignmentOperator(op) || op == OPERATOR_NOT || op == OPERATOR_NOT_BITWISE || op == OPERATOR_COMMA || op == OPERATOR_QUESTION || op == OPERATOR_COLON) {
                         PRINT_ERROR(highest_index, E_NON_BINARY_OPERATOR);
                     }
