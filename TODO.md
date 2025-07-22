@@ -2,6 +2,7 @@
 
 - [X] Hashable object keys
 - [X] ++ and -- operators work in expressions, not just set statements
+    - [X] Fix bug that allows them to increment and decrement constants (should not be allowed)
 - [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only postfix keywords
 - [ ] Implicit return in arrow functions
 - [ ] Arrow functions without type

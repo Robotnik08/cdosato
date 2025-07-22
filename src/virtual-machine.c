@@ -1029,8 +1029,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_INCREMENT: {
                 uint16_t index = NEXT_SHORT();
-                if (!vm->globals.values[index].defined) {
+                Value global = vm->globals.values[index];
+                if (!global.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                if (global.is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
                 ErrorType code = incValue(&vm->globals.values[index], 1);
@@ -1042,8 +1047,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_DECREMENT: {
                 uint16_t index = NEXT_SHORT();
-                if (!vm->globals.values[index].defined) {
+                Value global = vm->globals.values[index];
+                if (!global.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                if (global.is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
                 ErrorType code = incValue(&vm->globals.values[index], -1);
@@ -1055,8 +1065,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_INCREMENT_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                if (!vm->stack.values[index].defined) {
+                Value local = vm->stack.values[index];
+                if (!local.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                if (local.is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
                 ErrorType code = incValue(&vm->stack.values[index], 1);
@@ -1068,8 +1083,13 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
 
             case OP_DECREMENT_FAST: {
                 uint16_t index = NEXT_SHORT() + PEEK_STACK();
-                if (!vm->stack.values[index].defined) {
+                Value local = vm->stack.values[index];
+                if (!local.defined) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
+                }
+
+                if (local.is_constant) {
+                    PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
                 // TO DO type checking
