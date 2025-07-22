@@ -26,7 +26,7 @@ void destroyValue(Value* value) {
 
     if (value->type == TYPE_OBJECT) {
         ValueObject* object = AS_OBJECT(*value);
-        free_ValueObject(object);
+        free_ValueObjectHashTable(object);
     } else if (value->type == TYPE_STRING) {
         free(AS_STRING(*value));
     }
@@ -79,9 +79,17 @@ Value hardCopyValueSafe (Value value, DosatoObject*** pointers, int count) {
 
             ValueObject* object = AS_OBJECT(value);
             ValueObject* newObject = malloc(sizeof(ValueObject));
-            init_ValueObject(newObject);
-            for (size_t i = 0; i < object->count; i++) {
-                write_ValueObject(newObject, object->keys[i], hardCopyValueSafe(object->values[i], pointers, count));
+            init_ValueObjectHashTable(newObject);
+            for (size_t i = 0; i < object->size; i++) {
+                if (!object->entries[i].is_used) continue; // no hash
+                ValueObjectHashEntry entry = object->entries[i];
+                while (true) {
+                    write_ValueObjectHashTable(newObject, entry.keyValue, hardCopyValueSafe(entry.value, pointers, count));
+                    if (entry.next == NULL) {
+                        break;
+                    }
+                    entry = *(ValueObjectHashEntry*)entry.next;
+                }
             }
             value = BUILD_OBJECT(newObject, false);
             break;
@@ -165,17 +173,26 @@ bool valueEquals (Value* aPtr, Value* bPtr) {
             return false;
         }
 
-        for (size_t i = 0; i < aObject->count; i++) {
-            Value key = aObject->keys[i];
-            if (!hasKey(bObject, key)) {
-                return false;
-            }
-            Value* val = getValueAtKey(bObject, key);
+        for (size_t i = 0; i < aObject->size; i++) {
+            if (!aObject->entries[i].is_used) continue; // no hash
+            ValueObjectHashEntry entry = aObject->entries[i];
+            while (true) {
+                uint64_t key = entry.hash;
+                if (!hasKeyHash(bObject, key)) {
+                    return false;
+                }
+                Value* val = getValueAtKeyHash(bObject, key);
 
-            Value a = aObject->values[i];
-            Value b = *val;
-            if (!valueEquals(&a, &b)) {
-                return false;
+                Value a = entry.value;
+                Value b = *val;
+                if (!valueEquals(&a, &b)) {
+                    return false;
+                }
+
+                if (entry.next == NULL) {
+                    break;
+                }
+                entry = *(ValueObjectHashEntry*)entry.next;
             }
         }
 
@@ -523,9 +540,9 @@ ValueArray* buildArray(size_t count, ...) {
     return array;
 }
 
-ValueObject* buildObject(size_t count, ...) {
+void* buildObject(size_t count, ...) {
     ValueObject* object = malloc(sizeof(ValueObject));
-    init_ValueObject(object);
+    init_ValueObjectHashTable(object);
 
     va_list args;
     va_start(args, count);
@@ -533,7 +550,7 @@ ValueObject* buildObject(size_t count, ...) {
     for (size_t i = 0; i < count; i++) {
         Value key = va_arg(args, Value);
         Value value = va_arg(args, Value);
-        write_ValueObject(object, key, value);
+        write_ValueObjectHashTable(object, key, value);
     }
 
     va_end(args);
@@ -567,18 +584,31 @@ char* valueToStringSafe (Value value, bool extensive, DosatoObject*** pointers, 
             string = realloc(string, strlen(string) + 2);
             strcat(string, "{");
             ValueObject* object = AS_OBJECT(value);
-            for (size_t i = 0; i < object->count; i++) {
-                char* keyString = valueToStringSafe(object->keys[i], true, pointers, count);
-                string = realloc(string, strlen(string) + strlen(keyString) + 10);
-                strcat(string, keyString);
-                strcat(string, ": ");
-                char* valueString = valueToStringSafe(object->values[i], true, pointers, count);
-                string = realloc(string, strlen(string) + strlen(valueString) + 10);
-                strcat(string, valueString);
-                if (i < object->count - 1) {
-                    strcat(string, ", ");
+            int c = 0;
+            for (size_t i = 0; i < object->size; i++) {
+                if (!object->entries[i].is_used) continue;
+                ValueObjectHashEntry entry = object->entries[i];
+                while (true) {
+                    char* keyString = valueToStringSafe(entry.keyValue, true, pointers, count);
+                    string = realloc(string, strlen(string) + strlen(keyString) + 10);
+                    strcat(string, keyString);
+                    strcat(string, ": ");
+                    char* valueString = valueToStringSafe(entry.value, true, pointers, count);
+                    string = realloc(string, strlen(string) + strlen(valueString) + 10);
+                    strcat(string, valueString);
+
+                    if (c < object->count - 1) {
+                        strcat(string, ", ");
+                    }
+
+                    free(keyString);
+                    free(valueString);
+                    c++;
+                    if (entry.next == NULL) {
+                        break;
+                    }
+                    entry = *(ValueObjectHashEntry*)entry.next;
                 }
-                free(valueString);
             }
             string = realloc(string, strlen(string) + 2);
             strcat(string, "}");
@@ -882,9 +912,16 @@ void markDefined(Value* value) {
 
     if (value->type == TYPE_OBJECT) {
         ValueObject* object = AS_OBJECT(*value);
-        for (size_t i = 0; i < object->count; i++) {
-            if (object->values[i].defined) continue;
-            markDefined(&object->values[i]);
+        for (size_t i = 0; i < object->size; i++) {
+            if (!object->entries[i].is_used) continue; // no hash
+            ValueObjectHashEntry entry = object->entries[i];
+            while (true) {
+                if (!entry.value.defined) {
+                    markDefined(&entry.value);
+                }
+
+                NEXT_ENTRY(entry);
+            }
         }
     }
 }
@@ -940,60 +977,4 @@ size_t addName(NameMap* map, char* name) {
     strcpy(newName, name);
     write_NameMap(map, newName);
     return map->count - 1;
-}
-
-void init_ValueObject(ValueObject* object) {
-    object->values = NULL;
-    object->keys = NULL;
-    object->count = 0;
-    object->capacity = 0;
-}
-
-void write_ValueObject(ValueObject* object, Value key, Value value) {
-    if (object->capacity < object->count + 1) {
-        size_t oldCapacity = object->capacity;
-        object->capacity = DOSATO_UPDATE_CAPACITY(oldCapacity);
-        object->values = DOSATO_RESIZE_LIST(Value, object->values, oldCapacity, object->capacity);
-        object->keys = DOSATO_RESIZE_LIST(Value, object->keys, oldCapacity, object->capacity);
-    }
-    object->values[object->count] = value;
-    object->keys[object->count] = key;
-    object->count++;
-}
-
-void free_ValueObject(ValueObject* object) {
-    free(object->values);
-    free(object->keys);
-    init_ValueObject(object);
-}
-
-bool hasKey(ValueObject* object, Value key) {
-    for (size_t i = 0; i < object->count; i++) {
-        if (valueEqualsStrict(&object->keys[i], &key)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-Value* getValueAtKey(ValueObject* object, Value key) {
-    for (size_t i = 0; i < object->count; i++) {
-        if (valueEqualsStrict(&object->keys[i], &key)) {
-            return &object->values[i];
-        }
-    }
-    return NULL;
-}
-
-void removeFromKey (ValueObject* object, Value key) {
-    for (size_t i = 0; i < object->count; i++) {
-        if (valueEqualsStrict(&object->keys[i], &key)) {
-            for (size_t j = i; j < object->count - 1; j++) {
-                object->keys[j] = object->keys[j + 1];
-                object->values[j] = object->values[j + 1];
-            }
-            object->count--;
-            return;
-        }
-    }
 }

@@ -7,6 +7,7 @@
 #include "../include/code_instance.h"
 #include "../include/debug.h"
 #include "../include/dynamic_library_loader.h"
+#include "../include/hash.h"
 
 void compile(VirtualMachine* vm, AST* ast) {
 
@@ -988,10 +989,42 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_UNARY_EXPRESSION: {
+            if (ast->tokens.tokens[node.body.nodes[0].start].carry == OPERATOR_DECREMENT || ast->tokens.tokens[node.body.nodes[0].start].carry == OPERATOR_INCREMENT) {
+                // unary prefix increment/decrement
+                if (node.body.nodes[1].type != NODE_IDENTIFIER) {
+                    PRINT_ERROR(E_EXPECTED_IDENTIFIER, node.body.nodes[1].start);
+                }
+                bool decrement = ast->tokens.tokens[node.body.nodes[0].start].carry == OPERATOR_DECREMENT;
+                if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
+                    writeInstruction(ci, node.body.nodes[1].start, decrement ? OP_DECREMENT_FAST : OP_INCREMENT_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)));
+                    writeInstruction(ci, node.body.nodes[1].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)));
+                } else {
+                    writeInstruction(ci, node.body.nodes[1].start, decrement ? OP_DECREMENT : OP_INCREMENT, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
+                    writeInstruction(ci, node.body.nodes[1].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
+                }
+                break;
+            }
+
             compileNode(vm, ci, node.body.nodes[1], ast, scope);
             int res = writeUnaryInstruction(ci, ast->tokens.tokens[node.body.nodes[0].start].carry, node.body.nodes[0].start);
             if (res == -1) {
                 PRINT_ERROR(E_NON_UNARY_OPERATOR, node.body.nodes[0].start);
+            }
+            break;
+        }
+
+        case NODE_UNARY_POSTFIX_EXPRESSION: {
+            // check if the variable is in the scope
+            if (node.body.nodes[0].type != NODE_IDENTIFIER) {
+                PRINT_ERROR(E_EXPECTED_IDENTIFIER, node.body.nodes[0].start);
+            }
+            bool decrement = ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_DECREMENT;
+            if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)) {
+                writeInstruction(ci, node.body.nodes[0].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+                writeInstruction(ci, node.body.nodes[0].start, decrement ? OP_DECREMENT_FAST : OP_INCREMENT_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+            } else {
+                writeInstruction(ci, node.body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
+                writeInstruction(ci, node.body.nodes[0].start, decrement ? OP_DECREMENT : OP_INCREMENT, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
             }
             break;
         }
@@ -1658,7 +1691,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // build the enum object
             ValueObject* obj = malloc(sizeof(ValueObject));
-            init_ValueObject(obj);
+            init_ValueObjectHashTable(obj);
 
             long long int index = 0;
             for (int i = 0; i < node.body.nodes[1].body.count; i++) {
@@ -1674,7 +1707,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // add the constant to the object
                 char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
-                write_ValueObject(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
+                write_ValueObjectHashTable(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
 
                 index++;
             }

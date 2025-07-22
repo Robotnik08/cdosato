@@ -959,6 +959,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             bool func_call = false;
             bool type_cast = false;
             bool is_unary = false;
+            bool is_unary_postfix = false;
             bool is_turnary = false;
             bool lambda = false;
             for (int i = new_start; i < new_end; i++) {
@@ -1001,6 +1002,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         }
                         if (1 >= highest && !(is_unary || type_cast)) {
                             is_unary = false;
+                            is_unary_postfix = false;
                             is_turnary = false;
                             highest = 1;
                             highest_index = i;
@@ -1034,6 +1036,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                                 continue;
                             }
                             is_unary = false;
+                            is_unary_postfix = false;
                             is_turnary = false;
                             highest = UNARY_PRECEDENCE;
                             highest_index = type_cast ? highest_index : startofblock;
@@ -1055,6 +1058,17 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                             temp_unary = true;
                         } else {
                             PRINT_ERROR(i, E_NON_UNARY_OPERATOR);
+                        }
+                    }
+
+                    bool temp_unary_postfix = false;
+                    if ((tokens.tokens[i].carry == OPERATOR_INCREMENT || tokens.tokens[i].carry == OPERATOR_DECREMENT) && !temp_unary) {
+                        if (i + 1 == new_end || (tokens.tokens[i + 1].type == TOKEN_PARENTHESIS_CLOSED && CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_ROUND)) || tokens.tokens[i + 1].type == TOKEN_OPERATOR) {
+                            precedence = UNARY_PRECEDENCE; // unary operator precedence
+                            temp_unary_postfix = true;
+                            temp_unary = false;
+                        } else {
+                            PRINT_ERROR(i + 1, E_UNEXPECTED_TOKEN);
                         }
                     }
 
@@ -1094,6 +1108,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         highest = precedence;
                         highest_index = is_unary && temp_unary ? highest_index : op_loc; // when it's a unary operator, the highest index is the previous one
                         is_unary = temp_unary;
+                        is_unary_postfix = temp_unary_postfix;
                         is_turnary = temp_turnary;
                         func_call = false;
                         type_cast = false;
@@ -1131,6 +1146,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 if (is_unary) {
                     // unary operator
                     write_NodeList(&root.body, parse(source, length, highest_index, new_end, tokens, NODE_UNARY_EXPRESSION, file_name));
+                } else if (is_unary_postfix) {
+                    write_NodeList(&root.body, parse(source, length, new_start, highest_index + 1, tokens, NODE_UNARY_POSTFIX_EXPRESSION, file_name));
                 } else if (highest_index == new_end - 1) {
                     // error if the last token is an operator
                     PRINT_ERROR(highest_index, E_UNEXPECTED_TOKEN);
@@ -1194,6 +1211,23 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             
             write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_OPERATOR, file_name));
             write_NodeList(&root.body, parse(source, length, start + 1, end, tokens, NODE_EXPRESSION, file_name));
+            break;
+        }
+
+        case NODE_UNARY_POSTFIX_EXPRESSION: {
+            if (start == end) {
+                PRINT_ERROR(start, E_UNEXPECTED_TOKEN);
+            }
+            if (tokens.tokens[end - 1].type != TOKEN_OPERATOR) {
+                PRINT_ERROR(end, E_UNEXPECTED_TOKEN);
+            }
+
+            if (tokens.tokens[end - 1].carry != OPERATOR_INCREMENT && tokens.tokens[end - 1].carry != OPERATOR_DECREMENT) {
+                PRINT_ERROR(end, E_UNEXPECTED_TOKEN);
+            }
+
+            write_NodeList(&root.body, parse(source, length, start, end - 1, tokens, NODE_EXPRESSION, file_name));
+            write_NodeList(&root.body, parse(source, length, end - 1, end, tokens, NODE_OPERATOR, file_name));
             break;
         }
 

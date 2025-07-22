@@ -61,7 +61,7 @@ do assert((bool)string_value, true)
 do assert((string)string_value, "String")
 do assert((float)string_value, 6.0F)
 do assert((double)string_value, 6.0)
-do assert((char)string_value, (char)6)
+do assert((char)string_value, 'S') // First character
 do assert((short)string_value, 6)
 do assert((byte)string_value, 6)
 do expectError(void () => { do ((array)string_value) () }, 45)

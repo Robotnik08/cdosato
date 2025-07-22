@@ -60,7 +60,7 @@ static const char* ERROR_MESSAGES[] = {
     "Wrong number of arguments in function call",
     "Expected STRING type",
     "Expected number",
-    "Cannot reassign constant",
+    "Cannot modify constant",
     "Mismatch in tuple expression",
     "Identifier cannot be used in this context",
     "Value is not iterable",

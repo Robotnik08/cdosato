@@ -127,6 +127,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"keys", object_keys},
         {"values", object_values},
         {"entries", object_entries},
+        {"getHash", object_getHash}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {
