@@ -1283,6 +1283,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
 
             compileNode(vm, instance, node.body.nodes[new_start + 1], ast, new_scope);
+            if (node.body.nodes[new_start + 1].type == NODE_EXPRESSION) {
+                // if the body is an expression, we need to return the value
+                // first cast value
+                writeInstruction(instance, node.body.nodes[new_start + 1].start, OP_TYPE_CAST, data_type);
+                writeInstruction(instance, node.body.nodes[new_start + 1].end, OP_RETURN, DOSATO_SPLIT_SHORT(arity)); // return the value
+            }
 
             size_t* capture_indexs = malloc(0);
             int capture_index_count = 0;

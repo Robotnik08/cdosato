@@ -721,21 +721,29 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 new_start++;
             }
 
+            int i = 0;
             // arguments
             if (tokens.tokens[new_start].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[new_start].carry, BRACKET_ROUND)) {
-                PRINT_ERROR(new_start, E_EXPECTED_BRACKET_ROUND);
+                // check if the token after this is the FAT_ARROW operator
+                if (tokens.tokens[new_start + 1].type != TOKEN_OPERATOR || tokens.tokens[new_start + 1].carry != OPERATOR_FAT_ARROW) {
+                    PRINT_ERROR(new_start + 1, E_UNEXPECTED_TOKEN);
+                }
+                write_NodeList(&root.body, parse(source, length, new_start, new_start + 1, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+                i = new_start + 1; // skip the FAT_ARROW operator
+            } else {
+                i = getEndOfBlock(tokens, new_start);
+                if (i == -1) {
+                    PRINT_ERROR(new_start + 1, E_MISSING_CLOSING_PARENTHESIS);
+                }
+                write_NodeList(&root.body, parse(source, length, new_start + 1, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+                i++;
             }
-
-            int i = getEndOfBlock(tokens, new_start);
-            if (i == -1) {
-                PRINT_ERROR(new_start + 1, E_MISSING_CLOSING_PARENTHESIS);
-            }
-            write_NodeList(&root.body, parse(source, length, new_start + 1, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
-            i++;
             
             // body
             if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_CURLY)) {
-                PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_CURLY);
+                // only an expression as a body
+                write_NodeList(&root.body, parse(source, length, i + 1, end, tokens, NODE_EXPRESSION, file_name));
+                break;
             }
 
             int j = getEndOfBlock(tokens, i + 1);

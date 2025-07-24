@@ -20,7 +20,6 @@
 - [ ] optional catch variable name for the error instead of always using `_`
     - [ ] Retire `_` as a catch variable name
 - [ ] `delete` master keyword to delete a variable in an object
-- [ ] constant-folding optimizations
 - [ ] logical operators return the value of the last evaluated expression instead of a boolean, allows for it to stop evaluating if the result is already known.
 - [ ] logical XOR operator `^^`
 - [ ] Logical assignment operators `&&=`, `||=`, `^^=`
@@ -28,3 +27,21 @@
 - [ ] built-in macros for `__name__`, `__file__`, `__line__`, `__column__`
 - [ ] Better console mode
 - [ ] `loop` master keyword
+- [ ] Error when void function return a value
+- [ ] Optimise bytecode generation
+    - [ ] Generate STORE_POP and STORE_FAST_POP when setting variables
+    - [ ] Add FAST_BINARY operators if both operands are stack variables
+    - [ ] Add FAST_UNARY operators if the operand is a stack variable
+    - [ ] Bundle PUSH_NULL when tuple assignment is used
+    - [ ] constant-folding optimizations
+    - [ ] Handle TYPE_CAST spam, make it so if theres no type, it doesn't generate a type cast instruction or if the constant type is the same as the variable type, for both MAKE, CONST and RETURN
+    - [ ] If -1 use PUSH_MINUS_ONE (This is a special op for for loops, but it can be used quickly to save a bit of time when using -1)
+    - [ ] Add PUSH_CONSTANT_BYTE for quick integer constants
+    - [ ] Remove END_FUNC if the last instrution is a RETURN
+    - [ ] Remove All code after the last RETURN if there is no jump that after it
+    - [ ] Remove all code after the last BREAK or CONTINUE if there is no jump after it
+    - [ ] Add CALL_POP instruction to call a function and pop the result
+    - [ ] Add LOAD_CALL to load a function and call it
+    - [ ] Add LOAD_CALL_POP to load a function and call it, popping the result
+    - [ ] Add LOAD_CALL_FAST to load a function and call it, if the function is a stack variable
+    - [ ] Add LOAD_CALL_FAST_POP to load a function and call it, popping the result, if the function is a stack variable
