@@ -8,6 +8,8 @@
 #include "../include/memory.h"
 #include "../include/filetools.h"
 
+extern double tokenise_time, parse_time, compile_time;
+
 void init_AST (AST* ast) {
     ast->source = NULL;
     ast->length = 0;
@@ -24,7 +26,10 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
     ast->length = length;
     ast->name = name;
 
+    clock_t start_tokenise = clock();
     int res = tokenise(&ast->tokens, ast->source, length, vm, name);
+    clock_t end_tokenise = clock();
+    tokenise_time += (double)(end_tokenise - start_tokenise) / CLOCKS_PER_SEC;
     if (res != 0) {
         printf("Error tokenising source %d\n", res);
         exit(res);
@@ -34,7 +39,10 @@ void load_AST (AST* ast, char* source, size_t length, char* name, int debug, Vir
         printTokens(ast->tokens);
     }
 
+    clock_t start_parse = clock();
     ast->root = parse(ast->source, ast->length, 0, ast->tokens.count, ast->tokens, NODE_PROGRAM, name);
+    clock_t end_parse = clock();
+    parse_time += (double)(end_parse - start_parse) / CLOCKS_PER_SEC;
 }
 
 void free_AST (AST* ast) {

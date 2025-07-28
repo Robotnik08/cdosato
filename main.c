@@ -8,6 +8,7 @@
 
 #include "include/standard_libraries/load_std.h"
 
+double tokenise_time = 0, parse_time = 0, compile_time = 0;
 int debug = 0b0;
 #define DEBUG 0b1
 #define DEBUG_SOURCE 0b10
@@ -149,15 +150,15 @@ int main (int argc, char** argv) {
 
     clock_t start_compile = clock();
     clock_t end_compile = clock();
-    double time_compile = 0;
     if (!debug) {
         compile(vm, main_ast);
     } else {
         compile(vm, main_ast);
         end_compile = clock();
-        time_compile = (double)(end_compile - start_compile) / CLOCKS_PER_SEC;
+        compile_time = (double)(end_compile - start_compile) / CLOCKS_PER_SEC;
     }
 
+    double full_time = tokenise_time + parse_time + compile_time;
 
     if (debug & DEBUG_COMPILE) {
         disassembleCode(vm->instance, "Main");
@@ -184,7 +185,7 @@ int main (int argc, char** argv) {
         exit_code = runVirtualMachine(vm, debug, true);
         clock_t end = clock();
         double time = (double)(end - start) / CLOCKS_PER_SEC;
-        printf("Compilation time: %.3f seconds\nExecution time: %.3f seconds\n", time_compile, time);
+        printf("Compilation time: %.3f seconds (lexer: %.3f seconds, parser: %.3f seconds, compiler: %.3f seconds)\nExecution time: %.3f seconds\n", full_time, tokenise_time, parse_time, compile_time, time);
         printf("Stack size: %d (%s)\n", vm->stack.count, vm->stack.count == 0 ? "passed" : "failed");
         if ((int)vm->stack.count > 0) {
             printf("%s", "Left over stack:\n");

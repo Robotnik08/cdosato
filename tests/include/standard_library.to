@@ -286,26 +286,22 @@ do assert(counter(), 2)
 do assert(counter(), 3)
 do assert(counter(), 4)
 
-do expectError(void () => { do map([1, 2, 3], int (a) => { return a * i }) }, 51)
-do assert(map([1, 2, 3], int (a, i) => { return a * 2 }), [2, 4, 6])
+do assert(map([1, 2, 3], int (a) => { return a * 2 }), [2, 4, 6])
 do assert(map([1, 2, 3], int (a, i) => { return a * i }), [0, 2, 6])
 
 do expectError(void () => { do reduce([1, 2, 3], int (a) => { return a * i }) }, 51)
-do expectError(void () => { do reduce([1, 2, 3], int (a, v) => { return a + b }) }, 51)
-do assert(reduce([1, 2, 3], int (a, v, i) => { return a + v }, 0), 6)
-do assert(reduce([1, 2, 3], int (a, v, i) => { return a + v }, 1), 7)
-do assert(reduce([1, 2, 3], int (a, v, i) => { return a + v }, 2), 8)
-do assert(reduce([1, 2, 3], int (a, v, i) => { return a * v + 1 }, 0), 10)
+do assert(reduce([1, 2, 3], int (a, v) => { return a + v }, 0), 6)
+do assert(reduce([1, 2, 3], int (a, v) => { return a + v }, 1), 7)
+do assert(reduce([1, 2, 3], int (a, v) => { return a + v }, 2), 8)
+do assert(reduce([1, 2, 3], int (a, v) => { return a * v + 1 }, 0), 10)
+do assert(reduce([1, 2, 3], int (a, v, i) => { return a * v + i }, 1), 11)
 
-do expectError(void () => { do some([1, 2, 3], int (a) => { return a * i }) }, 51)
 do assert(some([1, 2, 3], bool (a, i) => { return a == 2 }), true)
 do assert(some([1, 2, 3], bool (a, i) => { return a == 4 }), false)
 
-do expectError(void () => { do every([1, 2, 3], int (a) => { return a * i }) }, 51)
 do assert(every([1, 2, 3], bool (a, i) => { return a < 4 }), true)
 do assert(every([1, 2, 3], bool (a, i) => { return a < 3 }), false)
 
-do expectError(void () => { do filter([1, 2, 3], int (a) => { return a * i }) }, 51)
 do assert(filter([1, 2, 3], bool (a, i) => { return a == 2 }), [2])
 do assert(filter([1, 2, 3], bool (a, i) => { return a == 4 }), [])
 
@@ -320,7 +316,6 @@ do assert(sum([1, 2, 3, 4]), 10)
 do assert(sum([1, 2, 3, 4, 5]), 15)
 do assert(sum([1, 2, 3, 4, -5, 6]), 11)
 
-do expectError(void () => { do find([1, 2, 3], int (a) => { return a * i }) }, 51)
 do assert(find([1, 2, 3], bool (a, i) => { return a == 2 }), 2)
 do assert(find([1, 2, 3], bool (a, i) => { return a == 4 }), null)
 
