@@ -1061,7 +1061,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     int precedence = precedence_values[tokens.tokens[i].carry];
 
                     bool temp_unary = false;
-                    if (i == new_start || tokens.tokens[i - 1].type == TOKEN_OPERATOR || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN || (tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_CLOSED && tokens.tokens[i - 2].type == TOKEN_VAR_TYPE && tokens.tokens[i - 3].type == TOKEN_PARENTHESIS_OPEN)) {
+                    if (i == new_start || (tokens.tokens[i - 1].type == TOKEN_OPERATOR && !(tokens.tokens[i - 1].carry == OPERATOR_INCREMENT || tokens.tokens[i - 1].carry == OPERATOR_DECREMENT)) || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN || (tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_CLOSED && tokens.tokens[i - 2].type == TOKEN_VAR_TYPE && tokens.tokens[i - 3].type == TOKEN_PARENTHESIS_OPEN)) {
                         if (tokens.tokens[i].type == TOKEN_OPERATOR && isUnaryOperator(tokens.tokens[i].carry)) {
                             precedence = UNARY_PRECEDENCE; // unary operator precedence
                             temp_unary = true;
