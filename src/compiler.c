@@ -811,7 +811,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             if (!tuple) {
                 if (operator == OPERATOR_INCREMENT || operator == OPERATOR_DECREMENT) {
                     // do nothing, handled later
-                } else if (operator != OPERATOR_ASSIGN) {
+                } else if (operator != OPERATOR_ASSIGN && operator != OPERATOR_ARRAY_UNWRAP) {
                     // compile the left side of the expression
                     for (int i = 0; i < operator_index; i++) {
                         Node left = node.body.nodes[i];
@@ -825,11 +825,17 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 } else {
                     // push the value to the stack
                     compileNode(vm, ci, node.body.nodes[operator_index + 1], ast, scope);
+
+                    if (operator == OPERATOR_ARRAY_UNWRAP) {
+                        // unwrap the required amount
+                        writeInstruction(ci, node.body.nodes[operator_index].start, OP_UNWRAP_LIST, operator_index);
+                    }
                 }
             } else {
                 if (operator != OPERATOR_ASSIGN) {
-                    PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.start);
+                    PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.body.nodes[operator_index].start);
                 }
+                
                 // push the values to the stack
                 for (int i = operator_index; i < node.body.count; i++) {
                     compileNode(vm, ci, node.body.nodes[i], ast, scope);

@@ -94,13 +94,14 @@ void freeCodeInstanceWeak(CodeInstance* instance) {
 int getOffset(OpCode instruction) {
     switch (instruction) {
         default:
-            return 1; // simple instructions
+            return 1; // simple instructions are 1 byte
 
         case OP_TYPE_CAST:
         case OP_CALL:
         case OP_RETURN:
         case OP_POP:
         case OP_END_FUNC:
+        case OP_UNWRAP_LIST:
             return 2; // 1 byte for the pop count
 
         case OP_DEFINE:

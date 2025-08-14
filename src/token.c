@@ -121,6 +121,7 @@ int isAssignmentOperator (OperatorType operator) {
         case OPERATOR_ROOT_ASSIGN:
         case OPERATOR_PIPE_ASSIGN:
         case OPERATOR_FALSEY_COALESCE_ASSIGN:
+        case OPERATOR_ARRAY_UNWRAP:
             return true;
         default:
             return false;

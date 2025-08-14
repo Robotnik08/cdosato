@@ -674,7 +674,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
             if (i + 1 != end) {
                 if (tokens.tokens[i + 1].type != TOKEN_OPERATOR || tokens.tokens[i + 1].carry != OPERATOR_ASSIGN) {
-                    PRINT_ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR);
+                    PRINT_ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                 }
                 // expression
                 write_NodeList(&root.body, parse(source, length, i + 2, end, tokens, NODE_EXPRESSION, file_name));

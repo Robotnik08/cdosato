@@ -213,6 +213,12 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             printf("%s", "OP_GETOBJECT");
             break;
 
+        case OP_UNWRAP_LIST:
+            printf("%s", "OP_UNWRAP_LIST");
+            pop_count = code[offset];
+            printf(": (%d)", pop_count);
+            break;
+
         case OP_STORE_SUBSCR:
             printf("%s", "OP_STORE_SUBSCR");
             break;

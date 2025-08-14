@@ -336,7 +336,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
         switch (instruction) {
             
             default: {
-                printf("Unknown instruction: %d at: %x\n", instruction, vm->ip - active_instance->code - 1);
+                printf("Unknown instruction: %d at: (0x%x)\n", instruction, vm->ip - active_instance->code - 1);
                 halt = true;
                 break;
             }
@@ -998,6 +998,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 vm->stack.count -= count;
 
                 pushValue(&vm->stack, BUILD_OBJECT(obj, true));
+                break;
+            }
+
+            case OP_UNWRAP_LIST: {
+                int count = NEXT_BYTE();
+                Value list = POP_VALUE();
+
+                if (list.type != TYPE_ARRAY) {
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
+                }
+
+                ValueArray* array = AS_ARRAY(list);
+                if (array->count < count) {
+                    // too little elements to unwrap
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                for (int i = 0; i < count; i++) {
+                    pushValue(&vm->stack, array->values[i]);
+                }
+
                 break;
             }
 

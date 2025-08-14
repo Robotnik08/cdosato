@@ -88,6 +88,8 @@ typedef enum {
     OP_GETOBJECT,
     OP_GETOBJECT_SAFE,
 
+    OP_UNWRAP_LIST,
+
     OP_JUMP,
     OP_JUMP_IF_FALSE,
     OP_JUMP_IF_TRUE,

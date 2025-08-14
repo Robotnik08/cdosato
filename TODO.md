@@ -1,16 +1,19 @@
 # Dosato 0.7.0 TODO
 
 - [X] Hashable object keys
-- [X] ++ and -- operators work in expressions, not just set statements
+- [ ] ++ and -- operators work in expressions, not just set statements
+    - [ ] Works with arrays and object members
     - [X] Fix bug that allows them to increment and decrement constants (should not be allowed)
 - [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only postfix keywords
 - [X] Implicit return in arrow functions
 - [X] Arrow functions without type
 - [X] Arrow functions without a type and without parentheses
-- [ ] Edit array map functions and co to be able to ignore the index argument for convenience
+- [X] Edit array map functions and co to be able to ignore the index argument for convenience
 - [ ] `test` master keyword and assert functions
 - [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
 - [ ] Array unwrapping operators `#=` to be able to unwrap arrays in expressions
+    - [X] For set expressions
+    - [ ] For make expressions
 - [ ] Add `\` operator (rounding operator)
 - [ ] `in` operator to check if a value is in a list
 - [ ] `not in` operator to check if a value is not in a list
