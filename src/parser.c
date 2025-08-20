@@ -217,7 +217,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     
                     if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
                         i++; // skip the comma
-                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || (tokens.tokens[i].carry != OPERATOR_ASSIGN && tokens.tokens[i].carry != OPERATOR_ARRAY_UNWRAP)) {
                         if (i >= end) {
                             is_undef = true;
                             break;
@@ -261,7 +261,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     
                     if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
                         i++; // skip the comma
-                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || (tokens.tokens[i].carry != OPERATOR_ASSIGN && tokens.tokens[i].carry != OPERATOR_ARRAY_UNWRAP)) {
                         if (i >= end) {
                             is_undef = true;
                             break;

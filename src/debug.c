@@ -218,6 +218,11 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             pop_count = code[offset];
             printf(": (%d)", pop_count);
             break;
+        case OP_UNWRAP_LIST_REVERSE:
+            printf("%s", "OP_UNWRAP_LIST_REVERSE");
+            pop_count = code[offset];
+            printf(": (%d)", pop_count);
+            break;
 
         case OP_STORE_SUBSCR:
             printf("%s", "OP_STORE_SUBSCR");

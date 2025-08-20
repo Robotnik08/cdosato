@@ -19,11 +19,11 @@
                    "?\?=","?->","^/=","|>", "===","!==","|>=","!?","!?=","<=>","#="}
 // operator precedence is mostly borrowed from C, lower means higher precedence
 #define OPERATOR_PRECEDENCE \
-                  { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  1,   15,  1,   \
+                  { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  0,   15,  0,   \
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
                     2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13,  13,  13,  13,   13,   12,\
-                    14,    1,    14,   12,   7,    7,    14,   12,  14,   6,    14}
-#define UNARY_PRECEDENCE 0
+                    14,    0,    14,   12,   7,    7,    14,   12,  14,   6,    14}
+#define UNARY_PRECEDENCE 1
 
 typedef enum {
     TOKEN_NULL = -2,

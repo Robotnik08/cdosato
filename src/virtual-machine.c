@@ -1022,6 +1022,27 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
+            case OP_UNWRAP_LIST_REVERSE: {
+                int count = NEXT_BYTE();
+                Value list = POP_VALUE();
+
+                if (list.type != TYPE_ARRAY) {
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
+                }
+
+                ValueArray* array = AS_ARRAY(list);
+                if (array->count < count) {
+                    // too little elements to unwrap
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                for (int i = count - 1; i >= 0; i--) {
+                    pushValue(&vm->stack, array->values[i]);
+                }
+
+                break;
+            }
+
             case OP_LOAD_LAMBDA: {
                 // load lambda function
                 uint16_t index = NEXT_SHORT();
@@ -1113,7 +1134,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
-                // TO DO type checking
                 ErrorType code = incValue(&vm->stack.values[index], -1);
                 break;
             }
@@ -1128,9 +1148,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                int i = index.as.longValue;
+                ErrorType code = castValue(&index, TYPE_LONG);
+                if (code) {
+                    PRINT_ERROR(code);
+                }
+
+                int i = AS_LONG(index);
                 ValueArray* array = AS_ARRAY(list);
+
                 if (i < 0) {
                     i += array->count;
                 }
@@ -1139,8 +1164,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
-                // TO DO type checking
-                ErrorType code = incValue(&array->values[i], 1);
+                code = incValue(&array->values[i], 1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
                 }
@@ -1157,8 +1181,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                int i = index.as.longValue;
+                ErrorType code = castValue(&index, TYPE_LONG);
+                if (code) {
+                    PRINT_ERROR(code);
+                }
+
+                int i = AS_LONG(index);
                 ValueArray* array = AS_ARRAY(list);
 
                 if (i < 0) {
@@ -1169,8 +1197,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
-                // TO DO type checking
-                ErrorType code = incValue(&array->values[i], -1);
+                code = incValue(&array->values[i], -1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
                 }
@@ -1190,7 +1217,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 Value* value = getValueAtKey(obj, key);
-                // to do type checking
+
                 ErrorType code = incValue(value, 1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
@@ -1211,7 +1238,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 Value* value = getValueAtKey(obj, key);
-                // to do type checking
+
                 ErrorType code = incValue(value, -1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);

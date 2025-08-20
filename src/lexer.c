@@ -708,7 +708,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
 
             // Check for hexadecimal
             if (strlen(lit) > 2 && lit[0] == '0' && (lit[1] == 'x' || lit[1] == 'X')) {
-                write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit + 2, NULL, 16)));
+                unsigned long long int lit_value = strtoull(lit + 2, NULL, 16);
+                write_ValueArray(&vm->constants, lit_value <= 9223372036854775807LL ? BUILD_LONG(lit_value) : BUILD_ULONG(lit_value));
                 isInt = false;
             }
             // Check for octal
@@ -721,13 +722,15 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
                     }
                 }
                 if (!invalid) {
-                    write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit + (IS_OCTAL(lit[1]) ? 1 : 2), NULL, 8)));
+                    unsigned long long int lit_value = strtoull(lit + (IS_OCTAL(lit[1]) ? 1 : 2), NULL, 8);
+                    write_ValueArray(&vm->constants, lit_value <= 9223372036854775807LL ? BUILD_LONG(lit_value) : BUILD_ULONG(lit_value));
                     isInt = false;
                 }
             }
             // Check for binary
             else if (strlen(lit) > 2 && lit[0] == '0' && (lit[1] == 'b' || lit[1] == 'B')) {
-                write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit + 2, NULL, 2)));
+                unsigned long long int lit_value = strtoull(lit + 2, NULL, 2);
+                write_ValueArray(&vm->constants, lit_value <= 9223372036854775807LL ? BUILD_LONG(lit_value) : BUILD_ULONG(lit_value));
                 isInt = false;
             }
             // Check for float or double
@@ -746,7 +749,8 @@ int tokenise (TokenList* list, char* full_code, const int code_length, VirtualMa
             }
             // Default to unsigned long if it's an integer
             if (isInt) {
-                write_ValueArray(&vm->constants, BUILD_ULONG(strtoull(lit, NULL, 10)));
+                unsigned long long int lit_value = strtoull(lit, NULL, 10);
+                write_ValueArray(&vm->constants, lit_value <= 9223372036854775807LL ? BUILD_LONG(lit_value) : BUILD_ULONG(lit_value));
             }
         }
     }

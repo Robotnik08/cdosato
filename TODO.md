@@ -1,8 +1,8 @@
 # Dosato 0.7.0 TODO
 
 - [X] Hashable object keys
-- [ ] ++ and -- operators work in expressions, not just set statements
-    - [ ] Works with arrays and object members
+- [X] ++ and -- operators work in expressions, not just set statements
+    - [X] Works with arrays and object members
     - [X] Fix bug that allows them to increment and decrement constants (should not be allowed)
 - [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only postfix keywords
 - [X] Implicit return in arrow functions
@@ -13,7 +13,8 @@
 - [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
 - [ ] Array unwrapping operators `#=` to be able to unwrap arrays in expressions
     - [X] For set expressions
-    - [ ] For make expressions
+    - [X] For make expressions
+    - [ ] Unit tests
 - [ ] Add `\` operator (rounding operator)
 - [ ] `in` operator to check if a value is in a list
 - [ ] `not in` operator to check if a value is not in a list
@@ -31,6 +32,7 @@
 - [ ] Better console mode
 - [ ] `loop` master keyword
 - [ ] Error when void function return a value
+- [ ] Allow ulong on ulong binary math, if both are ulongs
 - [ ] Optimise bytecode generation
     - [ ] Generate STORE_POP and STORE_FAST_POP when setting variables
     - [ ] Add FAST_BINARY operators if both operands are stack variables

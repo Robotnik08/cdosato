@@ -102,6 +102,7 @@ int getOffset(OpCode instruction) {
         case OP_POP:
         case OP_END_FUNC:
         case OP_UNWRAP_LIST:
+        case OP_UNWRAP_LIST_REVERSE:
             return 2; // 1 byte for the pop count
 
         case OP_DEFINE:

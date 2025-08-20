@@ -89,6 +89,7 @@ typedef enum {
     OP_GETOBJECT_SAFE,
 
     OP_UNWRAP_LIST,
+    OP_UNWRAP_LIST_REVERSE,
 
     OP_JUMP,
     OP_JUMP_IF_FALSE,
