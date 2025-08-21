@@ -16,13 +16,11 @@
 - [ ] placeholders for make and set expressions `_`
 - [X] logical XOR operator `^^`
 - [X] Logical assignment operators `&&=`, `||=`, `^^=`
-- [ ] allow trailing commas in array and object definitions
 - [ ] `loop` master keyword
-- [ ] Error when void function return a value
-- [ ] Allow ulong on ulong binary math, if both are ulongs
 
 ### Maybe planned for 0.8 (or I make a new implementation first):
 
+- [ ] Allow ulong on ulong binary math, if both are ulongs
 - [ ] `test` master keyword and assert functions
 - [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
 - [ ] `in` operator to check if a value is in a list
