@@ -122,6 +122,9 @@ int isAssignmentOperator (OperatorType operator) {
         case OPERATOR_PIPE_ASSIGN:
         case OPERATOR_FALSEY_COALESCE_ASSIGN:
         case OPERATOR_ARRAY_UNWRAP:
+        case OPERATOR_AND_AND_ASSIGN:
+        case OPERATOR_OR_OR_ASSIGN:
+        case OPERATOR_XOR_XOR_ASSIGN:
             return true;
         default:
             return false;

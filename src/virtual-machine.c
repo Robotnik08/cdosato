@@ -1776,6 +1776,22 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 pushValue(&vm->stack, BUILD_BOOL(a.as.boolValue || b.as.boolValue));
                 break;
             }
+            case OP_BINARY_LOGICAL_XOR: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_BOOL);
+                if (code != E_NULL) {
+                    PRINT_ERROR(code);
+                }
+                code = castValue(&b, TYPE_BOOL);
+                if (code != E_NULL) {
+                    PRINT_ERROR(code);
+                }
+
+                pushValue(&vm->stack, BUILD_BOOL(a.as.boolValue ^ b.as.boolValue));
+                break;
+            }
             case OP_BINARY_MODULO: {
                 Value b = POP_VALUE();
                 Value a = POP_VALUE();

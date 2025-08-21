@@ -165,6 +165,9 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_BINARY_LOGICAL_OR:
             printf("%s", "OP_BINARY_LOGICAL_OR");
             break;
+        case OP_BINARY_LOGICAL_XOR:
+            printf("%s", "OP_BINARY_LOGICAL_XOR");
+            break;
         case OP_BINARY_NULL_COALESCE:
             printf("%s", "OP_BINARY_NULL_COALESCE");
             break;

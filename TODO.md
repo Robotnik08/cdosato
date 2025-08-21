@@ -9,30 +9,32 @@
 - [X] Arrow functions without type
 - [X] Arrow functions without a type and without parentheses
 - [X] Edit array map functions and co to be able to ignore the index argument for convenience
-- [ ] `test` master keyword and assert functions
-- [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
 - [ ] Array unwrapping operators `#=` to be able to unwrap arrays in expressions
     - [X] For set expressions
     - [X] For make expressions
     - [ ] Unit tests
-- [ ] Add `\` operator (rounding operator)
+- [ ] placeholders for make and set expressions `_`
+- [X] logical XOR operator `^^`
+- [X] Logical assignment operators `&&=`, `||=`, `^^=`
+- [ ] allow trailing commas in array and object definitions
+- [ ] `loop` master keyword
+- [ ] Error when void function return a value
+- [ ] Allow ulong on ulong binary math, if both are ulongs
+
+### Maybe planned for 0.8 (or I make a new implementation first):
+
+- [ ] `test` master keyword and assert functions
+- [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
 - [ ] `in` operator to check if a value is in a list
 - [ ] `not in` operator to check if a value is not in a list
 - [ ] `is <type>` operator to check if a value is of a certain type
 - [ ] `is not <type>` operator to check if a value is not of a certain type
-- [ ] placeholders for make and set expressions `_`
 - [ ] optional catch variable name for the error instead of always using `_`
     - [ ] Retire `_` as a catch variable name
 - [ ] `delete` master keyword to delete a variable in an object
 - [ ] logical operators return the value of the last evaluated expression instead of a boolean, allows for it to stop evaluating if the result is already known.
-- [ ] logical XOR operator `^^`
-- [ ] Logical assignment operators `&&=`, `||=`, `^^=`
-- [ ] allow trailing commas in array and object definitions
 - [ ] built-in macros for `__name__`, `__file__`, `__line__`, `__column__`
 - [ ] Better console mode
-- [ ] `loop` master keyword
-- [ ] Error when void function return a value
-- [ ] Allow ulong on ulong binary math, if both are ulongs
 - [ ] Optimise bytecode generation
     - [ ] Generate STORE_POP and STORE_FAST_POP when setting variables
     - [ ] Add FAST_BINARY operators if both operands are stack variables

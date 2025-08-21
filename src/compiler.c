@@ -1855,17 +1855,24 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             writeByteCode(ci, OP_BINARY_OR_BITWISE, token_index);
             break;
         }
+        case OPERATOR_XOR_ASSIGN:
+        case OPERATOR_XOR: {
+            writeByteCode(ci, OP_BINARY_XOR_BITWISE, token_index);
+            break;
+        }
+        case OPERATOR_AND_AND_ASSIGN:
         case OPERATOR_AND_AND: {
             writeByteCode(ci, OP_BINARY_LOGICAL_AND, token_index);
             break;
         }
+        case OPERATOR_OR_OR_ASSIGN:
         case OPERATOR_OR_OR: {
             writeByteCode(ci, OP_BINARY_LOGICAL_OR, token_index);
             break;
         }
-        case OPERATOR_XOR_ASSIGN:
-        case OPERATOR_XOR: {
-            writeByteCode(ci, OP_BINARY_XOR_BITWISE, token_index);
+        case OPERATOR_XOR_XOR_ASSIGN:
+        case OPERATOR_XOR_XOR: {
+            writeByteCode(ci, OP_BINARY_LOGICAL_XOR, token_index);
             break;
         }
         case OPERATOR_SHIFT_LEFT_ASSIGN:

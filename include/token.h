@@ -16,13 +16,13 @@
 #define OPERATORS {"+", "-", "*", "/", "%", "=", ">", "<", "!", "&", "^", "|", "~", "?", ":", "->",",", "#",  \
                    "+=","-=","*=","/=","%=","++","--","==","!=",">=","<=","&&","||","<<",">>","&=","|=","^=", \
                    "**","^/",">|","<|","!-","=>",">>=","<<=","**=",">|=","<|=",";", ":>",":<",":>=",":<=","??",\
-                   "?\?=","?->","^/=","|>", "===","!==","|>=","!?","!?=","<=>","#="}
+                   "?\?=","?->","^/=","|>", "===","!==","|>=","!?","!?=","<=>","#=","^^","&&=","||=","^^="}
 // operator precedence is mostly borrowed from C, lower means higher precedence
 #define OPERATOR_PRECEDENCE \
                   { 4,   4,   3,   3,   3,   14,  6,   6,   2,   8,   9,   10,  2,   13,  13,  0,   15,  0,   \
                     14,  14,  14,  14,  14,  2,   2,   7,   7,   6,   6,   11,  12,  5,   5,   14,  14,  14,  \
                     2,   2,   2,   2,   2,   15,  14,   14,   14,   14,   14,   13,  13,  13,  13,   13,   12,\
-                    14,    0,    14,   12,   7,    7,    14,   12,  14,   6,    14}
+                    14,    0,    14,   12,   7,    7,    14,   12,  14,   6,    14,  11,  14,   14,   14}
 #define UNARY_PRECEDENCE 1
 
 typedef enum {
@@ -124,7 +124,11 @@ typedef enum {
     OPERATOR_FALSEY_COALESCE,
     OPERATOR_FALSEY_COALESCE_ASSIGN,
     OPERATOR_SPACE_SHIP,
-    OPERATOR_ARRAY_UNWRAP
+    OPERATOR_ARRAY_UNWRAP,
+    OPERATOR_XOR_XOR,
+    OPERATOR_AND_AND_ASSIGN,
+    OPERATOR_OR_OR_ASSIGN,
+    OPERATOR_XOR_XOR_ASSIGN,
 } OperatorType;
 
 typedef enum {
