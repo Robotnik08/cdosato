@@ -341,7 +341,7 @@ do assert(len([]), 0)
 
 // Type
 
-do assert(typeOf(1), "ulong")
+do assert(typeOf(1), "long")
 do assert(typeOf(1.0), "double")
 do assert(typeOf(1.0F), "float")
 do assert(typeOf("1"), "string")
@@ -371,7 +371,7 @@ do assert(isNaN([1, 2, 3]), true)
 do assert(isNaN({a: 1, b: 2}), true)
 do assert(isNaN(typeOf), true)
 
-do assert(typeIntOf(1), 13)
+do assert(typeIntOf(1), 7)
 do assert(typeIntOf(1.0), 4)
 do assert(typeIntOf(1.0F), 3)
 do assert(typeIntOf("1"), 2)
