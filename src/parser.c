@@ -85,7 +85,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_ENUM:
         case NODE_MASTER_IF:
         case NODE_MASTER_INHERIT:
-        case NODE_MASTER_MATCH: {
+        case NODE_MASTER_MATCH:
+        case NODE_MASTER_LOOP: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = type == NODE_MASTER_IF ? EXT_IF : EXT_NULL;
             if (type == NODE_MASTER_IF) {
@@ -173,6 +174,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         }
 
         case NODE_MASTER_DO_BODY: 
+        case NODE_MASTER_LOOP_BODY:
         case NODE_THEN_BODY: 
         case NODE_CATCH_BODY:
         case NODE_ELSE_BODY: {
