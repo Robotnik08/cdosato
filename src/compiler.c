@@ -90,7 +90,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_BREAK:
         case NODE_MASTER_RETURN:
         case NODE_MASTER_SET:
-        case NODE_MASTER_DO: {
+        case NODE_MASTER_DO:
+        case NODE_MASTER_LOOP: {
             NodeType last_node_type = 0;
             int last_result = -1;
             for (int i = 0; i < node.body.count; i++) {
@@ -571,6 +572,29 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             // pop the return value
             if (node.body.nodes[0].type == NODE_FUNCTION_CALL) 
                 writeInstruction(ci, node.body.nodes[0].start, OP_POP, 1);
+            break;
+        }
+
+        case NODE_MASTER_LOOP_BODY: {
+            // empty loop body does nothing
+            if (node.body.count == 0) {
+                break;
+            }
+
+            int jump_index = ci->count; // index of the jump instruction
+
+            bool is_local = scope != NULL;
+            
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 0); // this is for the CONTINUE instruction, continue reevaluates the condition
+            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 0); // this is for the BREAK instruction, break jumps to the end of the while block without reevaluating the condition
+
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            // pop the return value
+            if (node.body.nodes[0].type == NODE_FUNCTION_CALL) 
+                writeInstruction(ci, node.body.nodes[0].start, OP_POP, 1);
+
+            writeInstruction(ci, jump_index, OP_JUMP, DOSATO_SPLIT_SHORT(jump_index));
             break;
         }
 
