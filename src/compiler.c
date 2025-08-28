@@ -581,15 +581,20 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 break;
             }
 
+            // first jump to skip the break jump
             writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
-            int jump_index1 = ci->count - getOffset(OP_JUMP); // index of the jump instruction to the start of the loop
-            writeInstruction(ci, ci->count, OP_JUMP, DOSATO_SPLIT_SHORT(0));
-            int jump_index2 = ci->count - getOffset(OP_JUMP); // index of the jump instruction to the end of the loop
+            int jump_index1 = ci->count - getOffset(OP_JUMP);
 
+            // second jump is the break jump which jumps to the end of the loop
+            writeInstruction(ci, ci->count, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_index2 = ci->count - getOffset(OP_JUMP);
+
+            // set first jump to skip the break jump
             ci->code[jump_index1 + 1] = ci->count & 0xFF;
             ci->code[jump_index1 + 2] = ci->count >> 8;
 
-            int jump_index = ci->count; // index of the jump instruction
+            // main jump index for the loop body
+            int jump_index = ci->count;
 
             bool is_local = scope != NULL;
             
@@ -604,6 +609,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             writeInstruction(ci, jump_index, OP_JUMP, DOSATO_SPLIT_SHORT(jump_index));
 
+            // set the break jump to the end of the loop
             ci->code[jump_index2 + 1] = ci->count & 0xFF;
             ci->code[jump_index2 + 2] = ci->count >> 8;
 
