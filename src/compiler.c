@@ -581,13 +581,21 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 break;
             }
 
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_index1 = ci->count - getOffset(OP_JUMP); // index of the jump instruction to the start of the loop
+            writeInstruction(ci, ci->count, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_index2 = ci->count - getOffset(OP_JUMP); // index of the jump instruction to the end of the loop
+
+            ci->code[jump_index1 + 1] = ci->count & 0xFF;
+            ci->code[jump_index1 + 2] = ci->count >> 8;
+
             int jump_index = ci->count; // index of the jump instruction
 
             bool is_local = scope != NULL;
             
             // store the loop location data
             write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 0); // this is for the CONTINUE instruction, continue reevaluates the condition
-            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 0); // this is for the BREAK instruction, break jumps to the end of the while block without reevaluating the condition
+            write_LocationList(&ci->loop_jump_locations, jump_index2, is_local ? scope->locals_count : 0); // this is for the BREAK instruction, break jumps to the end of the while block without reevaluating the condition
 
             compileNode(vm, ci, node.body.nodes[0], ast, scope);
             // pop the return value
@@ -595,6 +603,10 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 writeInstruction(ci, node.body.nodes[0].start, OP_POP, 1);
 
             writeInstruction(ci, jump_index, OP_JUMP, DOSATO_SPLIT_SHORT(jump_index));
+
+            ci->code[jump_index2 + 1] = ci->count & 0xFF;
+            ci->code[jump_index2 + 2] = ci->count >> 8;
+
             break;
         }
 
