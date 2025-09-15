@@ -1379,7 +1379,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
 
             compileNode(vm, instance, node.body.nodes[new_start + 1], ast, new_scope);
-            if (node.body.nodes[new_start + 1].type == NODE_EXPRESSION) {
+            if (node.body.nodes[new_start + 1].type != NODE_BLOCK) {
                 // if the body is an expression, we need to return the value
                 // first cast value
                 writeInstruction(instance, node.body.nodes[new_start + 1].start, OP_TYPE_CAST, data_type);

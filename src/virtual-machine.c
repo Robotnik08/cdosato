@@ -5,6 +5,7 @@
 #include "../include/ast.h"
 #include "../include/memory.h"
 #include "../include/dynamic_library_loader.h"
+#include "../include/debug.h"
 
 VirtualMachine* main_vm = NULL;
 
@@ -280,6 +281,12 @@ void pushValue(ValueArray* array, Value value) {
         active_instance = active_stack[ip_stack_count]; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
+        /* If it's in debug mode, print the instruction where it crashed */ \
+        if (debug) { \
+            printf("%s", "\n==== Cause of error: ====\n"); \
+            printInstruction(active_instance->code, vm->ip - active_instance->code - 1 - (getOffset(instruction) - 1), -1); \
+            printf("%s", "==========================\n"); \
+        } \
         printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code, ((AST*)active_instance->ast)->tokens.tokens[token_index].length);\
     } \
 } while(0); \
