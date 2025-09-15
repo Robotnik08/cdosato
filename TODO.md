@@ -16,9 +16,9 @@
 - [ ] placeholders for make and set expressions `_`
 - [X] logical XOR operator `^^`
 - [X] Logical assignment operators `&&=`, `||=`, `^^=`
-- [ ] `loop` master keyword
+- [X] `loop` master keyword
 
-### Maybe planned for 0.8 (or I make a new implementation first):
+### Maybe planned for 0.8.0 (or I make a new implementation first):
 
 - [ ] Allow ulong on ulong binary math, if both are ulongs
 - [ ] `test` master keyword and assert functions
