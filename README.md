@@ -6,6 +6,9 @@
 
 cDosato is the official implementation of the DOSATO programming language.<br>
 
+> **Note**
+> 0.7 is the final version for cDosato, a new implementation is being developed [here](https://github.com/Robotnik08/dosato-lang)
+
 ## Table of Contents
 
 - [Introduction](#introduction)
