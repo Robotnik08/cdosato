@@ -1,0 +1,52 @@
+# Dosato 0.7.0 TODO
+
+- [X] Hashable object keys
+- [X] ++ and -- operators work in expressions, not just set statements
+    - [X] Works with arrays and object members
+    - [X] Fix bug that allows them to increment and decrement constants (should not be allowed)
+- [ ] `for`, `while` and `until` loops being able to be used as master keywords instead of only postfix keywords
+- [X] Implicit return in arrow functions
+- [X] Arrow functions without type
+- [X] Arrow functions without a type and without parentheses
+- [X] Edit array map functions and co to be able to ignore the index argument for convenience
+- [ ] Array unwrapping operators `#=` to be able to unwrap arrays in expressions
+    - [X] For set expressions
+    - [X] For make expressions
+    - [ ] Unit tests
+- [ ] placeholders for make and set expressions `_`
+- [X] logical XOR operator `^^`
+- [X] Logical assignment operators `&&=`, `||=`, `^^=`
+- [X] `loop` master keyword
+
+### Maybe planned for 0.8.0 (or I make a new implementation first):
+
+- [ ] Allow ulong on ulong binary math, if both are ulongs
+- [ ] `test` master keyword and assert functions
+- [ ] `type` master keyword to implement functions for types (my_string->split, my_array->length, etc.)
+- [ ] `in` operator to check if a value is in a list
+- [ ] `not in` operator to check if a value is not in a list
+- [ ] `is <type>` operator to check if a value is of a certain type
+- [ ] `is not <type>` operator to check if a value is not of a certain type
+- [ ] optional catch variable name for the error instead of always using `_`
+    - [ ] Retire `_` as a catch variable name
+- [ ] `delete` master keyword to delete a variable in an object
+- [ ] logical operators return the value of the last evaluated expression instead of a boolean, allows for it to stop evaluating if the result is already known.
+- [ ] built-in macros for `__name__`, `__file__`, `__line__`, `__column__`
+- [ ] Better console mode
+- [ ] Optimise bytecode generation
+    - [ ] Generate STORE_POP and STORE_FAST_POP when setting variables
+    - [ ] Add FAST_BINARY operators if both operands are stack variables
+    - [ ] Add FAST_UNARY operators if the operand is a stack variable
+    - [ ] Bundle PUSH_NULL when tuple assignment is used
+    - [ ] constant-folding optimizations
+    - [ ] Handle TYPE_CAST spam, make it so if theres no type, it doesn't generate a type cast instruction or if the constant type is the same as the variable type, for both MAKE, CONST and RETURN
+    - [ ] If -1 use PUSH_MINUS_ONE (This is a special op for for loops, but it can be used quickly to save a bit of time when using -1)
+    - [ ] Add PUSH_CONSTANT_BYTE for quick integer constants
+    - [ ] Remove END_FUNC if the last instrution is a RETURN
+    - [ ] Remove All code after the last RETURN if there is no jump that after it
+    - [ ] Remove all code after the last BREAK or CONTINUE if there is no jump after it
+    - [ ] Add CALL_POP instruction to call a function and pop the result
+    - [ ] Add LOAD_CALL to load a function and call it
+    - [ ] Add LOAD_CALL_POP to load a function and call it, popping the result
+    - [ ] Add LOAD_CALL_FAST to load a function and call it, if the function is a stack variable
+    - [ ] Add LOAD_CALL_FAST_POP to load a function and call it, popping the result, if the function is a stack variable

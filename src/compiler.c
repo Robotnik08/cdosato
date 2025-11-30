@@ -7,6 +7,7 @@
 #include "../include/code_instance.h"
 #include "../include/debug.h"
 #include "../include/dynamic_library_loader.h"
+#include "../include/hash.h"
 
 void compile(VirtualMachine* vm, AST* ast) {
 
@@ -89,7 +90,8 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         case NODE_MASTER_BREAK:
         case NODE_MASTER_RETURN:
         case NODE_MASTER_SET:
-        case NODE_MASTER_DO: {
+        case NODE_MASTER_DO:
+        case NODE_MASTER_LOOP: {
             NodeType last_node_type = 0;
             int last_result = -1;
             for (int i = 0; i < node.body.count; i++) {
@@ -573,6 +575,47 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             break;
         }
 
+        case NODE_MASTER_LOOP_BODY: {
+            // empty loop body does nothing
+            if (node.body.count == 0) {
+                break;
+            }
+
+            // first jump to skip the break jump
+            writeInstruction(ci, node.start, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_index1 = ci->count - getOffset(OP_JUMP);
+
+            // second jump is the break jump which jumps to the end of the loop
+            writeInstruction(ci, ci->count, OP_JUMP, DOSATO_SPLIT_SHORT(0));
+            int jump_index2 = ci->count - getOffset(OP_JUMP);
+
+            // set first jump to skip the break jump
+            ci->code[jump_index1 + 1] = ci->count & 0xFF;
+            ci->code[jump_index1 + 2] = ci->count >> 8;
+
+            // main jump index for the loop body
+            int jump_index = ci->count;
+
+            bool is_local = scope != NULL;
+            
+            // store the loop location data
+            write_LocationList(&ci->loop_jump_locations, jump_index, is_local ? scope->locals_count : 0); // this is for the CONTINUE instruction, continue reevaluates the condition
+            write_LocationList(&ci->loop_jump_locations, jump_index2, is_local ? scope->locals_count : 0); // this is for the BREAK instruction, break jumps to the end of the while block without reevaluating the condition
+
+            compileNode(vm, ci, node.body.nodes[0], ast, scope);
+            // pop the return value
+            if (node.body.nodes[0].type == NODE_FUNCTION_CALL) 
+                writeInstruction(ci, node.body.nodes[0].start, OP_POP, 1);
+
+            writeInstruction(ci, jump_index, OP_JUMP, DOSATO_SPLIT_SHORT(jump_index));
+
+            // set the break jump to the end of the loop
+            ci->code[jump_index2 + 1] = ci->count & 0xFF;
+            ci->code[jump_index2 + 2] = ci->count >> 8;
+
+            break;
+        }
+
         case NODE_MASTER_INCLUDE_BODY: {
             if (scope != NULL) {
                 PRINT_ERROR(E_MUST_BE_GLOBAL, node.start - 1);
@@ -716,7 +759,23 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             }
 
             if (operator_index == -1) {
-                PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.start);
+                if (scope != NULL) { // local scope (push null to the stack, used for the local variable)
+                    for (int i = identifier_index; i < node.body.count; i++) {
+                        writeByteCode(ci, OP_PUSH_NULL, node.body.nodes[i].start);
+                        writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
+                        pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
+                    }
+                } else {
+                    OpCode op_normal = type == NODE_MASTER_MAKE_BODY ? OP_DEFINE : OP_DEFINE_CONSTANT;
+                    OpCode op_pop = type == NODE_MASTER_MAKE_BODY ? OP_DEFINE_POP : OP_DEFINE_POP_CONSTANT;
+                    writeByteCode(ci, OP_PUSH_NULL, node.body.nodes[0].start); // push the null
+                    writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
+                    for (int i = identifier_index; i < node.body.count - 1; i++) {
+                        writeInstruction(ci, node.body.nodes[i].start, op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
+                    }
+                    writeInstruction(ci, node.body.nodes[node.body.count - 1].start, op_pop, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[node.body.count - 1].start].carry));
+                }
+                break;
             }
 
             if (scope != NULL) { // local scope (push null to the stack, used for the local variable)
@@ -733,16 +792,27 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(E_INVALID_AMOUNT_SET_EXPRESSION, node.start + identifier_index);
             }
 
-            OpCode op_normal = OP_STORE_FAST;
-            OpCode op_pop = OP_STORE_FAST_POP;
             for (int i = node.body.count - 1; i >= operator_index + 1; i--) {
                 compileNode(vm, ci, node.body.nodes[i], ast, scope);
                 writeInstruction(ci, node.start, OP_TYPE_CAST, data_type); // cast to the correct type
-
             }
+
+            OpCode op_normal = OP_STORE_FAST;
+            OpCode op_pop = OP_STORE_FAST_POP;
+
             if (type == NODE_MASTER_CONST_BODY) {
                 op_normal = OP_STORE_FAST_CONSTANT;
                 op_pop = OP_STORE_FAST_POP_CONSTANT;
+            }
+
+            bool is_unwrap = false;
+            if (ast->tokens.tokens[node.body.nodes[operator_index].start].carry == OPERATOR_ARRAY_UNWRAP) {
+                if (is_tuple) {
+                    PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.body.nodes[operator_index].start);
+                }
+
+                is_unwrap = true;
+                writeInstruction(ci, node.body.nodes[operator_index].start, OP_UNWRAP_LIST_REVERSE, operator_index - identifier_index);
             }
 
 
@@ -753,7 +823,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || i + 1 == operator_index ? op_pop : op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || is_unwrap || i + 1 == operator_index ? op_pop : op_normal, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[i].start].carry));
                 }
             } else {
                 for (int i = identifier_index; i < operator_index; i++) {
@@ -763,7 +833,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                     if (ast->tokens.tokens[node.body.nodes[i].start].carry <= 1) {
                         PRINT_ERROR(E_INVALID_IDENTIFIER, node.body.nodes[i].start);
                     }
-                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || (i + 1 == operator_index) ? op_pop : op_normal, DOSATO_SPLIT_SHORT(scope->locals_count));
+                    writeInstruction(ci, node.body.nodes[i].start, is_tuple || is_unwrap || (i + 1 == operator_index) ? op_pop : op_normal, DOSATO_SPLIT_SHORT(scope->locals_count));
                     pushScopeData(scope, ast->tokens.tokens[node.body.nodes[i].start].carry);
                 }
             }
@@ -794,7 +864,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             if (!tuple) {
                 if (operator == OPERATOR_INCREMENT || operator == OPERATOR_DECREMENT) {
                     // do nothing, handled later
-                } else if (operator != OPERATOR_ASSIGN) {
+                } else if (operator != OPERATOR_ASSIGN && operator != OPERATOR_ARRAY_UNWRAP) {
                     // compile the left side of the expression
                     for (int i = 0; i < operator_index; i++) {
                         Node left = node.body.nodes[i];
@@ -808,11 +878,17 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 } else {
                     // push the value to the stack
                     compileNode(vm, ci, node.body.nodes[operator_index + 1], ast, scope);
+
+                    if (operator == OPERATOR_ARRAY_UNWRAP) {
+                        // unwrap the required amount
+                        writeInstruction(ci, node.body.nodes[operator_index].start, OP_UNWRAP_LIST, operator_index);
+                    }
                 }
             } else {
                 if (operator != OPERATOR_ASSIGN) {
-                    PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.start);
+                    PRINT_ERROR(E_EXPECTED_ASSIGNMENT_OPERATOR_PURE, node.body.nodes[operator_index].start);
                 }
+
                 // push the values to the stack
                 for (int i = operator_index; i < node.body.count; i++) {
                     compileNode(vm, ci, node.body.nodes[i], ast, scope);
@@ -972,10 +1048,79 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_UNARY_EXPRESSION: {
+            if (ast->tokens.tokens[node.body.nodes[0].start].carry == OPERATOR_DECREMENT || ast->tokens.tokens[node.body.nodes[0].start].carry == OPERATOR_INCREMENT) {
+                // unary prefix increment/decrement
+                if (node.body.nodes[1].type == NODE_IDENTIFIER) {
+                    bool decrement = ast->tokens.tokens[node.body.nodes[0].start].carry == OPERATOR_DECREMENT;
+                    if (inScope(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)) {
+                        writeInstruction(ci, node.body.nodes[1].start, decrement ? OP_DECREMENT_FAST : OP_INCREMENT_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)));
+                        writeInstruction(ci, node.body.nodes[1].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[1].start].carry)));
+                    } else {
+                        writeInstruction(ci, node.body.nodes[1].start, decrement ? OP_DECREMENT : OP_INCREMENT, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
+                        writeInstruction(ci, node.body.nodes[1].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[1].start].carry));
+                    }
+                } else if (node.body.nodes[1].type == NODE_EXPRESSION) {
+                    Node expressionNode = node.body.nodes[1];
+                    OperatorType operator = ast->tokens.tokens[expressionNode.body.nodes[1].start].carry;
+                    if (operator != OPERATOR_HASH && operator != OPERATOR_ARROW && operator != OPERATOR_NULL_COALESCE_ACCESS) {
+                        PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, expressionNode.body.nodes[1].start);
+                    }
+
+                    compileNode(vm, ci, expressionNode, ast, scope);
+                    
+                    bool decrement = ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_DECREMENT;
+                    OpCode op_code = decrement ? (operator == OPERATOR_HASH ? OP_DECREMENT_SUBSCR : OP_DECREMENT_OBJ) : (operator == OPERATOR_HASH ? OP_INCREMENT_SUBSCR : OP_INCREMENT_OBJ);
+                    // replace last OP_GETLIST OR OP_GETOBJECT with the new op_code
+                    int get_index = ci->count - getOffset(OP_GETLIST);
+                    ci->code[get_index] = op_code;
+
+                    compileNode(vm, ci, expressionNode, ast, scope); // push result on the stack after, this is the new value
+                } else {
+                    PRINT_ERROR(E_EXPECTED_IDENTIFIER, node.body.nodes[1].start);
+                }
+                break;
+            }
+
             compileNode(vm, ci, node.body.nodes[1], ast, scope);
             int res = writeUnaryInstruction(ci, ast->tokens.tokens[node.body.nodes[0].start].carry, node.body.nodes[0].start);
             if (res == -1) {
                 PRINT_ERROR(E_NON_UNARY_OPERATOR, node.body.nodes[0].start);
+            }
+            break;
+        }
+
+        case NODE_UNARY_POSTFIX_EXPRESSION: {
+            if (node.body.nodes[0].type == NODE_EXPRESSION) {
+                Node expressionNode = node.body.nodes[0];
+                if (expressionNode.body.count != 3) {
+                    PRINT_ERROR(E_EXPECTED_IDENTIFIER, expressionNode.body.nodes[0].start);
+                }
+
+                OperatorType operator = ast->tokens.tokens[expressionNode.body.nodes[1].start].carry;
+                if (operator != OPERATOR_HASH && operator != OPERATOR_ARROW && operator != OPERATOR_NULL_COALESCE_ACCESS) {
+                    PRINT_ERROR(E_EXPECTED_HASH_OPERATOR, expressionNode.body.nodes[1].start);
+                }
+
+                compileNode(vm, ci, expressionNode, ast, scope); // push result on the stack first, this is left over after operation
+                compileNode(vm, ci, expressionNode, ast, scope);
+                
+                bool decrement = ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_DECREMENT;
+                OpCode op_code = decrement ? (operator == OPERATOR_HASH ? OP_DECREMENT_SUBSCR : OP_DECREMENT_OBJ) : (operator == OPERATOR_HASH ? OP_INCREMENT_SUBSCR : OP_INCREMENT_OBJ);
+                // replace last OP_GETLIST OR OP_GETOBJECT with the new op_code
+                int get_index = ci->count - getOffset(OP_GETLIST);
+                ci->code[get_index] = op_code;
+            } else {
+                if (node.body.nodes[0].type != NODE_IDENTIFIER) {
+                    PRINT_ERROR(E_EXPECTED_IDENTIFIER, node.body.nodes[0].start);
+                }
+                bool decrement = ast->tokens.tokens[node.body.nodes[1].start].carry == OPERATOR_DECREMENT;
+                if (inScope(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)) {
+                    writeInstruction(ci, node.body.nodes[0].start, OP_LOAD_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+                    writeInstruction(ci, node.body.nodes[0].start, decrement ? OP_DECREMENT_FAST : OP_INCREMENT_FAST, DOSATO_SPLIT_SHORT(getScopeIndex(scope, ast->tokens.tokens[node.body.nodes[0].start].carry)));
+                } else {
+                    writeInstruction(ci, node.body.nodes[0].start, OP_LOAD, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
+                    writeInstruction(ci, node.body.nodes[0].start, decrement ? OP_DECREMENT : OP_INCREMENT, DOSATO_SPLIT_SHORT(ast->tokens.tokens[node.body.nodes[0].start].carry));
+                }
             }
             break;
         }
@@ -1179,7 +1324,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
         }
 
         case NODE_LAMBDA_EXPRESSION: {
-            DataType data_type = ast->tokens.tokens[node.body.nodes[0].start].carry;
+            DataType data_type = TYPE_VAR;
+            int new_start = 0;
+            if (node.body.nodes[new_start].type == NODE_TYPE) {
+                data_type = ast->tokens.tokens[node.body.nodes[new_start].start].carry;
+                new_start = 1;
+            }
 
             char* name = COPY_STRING("lambda");
             size_t name_index = -1;
@@ -1190,12 +1340,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             ScopeData* new_scope = malloc(sizeof(ScopeData));
             initScopeData(new_scope);
 
-            int arity = node.body.nodes[1].body.count;
+            int arity = node.body.nodes[new_start].body.count;
             int* hash_map = malloc(sizeof(int) * arity);
             bool found_default = false;
             int default_count = 0;
             for (int i = 0; i < arity; i++) {
-                Node arg = node.body.nodes[1].body.nodes[i];
+                Node arg = node.body.nodes[new_start].body.nodes[i];
                 int f_identifier_index = arg.body.nodes[0].type == NODE_TYPE ? 1 : 0;
                 int carry = ast->tokens.tokens[arg.body.nodes[f_identifier_index].start].carry;
                 for (int j = 0; j < i; j++) {
@@ -1218,7 +1368,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             for (int i = arity - default_count; i < arity; i++) {
                 // compile each default argument expression
-                Node arg = node.body.nodes[1].body.nodes[i];
+                Node arg = node.body.nodes[new_start].body.nodes[i];
                 int expression_index = arg.body.nodes[0].type == NODE_TYPE ? 2 : 1;
                 writeInstruction(instance, arg.start, OP_JUMP_PEEK_IF_DEFINED, DOSATO_SPLIT_SHORT(0), i);
                 int jump_index = instance->count - getOffset(OP_JUMP_PEEK_IF_DEFINED);
@@ -1228,7 +1378,13 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 instance->code[jump_index + 2] = instance->count >> 8;
             }
 
-            compileNode(vm, instance, node.body.nodes[2], ast, new_scope);
+            compileNode(vm, instance, node.body.nodes[new_start + 1], ast, new_scope);
+            if (node.body.nodes[new_start + 1].type != NODE_BLOCK) {
+                // if the body is an expression, we need to return the value
+                // first cast value
+                writeInstruction(instance, node.body.nodes[new_start + 1].start, OP_TYPE_CAST, data_type);
+                writeInstruction(instance, node.body.nodes[new_start + 1].end, OP_RETURN, DOSATO_SPLIT_SHORT(arity)); // return the value
+            }
 
             size_t* capture_indexs = malloc(0);
             int capture_index_count = 0;
@@ -1272,12 +1428,12 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             freeScopeData(new_scope);
             free(new_scope);
 
-            writeInstruction(instance, node.body.nodes[2].end, OP_END_FUNC, arity + capture_index_count);
+            writeInstruction(instance, node.body.nodes[new_start + 1].end, OP_END_FUNC, arity + capture_index_count);
 
             size_t* name_indexs = malloc(sizeof(size_t) * arity); 
             DataType* types = malloc(sizeof(DataType) * arity);
             for (int i = 0; i < arity; i++) {
-                NodeList list = node.body.nodes[1].body.nodes[i].body;
+                NodeList list = node.body.nodes[new_start].body.nodes[i].body;
                 name_indexs[i] = ast->tokens.tokens[list.nodes[list.count - 1].start].carry;
                 types[i] = list.nodes[0].type != NODE_TYPE ? TYPE_VAR : ast->tokens.tokens[list.nodes[0].start].carry;
             }
@@ -1288,7 +1444,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
             func.name_index = name_index;
             func.argv = name_indexs;
             func.argt = types;
-            func.arity = node.body.nodes[1].body.count;
+            func.arity = node.body.nodes[new_start].body.count;
             func.default_count = default_count;
             func.instance = instance;
             func.return_type = data_type;
@@ -1564,7 +1720,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 PRINT_ERROR(type == NODE_MASTER_BREAK_BODY ? E_BREAK_OUTSIDE_LOOP : E_CONTINUE_OUTSIDE_LOOP, node.start - 1);
             }
             size_t top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 1];
-            if ((ci->code[top_jump_index] == OP_JUMP_IF_FALSE || ci->code[top_jump_index] == OP_JUMP_IF_TRUE) && type == NODE_MASTER_CONTINUE_BODY) {
+            if ((ci->code[top_jump_index] == OP_JUMP_IF_FALSE || ci->code[top_jump_index] == OP_JUMP_IF_TRUE || ci->code[top_jump_index] == OP_JUMP) && type == NODE_MASTER_CONTINUE_BODY) {
                 top_jump_index = ci->loop_jump_locations.locations[ci->loop_jump_locations.count - 2]; // get the condition start index instead of the jump index
             }
 
@@ -1642,7 +1798,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
             // build the enum object
             ValueObject* obj = malloc(sizeof(ValueObject));
-            init_ValueObject(obj);
+            init_ValueObjectHashTable(obj);
 
             long long int index = 0;
             for (int i = 0; i < node.body.nodes[1].body.count; i++) {
@@ -1650,7 +1806,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
                 if (enum_node.body.count != 0) {
                     // get constant id
                     Value constant = vm->constants.values[ast->tokens.tokens[enum_node.body.nodes[0].start].carry];
-                    if (constant.type != TYPE_ULONG) {
+                    if (constant.type != TYPE_ULONG && constant.type != TYPE_LONG) {
                         PRINT_ERROR(E_INVALID_TYPE, enum_node.body.nodes[0].start);
                     }
                     index = AS_ULONG(constant);
@@ -1658,7 +1814,7 @@ int compileNode (VirtualMachine* vm, CodeInstance* ci, Node node, AST* ast, Scop
 
                 // add the constant to the object
                 char* enum_name = getTokenString(ast->tokens.tokens[enum_node.start]);
-                write_ValueObject(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
+                write_ValueObjectHashTable(obj, BUILD_STRING(enum_name, false), BUILD_ULONG(index));
 
                 index++;
             }
@@ -1741,17 +1897,24 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             writeByteCode(ci, OP_BINARY_OR_BITWISE, token_index);
             break;
         }
+        case OPERATOR_XOR_ASSIGN:
+        case OPERATOR_XOR: {
+            writeByteCode(ci, OP_BINARY_XOR_BITWISE, token_index);
+            break;
+        }
+        case OPERATOR_AND_AND_ASSIGN:
         case OPERATOR_AND_AND: {
             writeByteCode(ci, OP_BINARY_LOGICAL_AND, token_index);
             break;
         }
+        case OPERATOR_OR_OR_ASSIGN:
         case OPERATOR_OR_OR: {
             writeByteCode(ci, OP_BINARY_LOGICAL_OR, token_index);
             break;
         }
-        case OPERATOR_XOR_ASSIGN:
-        case OPERATOR_XOR: {
-            writeByteCode(ci, OP_BINARY_XOR_BITWISE, token_index);
+        case OPERATOR_XOR_XOR_ASSIGN:
+        case OPERATOR_XOR_XOR: {
+            writeByteCode(ci, OP_BINARY_LOGICAL_XOR, token_index);
             break;
         }
         case OPERATOR_SHIFT_LEFT_ASSIGN:
@@ -1812,6 +1975,12 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
             break;
         }
 
+        case OPERATOR_FALSEY_COALESCE_ASSIGN:
+        case OPERATOR_FALSEY_COALESCE: {
+            writeByteCode(ci, OP_BINARY_FALSEY_COALESCE, token_index);
+            break;
+        }
+
         case OPERATOR_RANGE_UP: {
             writeByteCode(ci, OP_BINARY_RANGE_UP, token_index);
             break;
@@ -1842,6 +2011,11 @@ int writeOperatorInstruction (CodeInstance* ci, OperatorType operator, size_t to
 
         case OPERATOR_TRIPLE_NOT_EQUAL: {
             writeByteCode(ci, OP_BINARY_STRICT_NOT_EQUAL, token_index);
+            break;
+        }
+
+        case OPERATOR_SPACE_SHIP: {
+            writeByteCode(ci, OP_BINARY_SPACE_SHIP, token_index);
             break;
         }
         

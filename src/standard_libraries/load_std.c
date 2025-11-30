@@ -9,7 +9,9 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"listen", io_listen},
         {"read", io_read_file},
         {"write", io_write_file},
+        {"writeBytes", io_write_bytes_file},
         {"append", io_append_file},
+        {"appendBytes", io_append_bytes_file},
         {"delete", io_delete_file},
         {"exists", io_file_exists},
         {"move", io_move_file},
@@ -30,6 +32,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"randomRange", io_random_range},
         {"randomBool", io_random_bool},
         {"getRandom", io_get_random},
+        {"shuffle", io_array_shuffle},
 
         {"time", io_time},
         {"sleep", io_sleep},
@@ -69,6 +72,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"stringStartsWith", string_startswith},
         {"stringEndsWith", string_endswith},
         {"stringReplace", string_replace},
+        {"stringReplaceFirst", string_replace_first},
         {"stringTrim", string_trim},
         {"stringReverse", string_reverse},
         {"stringContains", string_contains},
@@ -111,6 +115,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"difference", array_difference},
         {"intersection", array_intersection},
         {"len", array_length},
+        {"contains", array_contains},
 
         {"typeOf", type_typeof},
         {"isNull", type_isnull},
@@ -122,6 +127,7 @@ int loadStandardLibrary(VirtualMachine* vm) {
         {"keys", object_keys},
         {"values", object_values},
         {"entries", object_entries},
+        {"getHash", object_getHash}
     };
 
     for (int i = 0; i < sizeof(functions) / sizeof(DosatoFunctionMap); i++) {

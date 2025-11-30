@@ -85,7 +85,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         case NODE_MASTER_ENUM:
         case NODE_MASTER_IF:
         case NODE_MASTER_INHERIT:
-        case NODE_MASTER_MATCH: {
+        case NODE_MASTER_MATCH:
+        case NODE_MASTER_LOOP: {
             bool body_parsed = false;
             ExtensionKeywordType ext_type = type == NODE_MASTER_IF ? EXT_IF : EXT_NULL;
             if (type == NODE_MASTER_IF) {
@@ -173,6 +174,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
         }
 
         case NODE_MASTER_DO_BODY: 
+        case NODE_MASTER_LOOP_BODY:
         case NODE_THEN_BODY: 
         case NODE_CATCH_BODY:
         case NODE_ELSE_BODY: {
@@ -206,6 +208,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
                 }
                 
+                bool is_undef = false;
                 while (i < end) {
                     if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                         PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
@@ -216,11 +219,18 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     
                     if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
                         i++; // skip the comma
-                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || (tokens.tokens[i].carry != OPERATOR_ASSIGN && tokens.tokens[i].carry != OPERATOR_ARRAY_UNWRAP)) {
+                        if (i >= end) {
+                            is_undef = true;
+                            break;
+                        }
                         PRINT_ERROR(i, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                     } else {
                         break;
                     }
+                }
+                if (is_undef) {
+                    break;
                 }
 
                 // write operator node
@@ -242,6 +252,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 }
 
                 int i = start;
+                bool is_undef = false;
                 while (i < end) {
                     if (tokens.tokens[i].type != TOKEN_IDENTIFIER) {
                         PRINT_ERROR(i, E_EXPECTED_IDENTIFIER);
@@ -252,11 +263,18 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     
                     if (i < end && tokens.tokens[i].type == TOKEN_OPERATOR && tokens.tokens[i].carry == OPERATOR_COMMA) {
                         i++; // skip the comma
-                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || tokens.tokens[i].carry != OPERATOR_ASSIGN) {
+                    } else if (i >= end || tokens.tokens[i].type != TOKEN_OPERATOR || (tokens.tokens[i].carry != OPERATOR_ASSIGN && tokens.tokens[i].carry != OPERATOR_ARRAY_UNWRAP)) {
+                        if (i >= end) {
+                            is_undef = true;
+                            break;
+                        }
                         PRINT_ERROR(i, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                     } else {
                         break;
                     }
+                }
+                if (is_undef) {
+                    break;
                 }
                 // write operator node
                 write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_OPERATOR, file_name));
@@ -658,7 +676,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             write_NodeList(&root.body, parse(source, length, i, i + 1, tokens, NODE_IDENTIFIER, file_name));
             if (i + 1 != end) {
                 if (tokens.tokens[i + 1].type != TOKEN_OPERATOR || tokens.tokens[i + 1].carry != OPERATOR_ASSIGN) {
-                    PRINT_ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR);
+                    PRINT_ERROR(i + 1, E_EXPECTED_ASSIGNMENT_OPERATOR_PURE);
                 }
                 // expression
                 write_NodeList(&root.body, parse(source, length, i + 2, end, tokens, NODE_EXPRESSION, file_name));
@@ -699,26 +717,35 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
         case NODE_LAMBDA_EXPRESSION: {
             // first token is the type
-            if (tokens.tokens[start].type != TOKEN_VAR_TYPE) {
-                PRINT_ERROR(start, E_EXPECTED_TYPE_INDENTIFIER);
+            int new_start = start;
+            if (tokens.tokens[new_start].type == TOKEN_VAR_TYPE) {
+                write_NodeList(&root.body, parse(source, length, new_start, new_start + 1, tokens, NODE_TYPE, file_name));
+                new_start++;
             }
-            write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_TYPE, file_name));
 
+            int i = 0;
             // arguments
-            if (tokens.tokens[start + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[start + 1].carry, BRACKET_ROUND)) {
-                PRINT_ERROR(start + 1, E_EXPECTED_BRACKET_ROUND);
+            if (tokens.tokens[new_start].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[new_start].carry, BRACKET_ROUND)) {
+                // check if the token after this is the FAT_ARROW operator
+                if (tokens.tokens[new_start + 1].type != TOKEN_OPERATOR || tokens.tokens[new_start + 1].carry != OPERATOR_FAT_ARROW) {
+                    PRINT_ERROR(new_start + 1, E_UNEXPECTED_TOKEN);
+                }
+                write_NodeList(&root.body, parse(source, length, new_start, new_start + 1, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+                i = new_start + 1; // skip the FAT_ARROW operator
+            } else {
+                i = getEndOfBlock(tokens, new_start);
+                if (i == -1) {
+                    PRINT_ERROR(new_start + 1, E_MISSING_CLOSING_PARENTHESIS);
+                }
+                write_NodeList(&root.body, parse(source, length, new_start + 1, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
+                i++;
             }
-
-            int i = getEndOfBlock(tokens, start + 1);
-            if (i == -1) {
-                PRINT_ERROR(start + 1, E_MISSING_CLOSING_PARENTHESIS);
-            }
-            write_NodeList(&root.body, parse(source, length, start + 2, i, tokens, NODE_FUNCTION_DEFINITION_PARAMETERS, file_name));
-            i++;
             
             // body
             if (tokens.tokens[i + 1].type != TOKEN_PARENTHESIS_OPEN || !CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_CURLY)) {
-                PRINT_ERROR(i + 1, E_EXPECTED_BRACKET_CURLY);
+                // only an expression as a body
+                write_NodeList(&root.body, parse(source, length, i + 1, end, tokens, NODE_EXPRESSION, file_name));
+                break;
             }
 
             int j = getEndOfBlock(tokens, i + 1);
@@ -943,6 +970,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             bool func_call = false;
             bool type_cast = false;
             bool is_unary = false;
+            bool is_unary_postfix = false;
             bool is_turnary = false;
             bool lambda = false;
             for (int i = new_start; i < new_end; i++) {
@@ -985,6 +1013,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         }
                         if (1 >= highest && !(is_unary || type_cast)) {
                             is_unary = false;
+                            is_unary_postfix = false;
                             is_turnary = false;
                             highest = 1;
                             highest_index = i;
@@ -1018,6 +1047,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                                 continue;
                             }
                             is_unary = false;
+                            is_unary_postfix = false;
                             is_turnary = false;
                             highest = UNARY_PRECEDENCE;
                             highest_index = type_cast ? highest_index : startofblock;
@@ -1033,12 +1063,23 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                     int precedence = precedence_values[tokens.tokens[i].carry];
 
                     bool temp_unary = false;
-                    if (i == new_start || tokens.tokens[i - 1].type == TOKEN_OPERATOR || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN || (tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_CLOSED && tokens.tokens[i - 2].type == TOKEN_VAR_TYPE && tokens.tokens[i - 3].type == TOKEN_PARENTHESIS_OPEN)) {
+                    if (i == new_start || (tokens.tokens[i - 1].type == TOKEN_OPERATOR && !(tokens.tokens[i - 1].carry == OPERATOR_INCREMENT || tokens.tokens[i - 1].carry == OPERATOR_DECREMENT)) || tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_OPEN || (tokens.tokens[i - 1].type == TOKEN_PARENTHESIS_CLOSED && tokens.tokens[i - 2].type == TOKEN_VAR_TYPE && tokens.tokens[i - 3].type == TOKEN_PARENTHESIS_OPEN)) {
                         if (tokens.tokens[i].type == TOKEN_OPERATOR && isUnaryOperator(tokens.tokens[i].carry)) {
                             precedence = UNARY_PRECEDENCE; // unary operator precedence
                             temp_unary = true;
                         } else {
                             PRINT_ERROR(i, E_NON_UNARY_OPERATOR);
+                        }
+                    }
+
+                    bool temp_unary_postfix = false;
+                    if ((tokens.tokens[i].carry == OPERATOR_INCREMENT || tokens.tokens[i].carry == OPERATOR_DECREMENT) && !temp_unary) {
+                        if (i + 1 == new_end || (tokens.tokens[i + 1].type == TOKEN_PARENTHESIS_CLOSED && CHECK_BRACKET_TYPE(tokens.tokens[i + 1].carry, BRACKET_ROUND)) || tokens.tokens[i + 1].type == TOKEN_OPERATOR) {
+                            precedence = UNARY_PRECEDENCE; // unary operator precedence
+                            temp_unary_postfix = true;
+                            temp_unary = false;
+                        } else {
+                            PRINT_ERROR(i + 1, E_UNEXPECTED_TOKEN);
                         }
                     }
 
@@ -1078,6 +1119,7 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                         highest = precedence;
                         highest_index = is_unary && temp_unary ? highest_index : op_loc; // when it's a unary operator, the highest index is the previous one
                         is_unary = temp_unary;
+                        is_unary_postfix = temp_unary_postfix;
                         is_turnary = temp_turnary;
                         func_call = false;
                         type_cast = false;
@@ -1115,6 +1157,8 @@ Node parse (const char *source, size_t length, const int start, const int end, T
                 if (is_unary) {
                     // unary operator
                     write_NodeList(&root.body, parse(source, length, highest_index, new_end, tokens, NODE_UNARY_EXPRESSION, file_name));
+                } else if (is_unary_postfix) {
+                    write_NodeList(&root.body, parse(source, length, new_start, highest_index + 1, tokens, NODE_UNARY_POSTFIX_EXPRESSION, file_name));
                 } else if (highest_index == new_end - 1) {
                     // error if the last token is an operator
                     PRINT_ERROR(highest_index, E_UNEXPECTED_TOKEN);
@@ -1142,12 +1186,19 @@ Node parse (const char *source, size_t length, const int start, const int end, T
 
                     root.type = NODE_TERNARY_EXPRESSION;
                 } else {
+                    OperatorType op = tokens.tokens[highest_index].carry;
+
+                    if (op == OPERATOR_FAT_ARROW) {
+                        // lambda expression
+                        write_NodeList(&root.body, parse(source, length, new_start, new_end, tokens, NODE_LAMBDA_EXPRESSION, file_name));
+                        break;
+                    }
+
                     write_NodeList(&root.body, parse(source, length, new_start, highest_index, tokens, type, file_name));
 
                     if (tokens.tokens[highest_index].type != TOKEN_OPERATOR) {
                         PRINT_ERROR(highest_index, E_UNEXPECTED_TOKEN);
                     }
-                    OperatorType op = tokens.tokens[highest_index].carry;
                     if (isAssignmentOperator(op) || op == OPERATOR_NOT || op == OPERATOR_NOT_BITWISE || op == OPERATOR_COMMA || op == OPERATOR_QUESTION || op == OPERATOR_COLON) {
                         PRINT_ERROR(highest_index, E_NON_BINARY_OPERATOR);
                     }
@@ -1178,6 +1229,23 @@ Node parse (const char *source, size_t length, const int start, const int end, T
             
             write_NodeList(&root.body, parse(source, length, start, start + 1, tokens, NODE_OPERATOR, file_name));
             write_NodeList(&root.body, parse(source, length, start + 1, end, tokens, NODE_EXPRESSION, file_name));
+            break;
+        }
+
+        case NODE_UNARY_POSTFIX_EXPRESSION: {
+            if (start == end) {
+                PRINT_ERROR(start, E_UNEXPECTED_TOKEN);
+            }
+            if (tokens.tokens[end - 1].type != TOKEN_OPERATOR) {
+                PRINT_ERROR(end, E_UNEXPECTED_TOKEN);
+            }
+
+            if (tokens.tokens[end - 1].carry != OPERATOR_INCREMENT && tokens.tokens[end - 1].carry != OPERATOR_DECREMENT) {
+                PRINT_ERROR(end, E_UNEXPECTED_TOKEN);
+            }
+
+            write_NodeList(&root.body, parse(source, length, start, end - 1, tokens, NODE_EXPRESSION, file_name));
+            write_NodeList(&root.body, parse(source, length, end - 1, end, tokens, NODE_OPERATOR, file_name));
             break;
         }
 

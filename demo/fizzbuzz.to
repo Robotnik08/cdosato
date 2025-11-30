@@ -1,0 +1,1 @@
+do sayln("Fizz" * !(i % 3) + "Buzz" * !(i % 5) !? i) for i in 1:>=100

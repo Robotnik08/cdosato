@@ -1,5 +1,5 @@
 define interpret_brainfck (code) {
-    const registers = [0] * 10000
+    const registers = [(long)0] * 10000
     make pointer = 0
     make memory_pointer = 0
     make output = ""
@@ -7,69 +7,57 @@ define interpret_brainfck (code) {
     do {
         make c = code#pointer
         set pointer++
-        switch c => {
+        match c => {
             '>' => {
                 set memory_pointer++
-                break
             }
             '<' => {
                 set memory_pointer--
-                break
             }
             '+' => {
                 set registers#memory_pointer++
-                break
             }
             '-' => {
                 set registers#memory_pointer--
-                break
             }
             '.' => {
                 make char r = registers#memory_pointer
                 set output += r
-                break
             }
             ',' => {
                 // TODO: Implement input
                 make char r = listen()#0
                 set registers#memory_pointer = r
-                break
             }
             '[' => {
+                break unless registers#memory_pointer == 0  // Continue execution normally
+                
                 make loop = 1
-                make start = pointer
-                if registers#memory_pointer == 0 then {
-                    break
-                }
+                set pointer--
                 do {
-                    make ch = code#pointer
                     set pointer++
+                    make ch = code#pointer
                     if ch == '[' then {
                         set loop++
                     } else if ch == ']' then {
                         set loop--
                     }
-                    do sayln(ch)
                 } while loop > 0
-                break
             }
             ']' => {
+                break unless registers#memory_pointer != 0 // Continue execution normally
+
                 make loop = 1
-                make start = pointer
-                if registers#memory_pointer == 0 then {
-                    break
-                }
+                set pointer--
                 do {
-                    make ch = code#pointer
                     set pointer--
+                    make ch = code#pointer
                     if ch == '[' then {
                         set loop--
                     } else if ch == ']' then {
                         set loop++
                     }
                 } while loop > 0
-                set pointer--
-                break
             }
 
             other => {
@@ -81,8 +69,6 @@ define interpret_brainfck (code) {
     return output
 }
 
-do sayln(map(stringSplit(interpret_brainfck("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."), ""), 
-    int (x, _i) => {
-        return (int)x#0
-    }
+do sayln(interpret_brainfck(
+"++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
 ))

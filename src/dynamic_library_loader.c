@@ -34,7 +34,7 @@ void free_DynamicLibrary(DynamicLibrary* lib) {
 DynamicLibrary loadLib (const char* path) {
     DynamicLibrary lib;
     init_DynamicLibrary(&lib);
-    lib.name = malloc(strlen(path) + 1);
+    lib.name = malloc(strlen(path) + 2);
     strcpy(lib.name, path);
 
     #ifdef _WIN32

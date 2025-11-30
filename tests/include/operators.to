@@ -497,7 +497,7 @@ do assert({a: {b: 2}}?->a?->c, null)
 // Pipe operator
 
 do assert(1 |> (var (x) => { return x + 1}), 2)
-do assert(1 |> typeOf, "ulong")
+do assert(1 |> typeOf, "long")
 
 set test_int = 1
 set test_int |>= (var (x) => { return x + 1})

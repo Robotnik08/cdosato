@@ -301,7 +301,7 @@ Value array_index_of (ValueArray args, bool debug) {
 
     ValueArray* obj = AS_ARRAY(arg);
     for (int i = 0; i < obj->count; i++) {
-        if (valueEquals(&obj->values[i], &value)) {
+        if (valueEqualsStrict(&obj->values[i], &value)) {
             return BUILD_LONG(i);
         }
     }
@@ -323,7 +323,7 @@ Value array_last_index_of(ValueArray args, bool debug) {
 
     ValueArray* obj = AS_ARRAY(arg);
     for (int i = obj->count - 1; i >= 0; i--) {
-        if (valueEquals(&obj->values[i], &value)) {
+        if (valueEqualsStrict(&obj->values[i], &value)) {
             return BUILD_LONG(i);
         }
     }
@@ -493,7 +493,10 @@ Value array_map (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -532,7 +535,10 @@ Value array_reduce (ValueArray args, bool debug) {
         // pass the accumulator, the value, and the index to the function
         write_ValueArray(&args, accumulator);
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 2) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -565,7 +571,10 @@ Value array_some (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -603,7 +612,10 @@ Value array_filter (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -641,7 +653,10 @@ Value array_every (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -671,7 +686,7 @@ Value array_count (ValueArray args, bool debug) {
     ValueArray* obj = AS_ARRAY(arg);
     int count = 0;
     for (int i = 0; i < obj->count; i++) {
-        if (valueEquals(&obj->values[i], &value)) {
+        if (valueEqualsStrict(&obj->values[i], &value)) {
             count++;
         }
     }
@@ -721,7 +736,10 @@ Value array_find (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -861,7 +879,7 @@ Value array_remove_duplicates (ValueArray args, bool debug) {
     for (int i = 0; i < obj->count; i++) {
         bool found = false;
         for (int j = 0; j < new_array->count; j++) {
-            if (valueEquals(&obj->values[i], &new_array->values[j])) {
+            if (valueEqualsStrict(&obj->values[i], &new_array->values[j])) {
                 found = true;
                 break;
             }
@@ -917,7 +935,7 @@ Value array_difference (ValueArray args, bool debug) {
     for (int i = 0; i < obj1->count; i++) {
         bool found = false;
         for (int j = 0; j < obj2->count; j++) {
-            if (valueEquals(&obj1->values[i], &obj2->values[j])) {
+            if (valueEqualsStrict(&obj1->values[i], &obj2->values[j])) {
                 found = true;
                 break;
             }
@@ -952,7 +970,7 @@ Value array_intersection (ValueArray args, bool debug) {
 
     for (int i = 0; i < obj1->count; i++) {
         for (int j = 0; j < obj2->count; j++) {
-            if (valueEquals(&obj1->values[i], &obj2->values[j])) {
+            if (valueEqualsStrict(&obj1->values[i], &obj2->values[j])) {
                 write_ValueArray(new_array, obj1->values[i]);
                 break;
             }
@@ -960,4 +978,26 @@ Value array_intersection (ValueArray args, bool debug) {
     }
 
     return BUILD_ARRAY(new_array, true);
+}
+
+Value array_contains (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value array = GET_ARG(args, 0);
+    if (array.type != TYPE_ARRAY) {
+        return BUILD_EXCEPTION(E_NOT_AN_ARRAY);
+    }
+
+    Value value = GET_ARG(args, 1);
+
+    ValueArray* obj = AS_ARRAY(array);
+    for (int i = 0; i < obj->count; i++) {
+        if (valueEqualsStrict(&obj->values[i], &value)) {
+            return BUILD_BOOL(true);
+        }
+    }
+
+    return BUILD_BOOL(false);
 }

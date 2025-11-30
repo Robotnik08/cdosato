@@ -40,5 +40,6 @@ Value array_remove_duplicates(ValueArray args, bool debug);
 Value array_length(ValueArray args, bool debug);
 Value array_difference (ValueArray args, bool debug);
 Value array_intersection (ValueArray args, bool debug);
+Value array_contains (ValueArray args, bool debug);
 
 #endif // STD_ARRAY_H

@@ -129,6 +129,52 @@ Value io_write_file (ValueArray args, bool debug) {
     return UNDEFINED_VALUE;
 }
 
+Value io_write_bytes_file (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+
+    CAST_SAFE(arg1, TYPE_STRING);
+    if (arg2.type != TYPE_ARRAY) {
+        // turn into byte
+        CAST_SAFE(arg2, TYPE_UBYTE);
+    }
+
+    FILE* file = fopen(AS_STRING(arg1), "wb");
+    if (file == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    if (arg2.type == TYPE_ARRAY) {
+        ValueArray* byte_array = AS_ARRAY(arg2);
+        int count = byte_array->count;
+
+        if (count == 0) {
+            fclose(file);
+            return UNDEFINED_VALUE; // nothing to write
+        }
+
+        for (int i = 0; i < count; i++) {
+            Value byte_value = byte_array->values[i];
+            CAST_SAFE(byte_value, TYPE_UBYTE);
+            fputc(AS_BYTE(byte_value), file);
+        }
+    } else {
+        fputc(AS_BYTE(arg2), file);
+    }
+
+    fclose(file);
+
+    return UNDEFINED_VALUE;
+}
+
 Value io_append_file (ValueArray args, bool debug) {
     if (args.count != 2) {
         return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
@@ -150,6 +196,52 @@ Value io_append_file (ValueArray args, bool debug) {
     }
 
     fwrite(AS_STRING(arg2), sizeof(char), strlen(AS_STRING(arg2)), file);
+    fclose(file);
+
+    return UNDEFINED_VALUE;
+}
+
+Value io_append_bytes_file (ValueArray args, bool debug) {
+    if (args.count != 2) {
+        return BUILD_EXCEPTION(E_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
+    Value arg1 = GET_ARG(args, 0);
+    Value arg2 = GET_ARG(args, 1);
+
+    CAST_SAFE(arg1, TYPE_STRING);
+    if (arg2.type != TYPE_ARRAY) {
+        // turn into byte
+        CAST_SAFE(arg2, TYPE_UBYTE);
+    }
+
+    FILE* file = fopen(AS_STRING(arg1), "ab");
+    if (file == NULL) {
+        #ifdef _WIN32
+        _fcloseall(); // close all files if any were opened
+        #endif
+
+        return BUILD_EXCEPTION((errno == EACCES ? E_FILE_PERMISSION_DENIED : E_FILE_NOT_FOUND));
+    }
+
+    if (arg2.type == TYPE_ARRAY) {
+        ValueArray* byte_array = AS_ARRAY(arg2);
+        int count = byte_array->count;
+
+        if (count == 0) {
+            fclose(file);
+            return UNDEFINED_VALUE; // nothing to write
+        }
+
+        for (int i = 0; i < count; i++) {
+            Value byte_value = byte_array->values[i];
+            CAST_SAFE(byte_value, TYPE_UBYTE);
+            fputc(AS_BYTE(byte_value), file);
+        }
+    } else {
+        fputc(AS_BYTE(arg2), file);
+    }
+
     fclose(file);
 
     return UNDEFINED_VALUE;
@@ -375,7 +467,6 @@ Value io_get_files_directory (ValueArray args, bool debug) {
     init_ValueArray(array);
     for (int i = 0; i < count; i++) {
         write_ValueArray(array, BUILD_STRING(COPY_STRING(files[i]), false));
-        free(files[i]);
     }
     
     free_files(files, count);

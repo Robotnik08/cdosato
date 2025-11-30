@@ -6,12 +6,12 @@ make name_space = ""
 define void assert(var value, var expected) {
     if value != expected then 
               push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected: {expected} \n\t- Got: {value}`) 
-        catch push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed\n\t- Expected: {expected}\n\t- Got: {value}\n\t- With error code: {_}`)
+        catch push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected: {expected} \n\t- Got: {value}\n\t- With error code: {_}`)
     set test_id++
 }
 
 define void expectNoError(function func) {
-    do func() catch push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected no errors, but got code {_}`)
+    do func() catch push(failed_tests, `Assertion {test_id} in {name_space}: Assertion failed \n\t- Expected no errors, but got error code {_}`)
     set test_id++
 }
 
