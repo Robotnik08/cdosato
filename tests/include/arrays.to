@@ -53,7 +53,7 @@ make types_arr = [1, 2.0, 3.0F, "4", true]
 
 do assert(types_arr, [1, 2.0, 3.0, "4", true])
 
-do assert(typeOf(types_arr#0), "ulong")
+do assert(typeOf(types_arr#0), "long")
 do assert(typeOf(types_arr#1), "double")
 do assert(typeOf(types_arr#2), "float")
 do assert(typeOf(types_arr#3), "string")

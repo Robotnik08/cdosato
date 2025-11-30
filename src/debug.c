@@ -165,6 +165,9 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
         case OP_BINARY_LOGICAL_OR:
             printf("%s", "OP_BINARY_LOGICAL_OR");
             break;
+        case OP_BINARY_LOGICAL_XOR:
+            printf("%s", "OP_BINARY_LOGICAL_XOR");
+            break;
         case OP_BINARY_NULL_COALESCE:
             printf("%s", "OP_BINARY_NULL_COALESCE");
             break;
@@ -211,6 +214,17 @@ void printInstruction(uint8_t* code, size_t offset, int line) {
             break;
         case OP_GETOBJECT:
             printf("%s", "OP_GETOBJECT");
+            break;
+
+        case OP_UNWRAP_LIST:
+            printf("%s", "OP_UNWRAP_LIST");
+            pop_count = code[offset];
+            printf(": (%d)", pop_count);
+            break;
+        case OP_UNWRAP_LIST_REVERSE:
+            printf("%s", "OP_UNWRAP_LIST_REVERSE");
+            pop_count = code[offset];
+            printf(": (%d)", pop_count);
             break;
 
         case OP_STORE_SUBSCR:

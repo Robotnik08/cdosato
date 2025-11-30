@@ -493,7 +493,10 @@ Value array_map (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -532,7 +535,10 @@ Value array_reduce (ValueArray args, bool debug) {
         // pass the accumulator, the value, and the index to the function
         write_ValueArray(&args, accumulator);
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 2) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -565,7 +571,10 @@ Value array_some (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -603,7 +612,10 @@ Value array_filter (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -641,7 +653,10 @@ Value array_every (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {
@@ -721,7 +736,10 @@ Value array_find (ValueArray args, bool debug) {
         init_ValueArray(&args);
         // pass the value and the index to the function
         write_ValueArray(&args, obj->values[i]);
-        write_ValueArray(&args, BUILD_LONG(i));
+        if (AS_FUNCTION(function)->arity > 1) {
+            // index value is only passed if the function can accept it
+            write_ValueArray(&args, BUILD_LONG(i));
+        }
         Value result = callExternalFunction(function, args, false);
         free_ValueArray(&args);
         if (result.type == TYPE_EXCEPTION || result.type == TYPE_HLT) {

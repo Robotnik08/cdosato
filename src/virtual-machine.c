@@ -5,6 +5,7 @@
 #include "../include/ast.h"
 #include "../include/memory.h"
 #include "../include/dynamic_library_loader.h"
+#include "../include/debug.h"
 
 VirtualMachine* main_vm = NULL;
 
@@ -280,6 +281,12 @@ void pushValue(ValueArray* array, Value value) {
         active_instance = active_stack[ip_stack_count]; \
     } else { \
         size_t token_index = active_instance->token_indices[vm->ip - active_instance->code - 1]; \
+        /* If it's in debug mode, print the instruction where it crashed */ \
+        if (debug) { \
+            printf("%s", "\n==== Cause of error: ====\n"); \
+            printInstruction(active_instance->code, vm->ip - active_instance->code - 1 - (getOffset(instruction) - 1), -1); \
+            printf("%s", "==========================\n"); \
+        } \
         printError(((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->tokens.tokens[token_index].start - ((AST*)active_instance->ast)->source, ((AST*)active_instance->ast)->name, e_code, ((AST*)active_instance->ast)->tokens.tokens[token_index].length);\
     } \
 } while(0); \
@@ -336,7 +343,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
         switch (instruction) {
             
             default: {
-                printf("Unknown instruction: %d at: %x\n", instruction, vm->ip - active_instance->code - 1);
+                printf("Unknown instruction: %d at: (0x%x)\n", instruction, vm->ip - active_instance->code - 1);
                 halt = true;
                 break;
             }
@@ -1001,6 +1008,48 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 break;
             }
 
+            case OP_UNWRAP_LIST: {
+                int count = NEXT_BYTE();
+                Value list = POP_VALUE();
+
+                if (list.type != TYPE_ARRAY) {
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
+                }
+
+                ValueArray* array = AS_ARRAY(list);
+                if (array->count < count) {
+                    // too little elements to unwrap
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                for (int i = 0; i < count; i++) {
+                    pushValue(&vm->stack, array->values[i]);
+                }
+
+                break;
+            }
+
+            case OP_UNWRAP_LIST_REVERSE: {
+                int count = NEXT_BYTE();
+                Value list = POP_VALUE();
+
+                if (list.type != TYPE_ARRAY) {
+                    PRINT_ERROR(E_NOT_AN_ARRAY);
+                }
+
+                ValueArray* array = AS_ARRAY(list);
+                if (array->count < count) {
+                    // too little elements to unwrap
+                    PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
+                }
+
+                for (int i = count - 1; i >= 0; i--) {
+                    pushValue(&vm->stack, array->values[i]);
+                }
+
+                break;
+            }
+
             case OP_LOAD_LAMBDA: {
                 // load lambda function
                 uint16_t index = NEXT_SHORT();
@@ -1092,7 +1141,6 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_CANNOT_ASSIGN_TO_CONSTANT);
                 }
 
-                // TO DO type checking
                 ErrorType code = incValue(&vm->stack.values[index], -1);
                 break;
             }
@@ -1107,9 +1155,14 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                int i = index.as.longValue;
+                ErrorType code = castValue(&index, TYPE_LONG);
+                if (code) {
+                    PRINT_ERROR(code);
+                }
+
+                int i = AS_LONG(index);
                 ValueArray* array = AS_ARRAY(list);
+
                 if (i < 0) {
                     i += array->count;
                 }
@@ -1118,8 +1171,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
-                // TO DO type checking
-                ErrorType code = incValue(&array->values[i], 1);
+                code = incValue(&array->values[i], 1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
                 }
@@ -1136,8 +1188,12 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_UNDEFINED_VARIABLE);
                 }
 
-                // TO DO type checking
-                int i = index.as.longValue;
+                ErrorType code = castValue(&index, TYPE_LONG);
+                if (code) {
+                    PRINT_ERROR(code);
+                }
+
+                int i = AS_LONG(index);
                 ValueArray* array = AS_ARRAY(list);
 
                 if (i < 0) {
@@ -1148,8 +1204,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                     PRINT_ERROR(E_INDEX_OUT_OF_BOUNDS);
                 }
 
-                // TO DO type checking
-                ErrorType code = incValue(&array->values[i], -1);
+                code = incValue(&array->values[i], -1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
                 }
@@ -1169,7 +1224,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 Value* value = getValueAtKey(obj, key);
-                // to do type checking
+
                 ErrorType code = incValue(value, 1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
@@ -1190,7 +1245,7 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 Value* value = getValueAtKey(obj, key);
-                // to do type checking
+
                 ErrorType code = incValue(value, -1);
                 if (code != E_NULL) {
                     PRINT_ERROR(code);
@@ -1726,6 +1781,22 @@ int runVirtualMachine (VirtualMachine* vm, int debug, bool is_main) {
                 }
 
                 pushValue(&vm->stack, BUILD_BOOL(a.as.boolValue || b.as.boolValue));
+                break;
+            }
+            case OP_BINARY_LOGICAL_XOR: {
+                Value b = POP_VALUE();
+                Value a = POP_VALUE();
+
+                ErrorType code = castValue(&a, TYPE_BOOL);
+                if (code != E_NULL) {
+                    PRINT_ERROR(code);
+                }
+                code = castValue(&b, TYPE_BOOL);
+                if (code != E_NULL) {
+                    PRINT_ERROR(code);
+                }
+
+                pushValue(&vm->stack, BUILD_BOOL(a.as.boolValue ^ b.as.boolValue));
                 break;
             }
             case OP_BINARY_MODULO: {

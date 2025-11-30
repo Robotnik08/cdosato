@@ -210,3 +210,17 @@ do {
 
 make a, b, c = 7, 8, 9
 do assert(global_lambda(), 6)
+
+// Lambda syntax alternatives
+
+make ldouble1 = int (int x) => { return x * 2 }
+make ldouble2 = (int x) => { return x * 2 }
+make ldouble3 = x => { return x * 2 }
+make ldouble4 = int x => { return x * 2 }
+make ldouble5 = x => x * 2
+
+do assert(ldouble1(123), 246)
+do assert(ldouble2(123), 246)
+do assert(ldouble3(123), 246)
+do assert(ldouble4(123), 246)
+do assert(ldouble5(123), 246)
